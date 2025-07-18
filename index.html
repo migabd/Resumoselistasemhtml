@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Rápido do Exame Neurológico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .card-header {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+        .card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Cores para cada seção */
+        .bg-cranianos { background-color: #3b82f6; } /* Blue */
+        .bg-motora { background-color: #10b981; } /* Green */
+        .bg-reflexos { background-color: #f97316; } /* Orange */
+        .bg-sensitiva { background-color: #8b5cf6; } /* Purple */
+        .bg-coordenacao { background-color: #ef4444; } /* Red */
+
+        .border-cranianos { border-color: #3b82f6; }
+        .border-motora { border-color: #10b981; }
+        .border-reflexos { border-color: #f97316; }
+        .border-sensitiva { border-color: #8b5cf6; }
+        .border-coordenacao { border-color: #ef4444; }
+
+        .text-cranianos { color: #3b82f6; }
+        .text-motora { color: #10b981; }
+        .text-reflexos { color: #f97316; }
+        .text-sensitiva { color: #8b5cf6; }
+        .text-coordenacao { color: #ef4444; }
+
+        .highlight {
+            background-color: rgba(255, 255, 0, 0.2);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow-md p-6 text-center">
+        <h1 class="text-4xl font-bold text-gray-700">Guia Didático do Exame Físico Neurológico</h1>
+        <p class="text-lg text-gray-600 mt-2">Um resumo visual das etapas, achados e correlações clínicas.</p>
+    </header>
+
+    <!-- Navegação Rápida -->
+    <nav class="sticky top-0 bg-white/80 backdrop-blur-sm shadow-sm z-10 py-3">
+        <div class="container mx-auto flex justify-center items-center space-x-2 md:space-x-6 flex-wrap px-4">
+            <a href="#cranianos" class="text-sm md:text-base font-semibold text-cranianos hover:underline">Nervos Cranianos</a>
+            <a href="#motora" class="text-sm md:text-base font-semibold text-motora hover:underline">Função Motora</a>
+            <a href="#reflexos" class="text-sm md:text-base font-semibold text-reflexos hover:underline">Reflexos</a>
+            <a href="#sensitiva" class="text-sm md:text-base font-semibold text-sensitiva hover:underline">Sensibilidade</a>
+            <a href="#coordenacao" class="text-sm md:text-base font-semibold text-coordenacao hover:underline">Coordenação e Marcha</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <!-- 1. Nervos Cranianos -->
+        <section id="cranianos" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-cranianos border-b-4 border-cranianos pb-2">
+                <span class="bg-cranianos text-white rounded-full w-10 h-10 inline-flex items-center justify-center mr-3">1</span>
+                Nervos Cranianos
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Card Genérico para NC -->
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">I. Olfatório</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Identificar odores familiares (café) com cada narina ocluída.</p>
+                        <p class="text-sm"><strong>Achado:</strong> <span class="font-semibold">Anosmia</span> (perda do olfato).</p>
+                        <p class="text-sm"><strong>Patologia:</strong> TCE (fratura de placa cribriforme), meningioma.</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">II. Óptico</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Acuidade (Snellen), campo visual por confrontação, fundo de olho.</p>
+                        <p class="text-sm"><strong>Achados:</strong> <span class="font-semibold">Papiledema, hemianopsias.</span></p>
+                        <p class="text-sm"><strong>Patologias:</strong> Hipertensão intracraniana, AVC, tumor de hipófise.</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">III, IV, VI. Oculomotor, Troclear, Abducente</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Motilidade ocular em "H", pesquisa de ptose, reflexos pupilares.</p>
+                        <p class="text-sm"><strong>Achados:</strong> <span class="font-semibold">Estrabismo, diplopia, ptose, midríase.</span></p>
+                        <p class="text-sm"><strong>Patologias:</strong> Aneurisma (NC III com midríase é emergência!), TCE, hipertensão intracraniana.</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">V. Trigêmeo</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Sensibilidade tátil/dolorosa na face (V1, V2, V3), força da mastigação.</p>
+                        <p class="text-sm"><strong>Achado:</strong> <span class="font-semibold">Dor facial lancinante.</span></p>
+                        <p class="text-sm"><strong>Patologia:</strong> Neuralgia do Trigêmeo (compressão vascular), esclerose múltipla.</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">VII. Facial</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Mímica facial (enrugar testa, sorrir, fechar olhos com força).</p>
+                        <p class="text-sm"><strong>Achado Crucial:</strong> <span class="font-semibold">Paralisia Periférica</span> (toda hemiface, não enruga a testa) vs. <span class="font-semibold">Central</span> (poupa a testa).</p>
+                        <p class="text-sm"><strong>Patologias:</strong> Periférica (Paralisia de Bell) vs. Central (AVC, tumor cerebral).</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">VIII. Vestibulococlear</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Testes de Weber e Rinne, pesquisa de nistagmo, Dix-Hallpike.</p>
+                        <p class="text-sm"><strong>Achados:</strong> <span class="font-semibold">Surdez, vertigem, nistagmo.</span></p>
+                        <p class="text-sm"><strong>Patologias:</strong> Padrão do nistagmo diferencia causa periférica (VPPB) de central (AVC de tronco).</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">IX, X. Glossofaríngeo, Vago</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Elevação do palato ("Ahhh"), reflexo nauseoso, qualidade da voz.</p>
+                        <p class="text-sm"><strong>Achado:</strong> <span class="font-semibold">Desvio da úvula para o lado SÃO</span> ("sinal da cortina").</p>
+                        <p class="text-sm"><strong>Patologias:</strong> Tumor de base de crânio, lesão iatrogênica.</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">XI. Acessório</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Elevar ombros e virar a cabeça contra resistência.</p>
+                        <p class="text-sm"><strong>Achado:</strong> <span class="font-semibold">Ombro caído, fraqueza.</span></p>
+                        <p class="text-sm"><strong>Patologia:</strong> Lesão iatrogênica (biópsia cervical).</p>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow-lg overflow-hidden border-l-4 border-cranianos">
+                    <div class="p-5">
+                        <h3 class="font-bold text-xl mb-2">XII. Hipoglosso</h3>
+                        <p class="text-sm text-gray-600 mb-2"><strong>Técnica:</strong> Protrusão da língua, pesquisa de atrofia/fasciculações.</p>
+                        <p class="text-sm"><strong>Achado:</strong> <span class="font-semibold">Desvio da língua para o lado da LESÃO.</span></p>
+                        <p class="text-sm"><strong>Patologias:</strong> AVC, tumor, ELA.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Função Motora -->
+        <section id="motora" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-motora border-b-4 border-motora pb-2">
+                <span class="bg-motora text-white rounded-full w-10 h-10 inline-flex items-center justify-center mr-3">2</span>
+                Função Motora
+            </h2>
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="font-bold text-lg mb-2">Trofismo e Mov. Involuntários</h4>
+                        <p class="text-sm"><strong>Atrofia:</strong> Perda de massa muscular.</p>
+                        <p class="text-sm"><strong>Fasciculações:</strong> Contrações musculares finas. Se associadas à fraqueza/atrofia, são sinal de alerta para <span class="highlight font-semibold">ELA</span>.</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2">Tônus Muscular (Resistência Passiva)</h4>
+                        <p class="text-sm"><strong>Hipotonia (Flacidez):</strong> Lesão de Neurônio Motor Inferior (NMI), miopatias, lesão cerebelar.</p>
+                        <p class="text-sm"><strong>Hipertonia:</strong></p>
+                        <ul class="list-disc list-inside text-sm ml-4">
+                            <li><span class="font-semibold">Espasticidade ("canivete"):</span> Lesão de Neurônio Motor Superior (NMS) - AVC, lesão medular.</li>
+                            <li><span class="font-semibold">Rigidez ("cano de chumbo"):</span> Doença de Parkinson.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-2">Força Muscular (Escala MRC 0-5)</h4>
+                        <p class="text-sm">Avaliar grupos musculares contra a resistência. Padrões de fraqueza localizam a lesão:</p>
+                        <ul class="list-disc list-inside text-sm ml-4">
+                            <li><strong>Hemiparesia:</strong> Metade do corpo (lesão de NMS contralateral).</li>
+                            <li><strong>Paraparesia:</strong> Membros inferiores (lesão medular).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 class="font-bold text-xl text-center mb-2 text-motora">Síntese: NMS vs. NMI</h4>
+                    <div class="flex justify-around text-center text-sm">
+                        <div>
+                            <h5 class="font-bold mb-2">Lesão NMS (Piramidal)</h5>
+                            <p>Tônus: Espasticidade</p>
+                            <p>Reflexos: Hiperreflexia</p>
+                            <p>Babinski: Presente</p>
+                            <p>Trofismo: Normal/Desuso</p>
+                        </div>
+                        <div class="border-l border-gray-300 mx-4"></div>
+                        <div>
+                            <h5 class="font-bold mb-2">Lesão NMI (Periférica)</h5>
+                            <p>Tônus: Hipotonia</p>
+                            <p>Reflexos: Hiporreflexia</p>
+                            <p>Babinski: Ausente</p>
+                            <p>Trofismo: Atrofia Precoce</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Reflexos -->
+        <section id="reflexos" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-reflexos border-b-4 border-reflexos pb-2">
+                <span class="bg-reflexos text-white rounded-full w-10 h-10 inline-flex items-center justify-center mr-3">3</span>
+                Reflexos
+            </h2>
+            <div class="bg-white rounded-lg shadow-lg p-6 grid md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="font-bold text-xl mb-3">Reflexos Miotáticos Profundos</h3>
+                    <p class="text-sm mb-4">Graduados de 0 (ausente) a 4+ (clônus). A <span class="font-semibold">assimetria</span> é o mais importante.</p>
+                    <p class="text-sm mb-2"><strong>Hiporreflexia/Arreflexia (0, 1+):</strong> Interrupção do arco reflexo. Sinal de <span class="highlight font-semibold">lesão de NMI</span> (polineuropatias, radiculopatias).</p>
+                    <p class="text-sm"><strong>Hiperreflexia/Clônus (3+, 4+):</strong> Perda de inibição central. Sinal de <span class="highlight font-semibold">lesão de NMS</span> (AVC, lesão medular).</p>
+                </div>
+                <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-8">
+                    <h3 class="font-bold text-xl mb-3">Reflexo Cutâneo-Plantar (Babinski)</h3>
+                    <p class="text-sm mb-4">Estimulação da planta do pé do calcanhar aos dedos.</p>
+                    <ul class="space-y-2 text-sm">
+                        <li><strong class="text-green-600">Normal (Flexor):</strong> Dedos se curvam para baixo.</li>
+                        <li><strong class="text-red-600">Anormal (Extensor) - Sinal de Babinski:</strong> Hálux se estende para cima. Sinal fidedigno de <span class="highlight font-semibold">lesão de NMS</span>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Função Sensitiva -->
+        <section id="sensitiva" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-sensitiva border-b-4 border-sensitiva pb-2">
+                <span class="bg-sensitiva text-white rounded-full w-10 h-10 inline-flex items-center justify-center mr-3">4</span>
+                Função Sensitiva
+            </h2>
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="font-bold text-xl mb-4">Padrões de Perda Sensitiva (Hipoestesia)</h3>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 class="font-semibold mb-1">Padrão em "Luva e Bota"</h4>
+                        <p>Perda distal e simétrica. Típico de <span class="highlight">polineuropatia periférica</span> (e.g., neuropatia diabética).</p>
+                    </div>
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 class="font-semibold mb-1">Nível Sensitivo</h4>
+                        <p>Perda de sensibilidade abaixo de um dermátomo no tronco. Patognomônico de <span class="highlight">lesão medular transversa</span>.</p>
+                    </div>
+                    <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 class="font-semibold mb-1">Hemianestesia</h4>
+                        <p>Perda em metade do corpo. Indica <span class="highlight">lesão cerebral contralateral</span> (tálamo, córtex parietal), geralmente por AVC.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Coordenação, Equilíbrio e Marcha -->
+        <section id="coordenacao" class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-coordenacao border-b-4 border-coordenacao pb-2">
+                <span class="bg-coordenacao text-white rounded-full w-10 h-10 inline-flex items-center justify-center mr-3">5</span>
+                Coordenação, Equilíbrio e Marcha
+            </h2>
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="grid md:grid-cols-2 gap-8 mb-6">
+                    <div>
+                        <h3 class="font-bold text-xl mb-3">Coordenação (Função Cerebelar)</h3>
+                        <p class="text-sm mb-2"><strong>Dismetria:</strong> Erro na medida do movimento. Teste <span class="font-semibold">índice-nariz</span> e <span class="font-semibold">calcanhar-joelho</span>. Achado: tremor de intenção.</p>
+                        <p class="text-sm"><strong>Disdiadococinesia:</strong> Dificuldade em movimentos alternados rápidos.</p>
+                        <p class="text-sm mt-2"><strong>Patologias:</strong> <span class="highlight">Lesão cerebelar</span> (AVC, tumor, intoxicação alcoólica).</p>
+                    </div>
+                    <div class="border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-8">
+                        <h3 class="font-bold text-xl mb-3">Equilíbrio Estático (Teste de Romberg)</h3>
+                        <p class="text-sm mb-2">Paciente em pé, pés juntos, olhos abertos e depois fechados.</p>
+                        <p class="text-sm"><strong>Romberg Positivo:</strong> Cai ao fechar os olhos. Indica lesão <span class="highlight">proprioceptiva (colunas dorsais)</span> ou <span class="highlight">vestibular</span>. <strong class="text-red-600">Não é um teste cerebelar!</strong></p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-xl mb-4 text-center">Padrões de Marcha Patológica</h3>
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                        <div class="p-3 bg-red-50 rounded-lg"><strong>Ceifante (Hemiparética):</strong> Perna arrastada em semicírculo. Causa: AVC.</div>
+                        <div class="p-3 bg-red-50 rounded-lg"><strong>Parkinsoniana:</strong> Passos curtos, arrastados, sem balanço dos braços. Causa: Doença de Parkinson.</div>
+                        <div class="p-3 bg-red-50 rounded-lg"><strong>Atáxica (Cerebelar):</strong> Base alargada, instável, "de bêbado". Causa: Lesão cerebelar.</div>
+                        <div class="p-3 bg-red-50 rounded-lg"><strong>Escarvante:</strong> Levanta muito o joelho por "pé caído". Causa: Lesão de nervo fibular.</div>
+                        <div class="p-3 bg-red-50 rounded-lg"><strong>Anserina ("de Pato"):</strong> Balanceio da pelve. Causa: Fraqueza de músculos pélvicos (miopatias).</div>
+                        <div class="p-3 bg-red-50 rounded-lg"><strong>Em Tesoura (Espástica):</strong> Pernas se cruzam. Causa: Paralisia cerebral.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center p-6 bg-gray-800 text-white mt-8">
+        <p>Este guia é um resumo didático e não substitui o estudo aprofundado ou a avaliação clínica completa.</p>
+    </footer>
+
+</body>
+</html>
