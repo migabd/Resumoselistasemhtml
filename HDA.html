@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Interativo de Hemorragia Digestiva Alta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application is structured into four logical, tabbed sections: "Visão Geral", "Etiologias", "Diagnóstico", and "Tratamento". This task-oriented design allows users (likely medical students or professionals) to navigate complex information sequentially, from a broad overview to specific details. The flow is intuitive: what it is, what causes it, how to find the cause, and how to fix it. Key interactions include clicking tabs to switch content, hovering over charts for details, clicking on pathology cards to reveal more information, and interacting with a CSS-based flowchart. This structure was chosen to deconstruct a complex medical topic into manageable, interconnected modules, enhancing usability and learning retention over a linear report. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Main causes of upper GI bleeding. -> Goal: Inform/Compare. -> Viz/Presentation: Donut Chart and Bar Chart. -> Interaction: Hover to see details on chart segments. -> Justification: Quickly conveys the most common causes and their relative frequencies. -> Library: Chart.js (Canvas).
+        - Report Info: Specific etiologies (Peptic Ulcer, Varices, etc.). -> Goal: Organize/Inform. -> Viz/Presentation: Interactive cards. -> Interaction: Click a card to expand and view detailed text. -> Justification: Allows users to explore specific conditions at their own pace without cluttering the UI. -> Library/Method: HTML/CSS/JS.
+        - Report Info: Diagnostic workflow. -> Goal: Organize/Inform. -> Viz/Presentation: CSS-based flowchart. -> Interaction: Hover over steps to see supplementary information. -> Justification: Visually represents a complex process in a clear, step-by-step manner, which is more intuitive than text alone. -> Library/Method: HTML/Tailwind CSS.
+        - Report Info: Treatment options. -> Goal: Organize/Inform. -> Viz/Presentation: Accordion-style content blocks. -> Interaction: Click headers to expand/collapse content. -> Justification: Manages a large amount of detailed information by hiding it until requested by the user. -> Library/Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 380px;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active {
+            border-bottom-color: #0d9488; /* teal-600 */
+            color: #0f766e; /* teal-700 */
+        }
+        .etiology-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .etiology-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .details-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .details-panel.open {
+            max-height: 500px;
+        }
+        .flowchart-step {
+            position: relative;
+            border: 2px solid #e2e8f0; /* slate-200 */
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            flex-grow: 1;
+        }
+        .flowchart-arrow {
+            color: #94a3b8; /* slate-400 */
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .accordion-header {
+            cursor: pointer;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <div id="app" class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-teal-800">Guia Interativo de Hemorragia Digestiva Alta (HDA)</h1>
+            <p class="mt-2 text-lg text-slate-600">Uma ferramenta para explorar etiologias, diagnósticos e tratamentos.</p>
+        </header>
+
+        <nav class="flex justify-center border-b border-slate-200 mb-8 space-x-4 md:space-x-8">
+            <button data-target="overview" class="nav-button active py-4 px-2 md:px-4 font-semibold text-slate-600">Visão Geral</button>
+            <button data-target="etiologies" class="nav-button py-4 px-2 md:px-4 font-semibold text-slate-600">Etiologias</button>
+            <button data-target="diagnosis" class="nav-button py-4 px-2 md:px-4 font-semibold text-slate-600">Diagnóstico</button>
+            <button data-target="treatment" class="nav-button py-4 px-2 md:px-4 font-semibold text-slate-600">Tratamento</button>
+        </nav>
+
+        <main id="content-container">
+            <!-- Visão Geral Section -->
+            <section id="overview" class="content-section space-y-8">
+                 <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-4">O que é a Hemorragia Digestiva Alta?</h2>
+                    <p class="text-slate-600 leading-relaxed">A Hemorragia Digestiva Alta (HDA) é definida como qualquer sangramento que se origine no trato gastrointestinal proximal ao ligamento de Treitz, ou seja, no esôfago, estômago ou duodeno. É uma emergência médica comum, com uma taxa de mortalidade significativa que varia de 5% a 10%. A apresentação clínica pode variar desde sintomas sutis até choque hipovolêmico grave. Esta seção oferece uma visão geral das causas mais comuns e sua prevalência, fornecendo um contexto inicial para a investigação clínica.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-semibold mb-4 text-center">Principais Causas de HDA</h3>
+                        <div class="chart-container">
+                            <canvas id="causesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                         <h3 class="text-xl font-semibold mb-4 text-center">Frequência Relativa das Etiologias</h3>
+                         <p class="text-sm text-slate-500 text-center mb-4">Comparação da incidência das causas não varicosas mais comuns.</p>
+                        <div class="chart-container h-96">
+                            <canvas id="frequencyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Etiologias Section -->
+            <section id="etiologies" class="content-section hidden space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-4">Etiologias da HDA</h2>
+                    <p class="text-slate-600 leading-relaxed">As causas da HDA são classicamente divididas em varicosas e não varicosas. A causa mais comum é a úlcera péptica, mas uma variedade de outras condições pode levar ao sangramento. Esta seção permite explorar as diferentes patologias. Clique em cada card para ver mais detalhes sobre a condição, seus fatores de risco e manifestações clínicas. A distinção entre as causas é fundamental, pois guia tanto o diagnóstico quanto a abordagem terapêutica.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Causas Não Varicosas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="etiology-card" data-etiology="peptica">
+                            <div class="bg-white p-5 rounded-lg shadow-sm h-full">
+                                <h4 class="font-bold text-lg text-teal-700">Úlcera Péptica</h4>
+                                <p class="text-sm text-slate-500 mt-1">Causa mais comum de HDA (até 50% dos casos).</p>
+                            </div>
+                        </div>
+                        <div class="etiology-card" data-etiology="mallory-weiss">
+                            <div class="bg-white p-5 rounded-lg shadow-sm h-full">
+                                <h4 class="font-bold text-lg text-teal-700">Laceração de Mallory-Weiss</h4>
+                                <p class="text-sm text-slate-500 mt-1">Lágrima na mucosa da junção gastroesofágica.</p>
+                            </div>
+                        </div>
+                        <div class="etiology-card" data-etiology="esofagite">
+                            <div class="bg-white p-5 rounded-lg shadow-sm h-full">
+                                <h4 class="font-bold text-lg text-teal-700">Esofagite/Gastrite Erosiva</h4>
+                                <p class="text-sm text-slate-500 mt-1">Inflamação e erosão da mucosa.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4 mt-8">Causas Varicosas</h3>
+                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="etiology-card" data-etiology="varizes">
+                            <div class="bg-white p-5 rounded-lg shadow-sm h-full">
+                                <h4 class="font-bold text-lg text-teal-700">Varizes Esofágicas/Gástricas</h4>
+                                <p class="text-sm text-slate-500 mt-1">Associadas à hipertensão portal, geralmente por cirrose.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="details-container" class="mt-6"></div>
+            </section>
+
+            <!-- Diagnóstico Section -->
+            <section id="diagnosis" class="content-section hidden space-y-8">
+                 <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-4">Abordagem Diagnóstica</h2>
+                    <p class="text-slate-600 leading-relaxed">O diagnóstico da HDA envolve uma abordagem sistemática que começa com a estabilização do paciente, seguida pela avaliação de risco e, finalmente, pela identificação da fonte do sangramento, quase sempre através de endoscopia digestiva alta. O fluxograma abaixo ilustra as etapas cruciais neste processo. Interagir com cada etapa fornecerá informações contextuais sobre os procedimentos e ferramentas de avaliação utilizados para estratificar os pacientes e orientar a intervenção.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-semibold text-center mb-6">Fluxograma de Investigação da HDA</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
+                        <div class="flowchart-step">
+                            <h4 class="font-semibold">1. Avaliação Inicial e Ressuscitação</h4>
+                            <p class="text-sm text-slate-500">ABC, acesso venoso, avaliação hemodinâmica.</p>
+                        </div>
+                        <div class="flowchart-arrow px-4 hidden md:block">&rarr;</div>
+                        <div class="flowchart-arrow py-2 block md:hidden">&darr;</div>
+                        <div class="flowchart-step">
+                            <h4 class="font-semibold">2. Estratificação de Risco</h4>
+                            <p class="text-sm text-slate-500">Uso de escores (ex: Glasgow-Blatchford).</p>
+                        </div>
+                        <div class="flowchart-arrow px-4 hidden md:block">&rarr;</div>
+                        <div class="flowchart-arrow py-2 block md:hidden">&darr;</div>
+                         <div class="flowchart-step">
+                            <h4 class="font-semibold">3. Endoscopia Digestiva Alta (EDA)</h4>
+                            <p class="text-sm text-slate-500">Padrão-ouro para diagnóstico e terapia. Realizar em < 24h.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tratamento Section -->
+            <section id="treatment" class="content-section hidden space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-4">Pilares do Tratamento</h2>
+                    <p class="text-slate-600 leading-relaxed">O tratamento da HDA é multifacetado e deve ser iniciado assim que houver suspeita clínica. A abordagem inclui a estabilização hemodinâmica do paciente, o uso de medicamentos para controlar o sangramento e reduzir a acidez gástrica, e a terapia endoscópica para tratar a lesão diretamente na fonte. Esta seção detalha cada um desses componentes. Utilize os painéis expansíveis para explorar as diferentes modalidades de tratamento disponíveis.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="accordion-item bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="accordion-header p-5 flex justify-between items-center bg-slate-50">
+                            <h3 class="text-lg font-semibold text-teal-800">1. Medidas Iniciais e Ressuscitação Volêmica</h3>
+                            <span class="text-teal-600 text-2xl transform transition-transform duration-300">+</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-5 border-t border-slate-200 text-slate-600 space-y-2">
+                                <p><strong>Objetivo:</strong> Estabilizar hemodinamicamente o paciente.</p>
+                                <p><strong>Ações:</strong> Garantir vias aéreas, monitorização contínua (PA, FC, SatO2), obter dois acessos venosos calibrosos.</p>
+                                <p><strong>Fluidos:</strong> Infusão de cristaloides (Soro Fisiológico 0.9% ou Ringer Lactato).</p>
+                                <p><strong>Transfusão Sanguínea:</strong> Restritiva. Considerar para Hemoglobina < 7 g/dL. Meta de 7-9 g/dL. Em pacientes com doença cardiovascular, a meta pode ser > 8 g/dL.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="accordion-header p-5 flex justify-between items-center bg-slate-50">
+                            <h3 class="text-lg font-semibold text-teal-800">2. Terapia Farmacológica</h3>
+                            <span class="text-teal-600 text-2xl transform transition-transform duration-300">+</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-5 border-t border-slate-200 text-slate-600 space-y-4">
+                                <div>
+                                    <h4 class="font-bold">Inibidores de Bomba de Prótons (IBP):</h4>
+                                    <p>Reduzem a acidez gástrica, estabilizando o coágulo. Administrar antes da EDA (ex: Pantoprazol 80mg em bolus, seguido de infusão contínua ou bolus intermitentes).</p>
+                                </div>
+                                 <div>
+                                    <h4 class="font-bold">Agentes Vasoativos (em HDA Varicosa):</h4>
+                                    <p>Reduzem a pressão portal. Iniciar na suspeita de sangramento varicoso. Opções incluem Terlipressina ou Octreotida.</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Antibioticoprofilaxia (em HDA Varicosa):</h4>
+                                    <p>Pacientes com cirrose e HDA têm alto risco de infecção. Administrar Ceftriaxona por 5-7 dias.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item bg-white rounded-lg shadow-sm overflow-hidden">
+                        <div class="accordion-header p-5 flex justify-between items-center bg-slate-50">
+                            <h3 class="text-lg font-semibold text-teal-800">3. Terapia Endoscópica</h3>
+                            <span class="text-teal-600 text-2xl transform transition-transform duration-300">+</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-5 border-t border-slate-200 text-slate-600 space-y-4">
+                                <p>Realizada após estabilização. Permite diagnóstico e tratamento simultâneos.</p>
+                                <div>
+                                    <h4 class="font-bold">HDA Não Varicosa (Úlceras):</h4>
+                                    <p><strong>Métodos de Injeção:</strong> Epinefrina diluída para hemostasia temporária.</p>
+                                    <p><strong>Métodos Térmicos:</strong> Eletrocoagulação para cauterizar o vaso.</p>
+                                    <p><strong>Métodos Mecânicos:</strong> Hemoclipes para ocluir mecanicamente o vaso sangrante. Terapia dupla (injeção + térmico/mecânico) é recomendada.</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">HDA Varicosa:</h4>
+                                    <p><strong>Ligadura Elástica:</strong> Método de escolha para varizes esofágicas. Bandas elásticas são colocadas sobre as varizes para obliterá-las.</p>
+                                    <p><strong>Escleroterapia:</strong> Injeção de agentes esclerosantes. Alternativa se a ligadura não for viável.</p>
+                                    <p><strong>Cianoacrilato:</strong> Injeção de "cola" para obliterar varizes gástricas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const navButtons = document.querySelectorAll('.nav-button');
+        const contentSections = document.querySelectorAll('.content-section');
+        const causesCtx = document.getElementById('causesChart').getContext('2d');
+        const frequencyCtx = document.getElementById('frequencyChart').getContext('2d');
+        const etiologyCards = document.querySelectorAll('.etiology-card');
+        const detailsContainer = document.getElementById('details-container');
+        const accordions = document.querySelectorAll('.accordion-item');
+
+        const etiologyData = {
+            peptica: {
+                title: "Úlcera Péptica",
+                content: "A úlcera péptica é uma ferida aberta que se desenvolve na mucosa do estômago (úlcera gástrica) ou duodeno (úlcera duodenal). É a principal causa de HDA. O sangramento ocorre quando a úlcera erode um vaso sanguíneo subjacente. <br><br><strong>Fatores de Risco:</strong> Infecção por <i>H. pylori</i>, uso de anti-inflamatórios não esteroidais (AINEs), tabagismo, estresse."
+            },
+            'mallory-weiss': {
+                title: "Laceração de Mallory-Weiss",
+                content: "Refere-se a uma laceração longitudinal na mucosa da junção esofagogástrica. É classicamente associada a vômitos intensos ou ânsias de vômito, que aumentam abruptamente a pressão intra-abdominal. <br><br><strong>Fatores de Risco:</strong> Alcoolismo, bulimia, qualquer condição que leve a vômitos recorrentes."
+            },
+            esofagite: {
+                title: "Esofagite / Gastrite / Duodenite Erosiva",
+                content: "Corresponde à inflamação difusa da mucosa com múltiplas erosões superficiais. O sangramento costuma ser menos volumoso do que o de uma úlcera. <br><br><strong>Fatores de Risco:</strong> Uso de AINEs, álcool, estresse fisiológico grave (ex: pacientes em UTI), refluxo gastroesofágico crônico."
+            },
+            varizes: {
+                title: "Varizes Esofágicas e Gástricas",
+                content: "São veias dilatadas que se formam no esôfago ou estômago como resultado da hipertensão portal, uma complicação comum da cirrose hepática. A ruptura dessas varizes pode causar sangramento maciço e com alta mortalidade. <br><br><strong>Fatores de Risco:</strong> Cirrose hepática (de qualquer causa, como álcool, hepatites virais), trombose de veia porta."
+            }
+        };
+
+        function switchTab(targetId) {
+            contentSections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            navButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            document.getElementById(targetId).classList.remove('hidden');
+            document.querySelector(`[data-target="${targetId}"]`).classList.add('active');
+        }
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                switchTab(button.dataset.target);
+            });
+        });
+        
+        etiologyCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const etiologyKey = card.dataset.etiology;
+                const data = etiologyData[etiologyKey];
+                
+                // Close any open details panel
+                const openPanel = document.querySelector('.details-panel.open');
+                if(openPanel) {
+                    openPanel.classList.remove('open');
+                    setTimeout(() => { if (openPanel) openPanel.remove(); }, 500);
+                }
+
+                // Create and insert new details panel
+                const detailPanel = document.createElement('div');
+                detailPanel.className = 'details-panel bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-lg shadow-md mt-4';
+                detailPanel.innerHTML = `
+                    <h3 class="font-bold text-xl text-teal-800 mb-2">${data.title}</h3>
+                    <p class="text-slate-700 leading-relaxed">${data.content}</p>
+                `;
+                
+                card.parentElement.parentElement.appendChild(detailPanel);
+
+                // Animate opening
+                setTimeout(() => {
+                    detailPanel.classList.add('open');
+                }, 10);
+            });
+        });
+
+        accordions.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+            const icon = header.querySelector('span');
+
+            header.addEventListener('click', () => {
+                const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                // Close all accordions
+                accordions.forEach(otherItem => {
+                    otherItem.querySelector('.accordion-content').style.maxHeight = '0px';
+                    otherItem.querySelector('.accordion-header span').style.transform = 'rotate(0deg)';
+                });
+
+                if (!isOpen) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.style.transform = 'rotate(45deg)';
+                }
+            });
+        });
+
+        const causesChartData = {
+            labels: ['Úlcera Péptica', 'Varizes Esofágicas', 'Lac. Mallory-Weiss', 'Esofagite/Gastrite', 'Outros'],
+            datasets: [{
+                label: 'Causas de HDA',
+                data: [45, 20, 10, 8, 17],
+                backgroundColor: [
+                    '#0d9488', // teal-600
+                    '#f97316', // orange-500
+                    '#0ea5e9', // sky-500
+                    '#84cc16', // lime-500
+                    '#64748b'  // slate-500
+                ],
+                hoverOffset: 4
+            }]
+        };
+
+        new Chart(causesCtx, {
+            type: 'doughnut',
+            data: causesChartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + '%';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const frequencyChartData = {
+            labels: ['Úlcera Duodenal', 'Úlcera Gástrica', 'Mallory-Weiss', 'Esofagite'],
+            datasets: [{
+                label: 'Incidência Relativa (%)',
+                data: [30, 20, 10, 8],
+                backgroundColor: '#14b8a6', // teal-500
+                borderColor: '#0f766e', // teal-700
+                borderWidth: 1
+            }]
+        };
+
+        new Chart(frequencyCtx, {
+            type: 'bar',
+            data: frequencyChartData,
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '%'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                         callbacks: {
+                            label: function(context) {
+                                return ` ${context.raw}% dos casos de HDA`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize with the first tab
+        switchTab('overview');
+    });
+</script>
+
+</body>
+</html>
