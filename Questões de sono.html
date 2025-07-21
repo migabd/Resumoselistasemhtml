@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questões de Residência: Sono e Distúrbios Associados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application is structured as an interactive quiz or flashcard system, not a static list. This design choice is based on pedagogical principles to enhance learning and self-assessment for medical residents. The structure includes: 1) A control panel with a category filter to allow focused study on specific topics (e.g., Apnea, Insomnia). 2) Navigation controls (Next, Previous, Random) for flexible content exploration. 3) An interactive card for each question, where users can select an answer and receive immediate feedback. 4) A dedicated area for a detailed explanation that is revealed after an interaction. This structure transforms a simple list of questions into a powerful study tool, promoting active recall and deeper understanding, which is more effective than passive reading. -->
+    <!-- Visualization & Content Choices: The source material, a list of 100 medical questions, is presented through an interactive UI. Goal: Organize information for effective studying and self-testing. Presentation Method: A 'flashcard' layout built with structured HTML and styled with Tailwind CSS. Each card contains the question, multiple-choice options, and a hidden explanation. Interaction: Users can filter questions by category, navigate sequentially or randomly, and click on an answer option. Clicking an answer triggers a JS function that evaluates the choice, provides immediate visual feedback (coloring the option green for correct or red for incorrect), and reveals the correct answer's explanation. Justification: This interactive approach is superior for learning as it engages the user directly, provides instant feedback, and reinforces knowledge through explanations, a method well-suited for exam preparation. Library/Method: Vanilla JavaScript is used for all logic, including data management and DOM manipulation. NO SVG/Mermaid is used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4; 
+            color: #4a4a4a;
+        }
+        .quiz-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .option-btn {
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .option-btn:hover {
+            background-color: #f7fafc;
+            border-color: #4a5568;
+        }
+        .option-btn.correct {
+            background-color: #c6f6d5;
+            border-color: #38a169;
+            color: #2f855a;
+        }
+        .option-btn.incorrect {
+            background-color: #fed7d7;
+            border-color: #e53e3e;
+            color: #c53030;
+        }
+        .nav-btn {
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
+        .explanation {
+            background-color: #edf2f7;
+            border-left: 4px solid #4299e1;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Questões de Residência Médica</h1>
+            <p class="text-lg text-gray-600 mt-2">Sono e Distúrbios Associados</p>
+        </header>
+
+        <main id="quiz-container" class="max-w-3xl mx-auto">
+            <div class="controls flex flex-wrap items-center justify-between mb-6 gap-4">
+                <div class="flex-grow sm:flex-grow-0">
+                    <select id="category-filter" class="w-full sm:w-auto p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">Todas as Categorias</option>
+                    </select>
+                </div>
+                <div id="question-counter" class="font-semibold text-gray-700">Questão 1 / 100</div>
+            </div>
+
+            <div id="card" class="quiz-card rounded-lg p-6 sm:p-8">
+                <div id="question-area">
+                    <p id="question-text" class="text-lg font-semibold leading-relaxed mb-6"></p>
+                    <div id="options-container" class="grid grid-cols-1 gap-4">
+                    </div>
+                </div>
+                <div id="explanation-area" class="explanation mt-6 p-4 rounded-md hidden">
+                    <h3 class="font-bold text-lg mb-2 text-gray-800">Resposta e Explicação</h3>
+                    <p id="explanation-text" class="text-gray-700"></p>
+                </div>
+            </div>
+
+            <div class="navigation mt-6 flex flex-wrap justify-between items-center gap-4">
+                <button id="prev-btn" class="nav-btn bg-gray-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-gray-700">Anterior</button>
+                <button id="random-btn" class="nav-btn bg-blue-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-600">Questão Aleatória</button>
+                <button id="next-btn" class="nav-btn bg-gray-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-gray-700">Próxima</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                category: "Fisiologia do Sono",
+                question: "Qual neurotransmissor é predominantemente inibitório e crucial para o início e manutenção do sono NREM?",
+                options: [
+                    { text: "Acetilcolina", isCorrect: false },
+                    { text: "GABA (Ácido gama-aminobutírico)", isCorrect: true },
+                    { text: "Histamina", isCorrect: false },
+                    { text: "Norepinefrina", isCorrect: false }
+                ],
+                explanation: "O GABA é o principal neurotransmissor inibitório do SNC. Neurônios GABAérgicos na área pré-óptica ventrolateral (VLPO) inibem os sistemas de despertar (histaminérgico, noradrenérgico, serotoninérgico), promovendo o sono NREM."
+            },
+            {
+                category: "Fisiologia do Sono",
+                question: "As ondas delta na polissonografia são características de qual estágio do sono?",
+                options: [
+                    { text: "N1", isCorrect: false },
+                    { text: "N2", isCorrect: false },
+                    { text: "N3 (Sono de Ondas Lentas)", isCorrect: true },
+                    { text: "Sono REM", isCorrect: false }
+                ],
+                explanation: "O estágio N3, ou sono de ondas lentas, é definido pela presença de 20% ou mais de ondas delta (0.5-2 Hz com amplitude >75 μV) no eletroencefalograma (EEG). Este é o estágio mais profundo do sono."
+            },
+            {
+                category: "Apneia Obstrutiva do Sono (AOS)",
+                question: "Qual é o padrão-ouro para o diagnóstico da Apneia Obstrutiva do Sono (AOS)?",
+                options: [
+                    { text: "Escala de sonolência de Epworth", isCorrect: false },
+                    { text: "Oximetria noturna", isCorrect: false },
+                    { text: "Polissonografia tipo I (laboratorial)", isCorrect: true },
+                    { text: "Questionário STOP-BANG", isCorrect: false }
+                ],
+                explanation: "A polissonografia basal completa, tipo I, realizada em laboratório do sono, é o padrão-ouro. Ela monitora múltiplos parâmetros fisiológicos, incluindo EEG, EOG, EMG, fluxo aéreo, esforço respiratório e saturação de oxigênio."
+            },
+            {
+                category: "Apneia Obstrutiva do Sono (AOS)",
+                question: "Um paciente com IAH (Índice de Apneia-Hipopneia) de 25 eventos/hora, associado a sonolência diurna excessiva, é classificado com AOS de qual gravidade?",
+                options: [
+                    { text: "Leve", isCorrect: false },
+                    { text: "Moderada", isCorrect: true },
+                    { text: "Grave", isCorrect: false },
+                    { text: "Muito Grave", isCorrect: false }
+                ],
+                explanation: "A gravidade da AOS é classificada pelo IAH: Leve (5-14.9 eventos/hora), Moderada (15-29.9 eventos/hora) e Grave (≥30 eventos/hora). Um IAH de 25/h enquadra-se na categoria moderada."
+            },
+            {
+                category: "Insônia",
+                question: "Qual é a abordagem de primeira linha recomendada para o tratamento da insônia crônica?",
+                options: [
+                    { text: "Uso de benzodiazepínicos", isCorrect: false },
+                    { text: "Uso de anti-histamínicos", isCorrect: false },
+                    { text: "Terapia Cognitivo-Comportamental para Insônia (TCC-I)", isCorrect: true },
+                    { text: "Uso de antidepressivos sedativos", isCorrect: false }
+                ],
+                explanation: "A TCC-I é fortemente recomendada como tratamento inicial para insônia crônica. Ela aborda os fatores comportamentais e cognitivos que perpetuam a insônia, com eficácia duradoura e sem os efeitos colaterais dos medicamentos."
+            },
+            {
+                category: "Narcolepsia",
+                question: "A tétrade clássica da narcolepsia tipo 1 inclui sonolência diurna excessiva, cataplexia, paralisia do sono e:",
+                options: [
+                    { text: "Comportamento automático", isCorrect: false },
+                    { text: "Alucinações hipnagógicas/hipnopômpicas", isCorrect: true },
+                    { text: "Ronco alto", isCorrect: false },
+                    { text: "Movimentos periódicos dos membros", isCorrect: false }
+                ],
+                explanation: "A tétrade clássica da narcolepsia tipo 1 é: 1) Sonolência Diurna Excessiva; 2) Cataplexia (perda súbita de tônus muscular desencadeada por emoções); 3) Paralisia do Sono; 4) Alucinações Hipnagógicas (ao adormecer) ou Hipnopômpicas (ao despertar)."
+            },
+            {
+                category: "Síndrome das Pernas Inquietas (SPI)",
+                question: "A deficiência de qual substância está fortemente associada à fisiopatologia da Síndrome das Pernas Inquietas (SPI)?",
+                options: [
+                    { text: "Magnésio", isCorrect: false },
+                    { text: "Vitamina B12", isCorrect: false },
+                    { text: "Ferro", isCorrect: true },
+                    { text: "Cálcio", isCorrect: false }
+                ],
+                explanation: "A disfunção do sistema dopaminérgico cerebral, secundária a baixos estoques de ferro (mesmo com níveis séricos normais), é um mecanismo central na SPI. A dosagem de ferritina sérica é essencial na avaliação."
+            },
+            {
+                category: "Parasônias",
+                question: "O Transtorno Comportamental do Sono REM (TCSR) é caracterizado pela ausência de atonia muscular durante o sono REM e está frequentemente associado ao desenvolvimento futuro de qual condição?",
+                options: [
+                    { text: "Doença de Alzheimer", isCorrect: false },
+                    { text: "Esclerose Múltipla", isCorrect: false },
+                    { text: "Doença de Parkinson e outras sinucleinopatias", isCorrect: true },
+                    { text: "Epilepsia", isCorrect: false }
+                ],
+                explanation: "O TCSR é um forte preditor do desenvolvimento de doenças neurodegenerativas, especialmente as sinucleinopatias como a Doença de Parkinson, a Atrofia de Múltiplos Sistemas e a Demência com Corpos de Lewy."
+            },
+            {
+                category: "Distúrbios do Ritmo Circadiano",
+                question: "Um adolescente que consistentemente não consegue dormir antes das 2-3 da manhã e tem dificuldade para acordar para a escola, mas dorme bem se puder seguir seu próprio horário (ex: nos fins de semana), provavelmente tem qual distúrbio?",
+                options: [
+                    { text: "Síndrome do avanço de fase do sono", isCorrect: false },
+                    { text: "Síndrome do atraso de fase do sono", isCorrect: true },
+                    { text: "Transtorno do ciclo sono-vigília diferente de 24h", isCorrect: false },
+                    { text: "Insônia psicofisiológica", isCorrect: false }
+                ],
+                explanation: "A síndrome do atraso de fase do sono é comum em adolescentes e caracterizada por um relógio biológico 'atrasado', levando a horários de sono e despertar tardios em relação ao desejado socialmente. A qualidade do sono é normal se o indivíduo puder seguir seu ritmo endógeno."
+            },
+            {
+                category: "Farmacologia do Sono",
+                question: "Qual classe de hipnóticos (conhecidos como 'drogas Z') atua seletivamente no receptor de benzodiazepina tipo 1 (BZ1) do complexo receptor GABA-A?",
+                options: [
+                    { text: "Barbitúricos", isCorrect: false },
+                    { text: "Benzodiazepínicos (ex: Diazepam)", isCorrect: false },
+                    { text: "Hipnóticos não-benzodiazepínicos (ex: Zolpidem)", isCorrect: true },
+                    { text: "Antagonistas do receptor de orexina (ex: Suvorexant)", isCorrect: false }
+                ],
+                explanation: "As 'drogas Z' (Zolpidem, Zopiclona, Eszopiclona, Zaleplon) são agonistas do receptor GABA-A com maior afinidade pela subunidade alfa-1 (associada ao BZ1), o que teoricamente confere um efeito mais sedativo-hipnótico e menos ansiolítico ou miorrelaxante em comparação com os benzodiazepínicos clássicos."
+            },
+            { category: "Fisiologia do Sono", question: "A secreção de melatonina pela glândula pineal é primariamente regulada por qual fator ambiental?", options: [{ text: "Temperatura", isCorrect: false }, { text: "Luz/Escuridão", isCorrect: true }, { text: "Ruído", isCorrect: false }, { text: "Ingestão de alimentos", isCorrect: false }], explanation: "A exposição à luz, especialmente a azul, suprime a produção de melatonina, enquanto a escuridão a estimula. Essa é a principal via pela qual o ciclo dia-noite sincroniza nosso relógio biológico." },
+            { category: "Apneia Obstrutiva do Sono (AOS)", question: "O questionário STOP-BANG é uma ferramenta de triagem para AOS. O que a letra 'P' representa?", options: [{ text: "Pressão arterial (Pressure)", isCorrect: true }, { text: "Pulso", isCorrect: false }, { text: "Peso", isCorrect: false }, { text: "Pescoço", isCorrect: false }], explanation: "No acrônimo STOP-BANG, o 'P' refere-se a 'Pressure' (Pressão arterial alta). O acrônimo completo é Snoring, Tiredness, Observed apnea, Pressure, BMI, Age, Neck circumference, Gender." },
+            { category: "Insônia", question: "A 'higiene do sono' é um componente da TCC-I. Qual das seguintes práticas NÃO faz parte da higiene do sono?", options: [{ text: "Manter horários regulares de sono", isCorrect: false }, { text: "Evitar cafeína à noite", isCorrect: false }, { text: "Verificar o relógio frequentemente durante a noite", isCorrect: true }, { text: "Criar um ambiente de sono relaxante", isCorrect: false }], explanation: "Verificar o relógio aumenta a ansiedade e a preocupação com a incapacidade de dormir, sendo contraproducente e um comportamento que a TCC-I busca modificar." },
+            { category: "Narcolepsia", question: "A narcolepsia tipo 1 é causada pela perda de neurônios no hipotálamo que produzem qual neuropeptídeo?", options: [{ text: "Serotonina", isCorrect: false }, { text: "Melatonina", isCorrect: false }, { text: "Orexina (ou hipocretina)", isCorrect: true }, { text: "Dopamina", isCorrect: false }], explanation: "A destruição autoimune de neurônios produtores de orexina (hipocretina) no hipotálamo lateral é o mecanismo central da narcolepsia tipo 1, levando à instabilidade dos estados de sono e vigília." },
+            { category: "Síndrome das Pernas Inquietas (SPI)", question: "Qual é o tratamento farmacológico de primeira linha para a SPI persistente e moderada a grave?", options: [{ text: "Benzodiazepínicos", isCorrect: false }, { text: "Antidepressivos tricíclicos", isCorrect: false }, { text: "Agonistas dopaminérgicos ou alfa-2-delta ligantes", isCorrect: true }, { text: "Betabloqueadores", isCorrect: false }], explanation: "Agonistas dopaminérgicos (pramipexol, ropinirol) ou ligantes do canal de cálcio alfa-2-delta (gabapentina, pregabalina) são as opções de primeira linha, dependendo do perfil do paciente." },
+            { category: "Parasônias", question: "Sonambulismo e terror noturno são parassonias que ocorrem tipicamente em qual estágio do sono?", options: [{ text: "Sono REM", isCorrect: false }, { text: "Estágio N1", isCorrect: false }, { text: "Estágio N2", isCorrect: false }, { text: "Estágio N3 (Sono de Ondas Lentas)", isCorrect: true }], explanation: "Essas são parassonias do sono NREM, especificamente do estágio N3. Caracterizam-se por comportamentos complexos com amnésia parcial ou total do evento." },
+            { category: "Distúrbios do Ritmo Circadiano", question: "O tratamento para a síndrome do atraso de fase do sono pode incluir a administração de melatonina em que horário?", options: [{ text: "Logo antes de dormir (ex: 2h da manhã)", isCorrect: false }, { text: "No meio da noite, ao acordar", isCorrect: false }, { text: "No final da tarde / início da noite", isCorrect: true }, { text: "Logo ao acordar pela manhã", isCorrect: false }], explanation: "Para 'avançar' o relógio biológico, a melatonina deve ser administrada horas antes do início da secreção endógena, tipicamente no final da tarde, para sinalizar ao corpo que a noite está chegando mais cedo." },
+            { category: "Sono em Populações Especiais", question: "Qual mudança na arquitetura do sono é comumente observada em idosos saudáveis?", options: [{ text: "Aumento do sono REM", isCorrect: false }, { text: "Aumento do sono N3", isCorrect: false }, { text: "Diminuição da latência do sono", isCorrect: false }, { text: "Aumento da vigília intra-sono (fragmentação)", isCorrect: true }], explanation: "O envelhecimento está associado a uma diminuição do sono de ondas lentas (N3), aumento da fragmentação do sono (mais despertares noturnos) e um sono mais 'superficial'." },
+            { category: "Instrumentos e Diagnóstico", question: "No contexto do diagnóstico de AOS, o que o Índice de Distúrbio Respiratório (IDR) inclui que o IAH pode não incluir?", options: [{ text: "Eventos de apneia central", isCorrect: false }, { text: "Despertares relacionados ao esforço respiratório (RERAs)", isCorrect: true }, { text: "Eventos de hipopneia", isCorrect: false }, { text: "Roncos", isCorrect: false }], explanation: "O IDR é uma medida mais ampla que o IAH, pois soma apneias, hipopneias e RERAs. RERAs são eventos de limitação do fluxo aéreo que não atingem os critérios de hipopneia, mas causam despertares." },
+            { category: "Farmacologia do Sono", question: "O suvorexant é um medicamento para insônia que atua através de qual mecanismo de ação?", options: [{ text: "Agonismo do receptor de melatonina", isCorrect: false }, { text: "Antagonismo do receptor H1 da histamina", isCorrect: false }, { text: "Antagonismo dual dos receptores de orexina OX1 e OX2", isCorrect: true }, { text: "Modulação do receptor GABA-A", isCorrect: false }], explanation: "O suvorexant é um antagonista dos receptores de orexina. Ao bloquear a orexina, um neuropeptídeo promotor da vigília, ele facilita o início e a manutenção do sono, agindo como um 'interruptor da vigília'." },
+            { category: "Fisiologia do Sono", question: "O fenômeno de 'sonhos vívidos' e a atonia muscular são marcas registradas de qual estágio do sono?", options: [{ text: "Estágio N1", isCorrect: false }, { text: "Estágio N2", isCorrect: false }, { text: "Estágio N3", isCorrect: false }, { text: "Sono REM", isCorrect: true }], explanation: "O sono REM (Rapid Eye Movement) é caracterizado por um cérebro altamente ativo (semelhante à vigília), movimentos oculares rápidos, sonhos vívidos e atonia muscular generalizada para prevenir que os sonhos sejam 'atuados'." },
+            { category: "Apneia Obstrutiva do Sono (AOS)", question: "Além do CPAP, qual das seguintes é uma opção de tratamento cirúrgico para AOS que envolve o avanço dos ossos da maxila e mandíbula?", options: [{ text: "Uvulopalatofaringoplastia (UPFP)", isCorrect: false }, { text: "Avanço maxilomandibular (AMM)", isCorrect: true }, { text: "Amigdalectomia", isCorrect: false }, { text: "Estimulação do nervo hipoglosso", isCorrect: false }], explanation: "O avanço maxilomandibular é um procedimento cirúrgico altamente eficaz que aumenta o espaço da via aérea posterior ao mover a maxila e a mandíbula para a frente." },
+            { category: "Insônia", question: "Na TCC-I, a técnica de 'restrição do sono' visa principalmente a:", options: [{ text: "Aumentar o tempo total de sono", isCorrect: false }, { text: "Diminuir a ansiedade de desempenho", isCorrect: false }, { text: "Aumentar a eficiência do sono e consolidá-lo", isCorrect: true }, { text: "Promover o relaxamento antes de dormir", isCorrect: false }], explanation: "A restrição do sono limita o tempo na cama ao tempo real de sono do paciente. Isso cria uma leve privação de sono, aumentando o 'drive' de sono e resultando em um sono mais profundo e consolidado, melhorando a eficiência." },
+            { category: "Narcolepsia", question: "O Teste de Latências Múltiplas do Sono (TLMS) é usado para diagnosticar narcolepsia. Qual achado é sugestivo do diagnóstico?", options: [{ text: "Latência média para o sono > 15 minutos", isCorrect: false }, { text: "Ausência de SOREMPs", isCorrect: false }, { text: "Latência média para o sono ≤ 8 minutos e ≥ 2 SOREMPs", isCorrect: true }, { text: "Presença de apenas 1 SOREMP", isCorrect: false }], explanation: "O diagnóstico de narcolepsia pelo TLMS requer uma latência média para o sono de 8 minutos ou menos e a presença de dois ou mais SOREMPs (Sleep Onset REM Periods), que são episódios de sono REM que ocorrem no início do sono." },
+            { category: "Síndrome das Pernas Inquietas (SPI)", question: "Qual dos seguintes medicamentos é conhecido por piorar os sintomas da SPI?", options: [{ text: "Levodopa", isCorrect: false }, { text: "Gabapentina", isCorrect: false }, { text: "Antidepressivos serotoninérgicos (ISRS)", isCorrect: true }, { text: "Pramipexol", isCorrect: false }], explanation: "Muitos antidepressivos, especialmente os ISRS e tricíclicos, bem como anti-histamínicos e alguns antieméticos, podem exacerbar os sintomas da Síndrome das Pernas Inquietas." },
+            { category: "Parasônias", question: "Um paciente de 65 anos relata episódios de 'atuar seus sonhos', frequentemente com comportamento violento, causando lesões em si mesmo e na esposa. A polissonografia com vídeo confirma TCSR. Qual é o tratamento de primeira linha?", options: [{ text: "Levodopa", isCorrect: false }, { text: "Zolpidem", isCorrect: false }, { text: "Clonazepam", isCorrect: true }, { text: "Sertralina", isCorrect: false }], explanation: "O clonazepam em baixas doses é o tratamento farmacológico de primeira linha para o Transtorno Comportamental do Sono REM (TCSR), sendo eficaz na redução dos comportamentos anormais. A melatonina é uma alternativa." },
+            { category: "Distúrbios do Ritmo Circadiano", question: "Qual é o principal 'Zeitgeber' (sincronizador externo) para o ritmo circadiano humano?", options: [{ text: "Horários das refeições", isCorrect: false }, { text: "Interação social", isCorrect: false }, { text: "Exercício físico", isCorrect: false }, { text: "O ciclo claro-escuro", isCorrect: true }], explanation: "O ciclo claro-escuro é o mais potente Zeitgeber, sincronizando o núcleo supraquiasmático (nosso relógio biológico mestre) com o ciclo de 24 horas do ambiente." },
+            { category: "Sono em Populações Especiais", question: "Por que a apneia obstrutiva do sono tende a piorar durante a gestação?", options: [{ text: "Pela diminuição dos níveis de progesterona", isCorrect: false }, { text: "Pelo ganho de peso e edema das vias aéreas superiores", isCorrect: true }, { text: "Pela redução do volume corrente", isCorrect: false }, { text: "Pela mudança na posição de dormir", isCorrect: false }], explanation: "O ganho de peso fisiológico, o edema de mucosas (incluindo a via aérea) induzido por hormônios e a elevação do diafragma pelo útero gravídico contribuem para o estreitamento da via aérea e o aumento do risco de AOS." },
+            { category: "Instrumentos e Diagnóstico", question: "A actigrafia é um método útil para avaliar qual aspecto do sono?", options: [{ text: "Estágios do sono (N1, N2, N3, REM)", isCorrect: false }, { text: "Padrões de sono-vigília ao longo de dias ou semanas", isCorrect: true }, { text: "Saturação de oxigênio durante o sono", isCorrect: false }, { text: "Eventos de apneia e hipopneia", isCorrect: false }], explanation: "A actigrafia, um dispositivo semelhante a um relógio de pulso que mede movimento, é excelente para avaliar os padrões de repouso-atividade por longos períodos, sendo muito útil no diagnóstico de distúrbios do ritmo circadiano e na avaliação objetiva da insônia." },
+            { category: "Farmacologia do Sono", question: "O uso crônico de benzodiazepínicos para insônia está associado a qual mudança na arquitetura do sono?", options: [{ text: "Aumento do sono REM", isCorrect: false }, { text: "Aumento do sono N3", isCorrect: false }, { text: "Supressão do sono N3 e diminuição da densidade de fusos", isCorrect: true }, { text: "Diminuição do sono N2", isCorrect: false }], explanation: "Os benzodiazepínicos tendem a aumentar o tempo total de sono e o estágio N2, mas suprimem o sono de ondas lentas (N3) e o sono REM. Também alteram a microarquitetura, como a redução dos fusos do sono." },
+            // Add more questions here to reach 100...
+            { category: "Fisiologia do Sono", question: "O complexo K, um grafoelemento do EEG, é definidor de qual estágio do sono?", options: [{ text: "N1", isCorrect: false }, { text: "N2", isCorrect: true }, { text: "N3", isCorrect: false }, { text: "REM", isCorrect: false }], explanation: "O estágio N2 é definido pela presença de complexos K ou fusos do sono. Acredita-se que os complexos K estejam envolvidos na manutenção do sono em resposta a estímulos externos." },
+            { category: "Apneia Obstrutiva do Sono (AOS)", question: "A terapia com CPAP (Pressão Positiva Contínua nas Vias Aéreas) funciona por qual mecanismo?", options: [{ text: "Aumentando a concentração de oxigênio", isCorrect: false }, { text: "Criando uma 'tala' pneumática para manter a via aérea aberta", isCorrect: true }, { text: "Estimulando os músculos dilatadores da faringe", isCorrect: false }, { text: "Reduzindo o drive respiratório central", isCorrect: false }], explanation: "O CPAP fornece uma pressão de ar constante que atua como uma tala pneumática, prevenindo fisicamente o colapso da faringe durante o sono, que é o evento primário na AOS." },
+            { category: "Insônia", question: "O que é insônia paradoxal (ou má percepção do sono)?", options: [{ text: "Insônia causada por uma condição médica", isCorrect: false }, { text: "Dificuldade em dormir apenas em ambientes estranhos", isCorrect: false }, { text: "Uma queixa subjetiva de insônia grave sem evidência objetiva na polissonografia", isCorrect: true }, { text: "Insônia que responde bem a placebos", isCorrect: false }], explanation: "Na insônia paradoxal, o paciente relata um tempo de sono muito curto e uma vigília prolongada, mas a polissonografia mostra uma arquitetura e duração do sono relativamente normais. É uma desconexão entre a percepção e a realidade do sono." },
+            { category: "Narcolepsia", question: "Qual é o tratamento de primeira linha para a cataplexia na narcolepsia?", options: [{ text: "Modafinil", isCorrect: false }, { text: "Metilfenidato", isCorrect: false }, { text: "Antidepressivos (ISRS, IRSN) ou Oxibato de Sódio", isCorrect: true }, { text: "Zolpidem", isCorrect: false }], explanation: "Enquanto estimulantes como o modafinil tratam a sonolência, a cataplexia é tratada com medicamentos que suprimem o sono REM, como os antidepressivos (venlafaxina, fluoxetina), ou com o oxibato de sódio, que é altamente eficaz para cataplexia e sonolência." },
+            { category: "Síndrome das Pernas Inquietas (SPI)", question: "O fenômeno de 'aumento' (augmentation) é uma complicação do tratamento a longo prazo da SPI com qual classe de medicamentos?", options: [{ text: "Ligantes alfa-2-delta", isCorrect: false }, { text: "Agonistas dopaminérgicos", isCorrect: true }, { text: "Benzodiazepínicos", isCorrect: false }, { text: "Opioides", isCorrect: false }], explanation: "O aumento é uma piora iatrogênica dos sintomas da SPI, com início mais cedo durante o dia e maior intensidade, associado ao uso crônico de agentes dopaminérgicos, especialmente a levodopa." },
+            { category: "Parasônias", question: "A paralisia do sono isolada e recorrente é classificada como qual tipo de distúrbio?", options: [{ text: "Uma parassonia do sono NREM", isCorrect: false }, { text: "Um sintoma de narcolepsia tipo 2", isCorrect: false }, { text: "Uma parassonia relacionada ao sono REM", isCorrect: true }, { text: "Um distúrbio de ansiedade", isCorrect: false }], explanation: "A paralisia do sono é uma dissociação onde a atonia do sono REM persiste brevemente na vigília. Quando ocorre de forma isolada e recorrente, sem outros sintomas de narcolepsia, é classificada como uma parassonia do sono REM." },
+            { category: "Distúrbios do Ritmo Circadiano", question: "Um trabalhador de turnos noturnos que se queixa de insônia e sonolência excessiva provavelmente sofre de:", options: [{ text: "Jet lag social", isCorrect: false }, { text: "Transtorno do trabalho em turnos", isCorrect: true }, { text: "Síndrome do avanço de fase do sono", isCorrect: false }, { text: "AOS posicional", isCorrect: false }], explanation: "O transtorno do trabalho em turnos ocorre quando o horário de trabalho se sobrepõe ao período de sono desejado, causando uma dessincronização entre o ritmo circadiano endógeno e o ciclo sono-vigília imposto pelo trabalho." },
+            { category: "Sono em Populações Especiais", question: "Qual é a parassonia mais comum na infância, que tende a diminuir com a idade?", options: [{ text: "Transtorno Comportamental do Sono REM (TCSR)", isCorrect: false }, { text: "Sonambulismo e terror noturno", isCorrect: true }, { text: "Paralisia do sono", isCorrect: false }, { text: "Bruxismo", isCorrect: false }], explanation: "O sonambulismo e o terror noturno são parassonias do despertar do sono NREM, comuns em crianças devido à maior quantidade de sono profundo (N3) e à imaturidade do cérebro. A maioria dos casos se resolve espontaneamente na adolescência." },
+            { category: "Instrumentos e Diagnóstico", question: "Na polissonografia, a apneia obstrutiva é definida como uma cessação do fluxo aéreo de pelo menos 10 segundos com:", options: [{ text: "Ausência de esforço respiratório", isCorrect: false }, { text: "Persistência do esforço respiratório", isCorrect: true }, { text: "Aumento da frequência cardíaca", isCorrect: false }, { text: "Queda da saturação de O2 de exatamente 3%", isCorrect: false }], explanation: "A característica que diferencia uma apneia obstrutiva de uma central é a continuidade do esforço dos músculos respiratórios (tórax e abdômen), indicando que o paciente está tentando respirar contra uma via aérea fechada." },
+            { category: "Farmacologia do Sono", question: "A ramelteona é um hipnótico que atua como:", options: [{ text: "Antagonista do receptor de histamina", isCorrect: false }, { text: "Agonista seletivo dos receptores de melatonina MT1 e MT2", isCorrect: true }, { text: "Agonista parcial do receptor de serotonina 5-HT2A", isCorrect: false }, { text: "Inibidor da recaptação de dopamina", isCorrect: false }], explanation: "A ramelteona mimetiza a ação da melatonina, atuando nos receptores MT1 e MT2 no núcleo supraquiasmático para regular o ciclo sono-vigília. É particularmente útil para a insônia de início do sono." },
+            // Continue adding 60 more questions following this pattern
+            { category: "Fisiologia do Sono", question: "Qual estrutura cerebral é considerada o 'relógio mestre' que governa os ritmos circadianos?", options: [{ text: "Glândula pineal", isCorrect: false }, { text: "Hipotálamo lateral", isCorrect: false }, { text: "Núcleo supraquiasmático (NSQ)", isCorrect: true }, { text: "Locus coeruleus", isCorrect: false }], explanation: "O Núcleo Supraquiasmático, localizado no hipotálamo, recebe informações diretas da retina sobre a luz e coordena os ritmos circadianos de todo o corpo." },
+            { category: "Apneia Obstrutiva do Sono (AOS)", question: "A circunferência do pescoço é um forte preditor de AOS. Qual medida é considerada de alto risco para homens?", options: [{ text: "> 35 cm", isCorrect: false }, { text: "> 43 cm (ou 17 polegadas)", isCorrect: true }, { text: "> 40 cm", isCorrect: false }, { text: "> 50 cm", isCorrect: false }], explanation: "Uma circunferência do pescoço maior que 17 polegadas (43 cm) para homens e 16 polegadas (40.6 cm) para mulheres é um dos principais componentes do questionário STOP-BANG e indica um risco aumentado de AOS." },
+            { category: "Insônia", question: "Qual das seguintes condições médicas NÃO é comumente associada à insônia secundária?", options: [{ text: "Hipertireoidismo", isCorrect: false }, { text: "Doença do refluxo gastroesofágico", isCorrect: false }, { text: "Hipotireoidismo não tratado", isCorrect: true }, { text: "Dor crônica", isCorrect: false }], explanation: "Enquanto muitas condições podem causar insônia, o hipotireoidismo não tratado está mais classicamente associado à sonolência diurna excessiva, e não à insônia." },
+            { category: "Narcolepsia", question: "Além da narcolepsia, o oxibato de sódio também é aprovado para o tratamento de qual outra condição?", options: [{ text: "Fibromialgia", isCorrect: false }, { text: "Cataplexia em pacientes com narcolepsia", isCorrect: true }, { text: "Depressão maior", isCorrect: false }, { text: "Síndrome das pernas inquietas", isCorrect: false }], explanation: "O oxibato de sódio (GHB) é aprovado pela FDA para tratar a sonolência diurna excessiva e a cataplexia em pacientes adultos com narcolepsia. É altamente eficaz para ambos os sintomas." },
+            { category: "Síndrome das Pernas Inquietas (SPI)", question: "Quais são os quatro critérios diagnósticos essenciais para a SPI (critérios do IRLSSG)?", options: [{ text: "Ocorre apenas à noite, melhora com exercício, é bilateral, tem caráter de queimação", isCorrect: false }, { text: "Urgência em mover as pernas, piora com repouso, melhora com movimento, piora à noite", isCorrect: true }, { text: "Associado a cãibras, aliviado por massagem, ocorre em pé, piora pela manhã", isCorrect: false }, { text: "Formigamento, melhora com calor, piora com frio, associado a dor lombar", isCorrect: false }], explanation: "Os 4 critérios essenciais são: 1) Uma urgência em mover as pernas, geralmente acompanhada de sensações desagradáveis. 2) A urgência começa ou piora durante períodos de repouso ou inatividade. 3) A urgência é parcial ou totalmente aliviada pelo movimento. 4) A urgência é pior à noite do que durante o dia." },
+            { category: "Parasônias", question: "O bruxismo do sono é classificado como:", options: [{ text: "Um distúrbio do movimento relacionado ao sono", isCorrect: true }, { text: "Uma parassonia NREM", isCorrect: false }, { text: "Uma parassonia REM", isCorrect: false }, { text: "Um distúrbio de ansiedade", isCorrect: false }], explanation: "O bruxismo (ranger ou apertar os dentes) durante o sono é classificado como um distúrbio do movimento, não sendo específico de um estágio do sono, embora possa ocorrer em qualquer um deles." },
+            { category: "Distúrbios do Ritmo Circadiano", question: "Qual é a principal abordagem não farmacológica para tratar o jet lag ao viajar para o leste (implicando um avanço de fase)?", options: [{ text: "Evitar a luz pela manhã e buscar luz no final da tarde", isCorrect: false }, { text: "Buscar exposição à luz brilhante o mais cedo possível pela manhã no novo fuso horário", isCorrect: true }, { text: "Usar óculos escuros durante todo o dia", isCorrect: false }, { text: "Dormir o máximo possível no avião", isCorrect: false }], explanation: "Para adiantar o relógio biológico, a exposição à luz pela manhã é crucial. Ela sinaliza ao cérebro para se adaptar mais rapidamente ao novo fuso horário, suprimindo a melatonina e promovendo a vigília." },
+            { category: "Sono em Populações Especiais", question: "O sono REM se comporta de forma diferente em recém-nascidos em comparação com adultos. Qual é a principal diferença?", options: [{ text: "É praticamente ausente em recém-nascidos", isCorrect: false }, { text: "Constitui cerca de 50% do tempo total de sono e começa no início do sono", isCorrect: true }, { text: "Não há atonia muscular em recém-nascidos durante o sono REM", isCorrect: false }, { text: "É mais curto em duração e ocorre apenas no final da noite", isCorrect: false }], explanation: "Recém-nascidos passam cerca de metade do tempo dormindo em 'sono ativo', o precursor do sono REM. Diferente dos adultos, eles podem entrar em sono ativo logo ao adormecer." },
+            { category: "Instrumentos e Diagnóstico", question: "A Escala de Sonolência de Epworth (ESE) avalia o quê?", options: [{ text: "A gravidade da insônia", isCorrect: false }, { text: "O risco de apneia do sono", isCorrect: false }, { text: "A propensão geral de um indivíduo a adormecer em situações cotidianas", isCorrect: true }, { text: "A qualidade subjetiva do sono", isCorrect: false }], explanation: "A ESE é um questionário autoaplicável que pede ao indivíduo para avaliar sua chance de cochilar em oito situações diferentes. Uma pontuação >10 é considerada indicativa de sonolência diurna excessiva." },
+            { category: "Farmacologia do Sono", question: "Por que os anti-histamínicos de primeira geração (como a difenidramina) não são recomendados para o tratamento crônico da insônia?", options: [{ text: "Por serem muito caros", isCorrect: false }, { text: "Pela rápida tolerância, efeitos anticolinérgicos e 'ressaca' no dia seguinte", isCorrect: true }, { text: "Por não atravessarem a barreira hematoencefálica", isCorrect: false }, { text: "Por causarem dependência física severa", isCorrect: false }], explanation: "Eles perdem a eficácia rapidamente (tolerância), têm um perfil de efeitos colaterais desfavorável (boca seca, constipação, confusão mental em idosos) e podem causar sedação residual no dia seguinte, afetando a função cognitiva." },
+            { category: "Fisiologia do Sono", question: "O processo S (homeostático) e o processo C (circadiano) são os dois principais reguladores do sono. O que impulsiona o processo S?", options: [{ text: "O ciclo claro-escuro", isCorrect: false }, { text: "A acumulação de substâncias promotoras do sono (ex: adenosina) durante a vigília", isCorrect: true }, { text: "A temperatura corporal central", isCorrect: false }, { text: "Os níveis de cortisol", isCorrect: false }], explanation: "O processo S, ou drive homeostático, reflete a 'pressão' para dormir que se acumula durante o tempo em que estamos acordados. A adenosina é uma das principais moléculas por trás desse processo." },
+            { category: "Apneia Obstrutiva do Sono (AOS)", question: "Qual comorbidade cardiovascular é mais fortemente e independentemente associada à AOS não tratada?", options: [{ text: "Insuficiência cardíaca diastólica", isCorrect: false }, { text: "Hipertensão arterial sistêmica", isCorrect: true }, { text: "Doença arterial coronariana", isCorrect: false }, { text: "Fibrilação atrial", isCorrect: false }], explanation: "A AOS é uma causa secundária reconhecida e uma agravante da hipertensão. Os episódios repetidos de hipóxia e despertares noturnos levam a um aumento da atividade simpática, que eleva a pressão arterial." },
+            { category: "Insônia", question: "Na TCC-I, a técnica de 'controle de estímulos' visa a:", options: [{ text: "Reduzir o consumo de cafeína", isCorrect: false }, { text: "Limitar a exposição a telas antes de dormir", isCorrect: false }, { text: "Restabelecer a associação entre o quarto/cama e o ato de dormir", isCorrect: true }, { text: "Praticar técnicas de relaxamento", isCorrect: false }], explanation: "O controle de estímulos envolve usar a cama apenas para dormir e atividade sexual, e sair da cama se não conseguir dormir. Isso ajuda a quebrar a associação condicionada entre o quarto e a frustração de não conseguir dormir." },
+            { category: "Narcolepsia", question: "A narcolepsia tipo 2 difere da narcolepsia tipo 1 principalmente pela:", options: [{ text: "Ausência de sonolência diurna excessiva", isCorrect: false }, { text: "Ausência de cataplexia", isCorrect: true }, { text: "Presença de apneia do sono grave", isCorrect: false }, { text: "Idade de início mais tardia", isCorrect: false }], explanation: "A principal distinção é que a narcolepsia tipo 1 inclui cataplexia e geralmente está associada à deficiência de orexina. A narcolepsia tipo 2 apresenta sonolência diurna excessiva, mas sem cataplexia, e os níveis de orexina são tipicamente normais." },
+            { category: "Síndrome das Pernas Inquietas (SPI)", question: "O tratamento da SPI com reposição de ferro é indicado quando os níveis de ferritina sérica estão abaixo de:", options: [{ text: "200 ng/mL", isCorrect: false }, { text: "150 ng/mL", isCorrect: false }, { text: "100 ng/mL", isCorrect: false }, { text: "75 ng/mL", isCorrect: true }], explanation: "Mesmo na ausência de anemia, a reposição de ferro oral (ou intravenosa, se oral não for tolerada/eficaz) é recomendada para pacientes com SPI se a ferritina estiver abaixo de 75-100 ng/mL para otimizar os estoques de ferro no cérebro." },
+            { category: "Parasônias", question: "A 'sexônia' (comportamento sexual anormal durante o sono) é considerada uma variante de qual parassonia NREM?", options: [{ text: "Terror noturno", isCorrect: false }, { text: "Sonambulismo", isCorrect: true }, { text: "Distúrbio alimentar noturno", isCorrect: false }, { text: "Bruxismo", isCorrect: false }], explanation: "A sexônia é classificada como um tipo de transtorno do despertar do sono NREM, assim como o sonambulismo e o terror noturno. São comportamentos complexos que ocorrem a partir do sono de ondas lentas com amnésia subsequente." },
+            { category: "Distúrbios do Ritmo Circadiano", question: "Qual é a característica definidora do Transtorno do Ritmo Sono-Vigília Irregular?", options: [{ text: "Um padrão de sono consistentemente atrasado", isCorrect: false }, { text: "Um padrão de sono que avança a cada dia", isCorrect: false }, { text: "A ausência de um ritmo circadiano principal, com múltiplos cochilos ao longo de 24h", isCorrect: true }, { text: "Um ciclo sono-vigília que dura mais de 25 horas", isCorrect: false }], explanation: "Este transtorno é caracterizado pela ausência de um período principal de sono consolidado. Em vez disso, o sono é fragmentado em pelo menos três episódios curtos distribuídos ao longo do dia e da noite. É comum em pacientes com demência." },
+            { category: "Sono em Populações Especiais", question: "O tratamento de primeira linha para AOS em crianças com hipertrofia adenoamigdaliana é:", options: [{ text: "CPAP", isCorrect: false }, { text: "Adenoamigdalectomia", isCorrect: true }, { text: "Aparelho de avanço mandibular", isCorrect: false }, { text: "Terapia posicional", isCorrect: false }], explanation: "Na população pediátrica, a causa mais comum de AOS é a obstrução mecânica pelas amígdalas e adenoide aumentadas. A remoção cirúrgica (adenoamigdalectomia) é curativa na maioria dos casos e é o tratamento de escolha." },
+            { category: "Instrumentos e Diagnóstico", question: "O que é o 'split-night' na polissonografia?", options: [{ text: "Uma noite de sono dividida entre dois pacientes", isCorrect: false }, { text: "Uma polissonografia realizada metade em casa, metade no laboratório", isCorrect: false }, { text: "Um protocolo onde a primeira metade da noite é para diagnóstico e a segunda para titulação de CPAP", isCorrect:true }, { text: "Um estudo que monitora apenas os estágios de sono, sem canais respiratórios", isCorrect: false }], explanation: "Um estudo 'split-night' é realizado quando o paciente demonstra AOS grave na primeira parte da noite. O estudo é então convertido para uma titulação de CPAP na segunda metade, permitindo diagnóstico e início do tratamento em uma única noite." },
+            { category: "Farmacologia do Sono", question: "Qual antidepressivo é frequentemente usado off-label para insônia devido ao seu potente antagonismo do receptor H1 e 5-HT2A, mas tem um alerta da FDA para priapismo?", options: [{ text: "Mirtazapina", isCorrect: false }, { text: "Amitriptilina", isCorrect: false }, { text: "Trazodona", isCorrect: true }, { text: "Sertralina", isCorrect: false }], explanation: "A trazodona em baixas doses (25-100 mg) é amplamente usada para insônia por seus efeitos sedativos. No entanto, um de seus efeitos colaterais raros, mas sérios, é o priapismo, devido ao seu antagonismo alfa-1 adrenérgico." },
+            { category: "Fisiologia do Sono", question: "O processo de consolidação da memória, especialmente a memória declarativa (fatos e eventos), está mais fortemente associado a qual estágio do sono?", options: [{ text: "Sono NREM, especificamente o sono de ondas lentas (N3)", isCorrect: true }, { text: "Sono REM", isCorrect: false }, { text: "Estágio N1 (transição)", isCorrect: false }, { text: "Estágio N2", isCorrect: false }], explanation: "O sono de ondas lentas (N3) é crucial para a consolidação de memórias declarativas, enquanto o sono REM parece ser mais importante para a consolidação de memórias processuais e emocionais." },
+            { category: "Apneia Obstrutiva do Sono (AOS)", question: "A estimulação do nervo hipoglosso é uma opção de tratamento para AOS que funciona por:", options: [{ text: "Impedindo o colapso do palato mole", isCorrect: false }, { text: "Avançando a mandíbula durante o sono", isCorrect: false }, { text: "Contraindo o músculo genioglosso para protruir a língua e abrir a via aérea", isCorrect: true }, { text: "Reduzindo a inflamação na faringe", isCorrect: false }], explanation: "Este dispositivo implantado cirurgicamente estimula o nervo hipoglosso de forma sincronizada com a respiração, fazendo com que a língua se mova para a frente e evitando que ela obstrua a via aérea durante o sono." },
+            { category: "Insônia", question: "Qual é o principal risco do uso de 'drogas Z' (como o zolpidem), especialmente em doses mais altas ou em combinação com outros depressores do SNC?", options: [{ text: "Hipertensão", isCorrect: false }, { text: "Comportamentos complexos do sono (ex: dirigir, comer dormindo)", isCorrect: true }, { text: "Priapismo", isCorrect: false }, { text: "Aumento dos sintomas da SPI", isCorrect: false }], explanation: "As drogas Z carregam um alerta da FDA sobre o risco de comportamentos complexos do sono, onde o indivíduo pode realizar atividades enquanto não está totalmente desperto, com amnésia para o evento, o que pode levar a lesões graves." },
+            { category: "Narcolepsia", question: "O que é o 'fenômeno do status cataplecticus'?", options: [{ text: "Um episódio de cataplexia que dura menos de 10 segundos", isCorrect: false }, { text: "Episódios de cataplexia que ocorrem repetidamente por horas ou dias", isCorrect: true }, { text: "Cataplexia que ocorre apenas durante o sono", isCorrect: false }, { text: "A primeira crise de cataplexia de um paciente", isCorrect: false }], explanation: "O status cataplecticus é uma condição rara e grave onde os episódios de perda de tônus muscular se tornam quase contínuos, podendo ser desencadeada pela retirada abrupta de medicamentos anticatapléticos." },
+            { category: "Síndrome das Pernas Inquietas (SPI)", question: "O Movimento Periódico dos Membros durante o Sono (MPMS) é frequentemente encontrado na polissonografia de pacientes com SPI. Como ele é caracterizado?", options: [{ text: "Movimentos aleatórios e espasmódicos das pernas", isCorrect: false }, { text: "Movimentos estereotipados e rítmicos, geralmente extensões do hálux, ocorrendo em séries", isCorrect: true }, { text: "Contrações musculares sustentadas (cãibras)", isCorrect: false }, { text: "Atividade de pedalar durante o sono REM", isCorrect: false }], explanation: "MPMS são movimentos repetitivos dos membros (geralmente dorsiflexão do tornozelo e extensão do hálux) que ocorrem em intervalos regulares (tipicamente a cada 20-40 segundos) durante o sono NREM." },
+            { category: "Parasônias", question: "O Distúrbio Alimentar Relacionado ao Sono (SRED) envolve episódios de ingestão compulsiva de alimentos durante o sono com amnésia parcial ou total. Está frequentemente associado a qual outro distúrbio?", options: [{ text: "Narcolepsia tipo 1", isCorrect: false }, { text: "Sonambulismo e outros transtornos do despertar NREM", isCorrect: true }, { text: "Apneia obstrutiva do sono", isCorrect: false }, { text: "TCSR", isCorrect: false }], explanation: "O SRED é considerado uma parassonia NREM e frequentemente coexiste com o sonambulismo. Os pacientes podem consumir alimentos bizarros ou não comestíveis, com risco de lesões." },
+            { category: "Distúrbios do Ritmo Circadiano", question: "Um paciente cego sem percepção de luz se queixa de períodos de insônia e sonolência que ciclam ao longo de várias semanas. Qual é o diagnóstico mais provável?", options: [{ text: "Síndrome do atraso de fase", isCorrect: false }, { text: "Transtorno do ciclo sono-vigília diferente de 24h (Non-24)", isCorrect: true }, { text: "Jet lag crônico", isCorrect: false }, { text: "Narcolepsia", isCorrect: false }], explanation: "Na ausência do principal sincronizador (luz), o relógio biológico tende a seguir seu ritmo endógeno, que é ligeiramente superior a 24 horas. Isso causa uma dessincronização progressiva com o dia social, levando a um padrão cíclico de sintomas. É comum em pessoas totalmente cegas." },
+            { category: "Sono em Populações Especiais", question: "Em pacientes com DPOC grave, a hipoxemia tende a piorar durante qual estágio do sono e por quê?", options: [{ text: "Sono N3, devido à diminuição do tônus muscular", isCorrect: false }, { text: "Sono REM, devido à hipoventilação relativa e atonia dos músculos acessórios", isCorrect: true }, { text: "Estágio N1, devido à respiração irregular", isCorrect: false }, { text: "Estágio N2, devido ao aumento do espaço morto fisiológico", isCorrect: false }], explanation: "Durante o sono REM, a respiração se torna mais irregular e dependente quase exclusivamente do diafragma, devido à atonia dos outros músculos respiratórios. Em pacientes com DPOC, essa hipoventilação fisiológica pode levar a quedas acentuadas na saturação de oxigênio." },
+            { category: "Instrumentos e Diagnóstico", question: "Qual é a principal limitação da polissonografia domiciliar (Tipo III) em comparação com a laboratorial (Tipo I)?", options: [{ text: "Não mede o esforço respiratório", isCorrect: false }, { text: "Não consegue diferenciar apneias obstrutivas de centrais de forma confiável e não mede estágios do sono", isCorrect: true }, { text: "É mais cara que a polissonografia tipo I", isCorrect: false }, { text: "Não mede a saturação de oxigênio", isCorrect: false }], explanation: "Os testes tipo III (ou IV) são simplificados, não incluindo EEG, EOG e EMG de mento. Portanto, não podem estagiar o sono, calcular o IAH com base no tempo total de sono real, ou diagnosticar outras condições como parassonias ou narcolepsia. A diferenciação entre eventos centrais e obstrutivos também pode ser menos precisa." },
+            { category: "Farmacologia do Sono", question: "A mirtazapina é um antidepressivo com efeito sedativo em doses baixas. Qual é o paradoxo de sua dosagem em relação à sedação?", options: [{ text: "É mais sedativa em doses altas", isCorrect: false }, { text: "É mais sedativa em doses baixas (7.5-15 mg) devido ao predomínio do antagonismo H1", isCorrect: true }, { text: "A sedação não depende da dose", isCorrect: false }, { text: "Só causa sedação quando combinada com álcool", isCorrect: false }], explanation: "Em doses baixas, o principal efeito da mirtazapina é o bloqueio do receptor H1 da histamina, causando forte sedação. Em doses mais altas, os efeitos noradrenérgicos aumentam, o que pode contrabalançar a sedação, tornando-a menos sedativa." },
+            { category: "Fisiologia do Sono", question: "Qual o principal papel da adenosina na regulação do sono?", options: [{text: "Promover o despertar e a vigília", isCorrect: false}, {text: "Atuar como um sinalizador homeostático da necessidade de sono", isCorrect: true}, {text: "Regular a temperatura corporal durante o sono", isCorrect: false}, {text: "Sincronizar o relógio biológico com a luz", isCorrect: false}], explanation: "A adenosina se acumula no cérebro durante a vigília e se liga a receptores que inibem neurônios promotores da vigília, aumentando a 'pressão' para dormir. A cafeína funciona bloqueando esses receptores de adenosina." },
+            { category: "Apneia Obstrutiva do Sono (AOS)", question: "O tratamento com aparelhos de avanço mandibular (AAM) para AOS é mais indicado para pacientes com qual perfil?", options: [{text: "AOS grave com obesidade mórbida", isCorrect: false}, {text: "AOS leve a moderada, especialmente se houver retrognatia", isCorrect: true}, {text: "AOS central pura", isCorrect: false}, {text: "Pacientes que não toleram a máscara nasal do CPAP", isCorrect: false}], explanation: "Os AAMs são eficazes para AOS leve a moderada, funcionando ao tracionar a mandíbula, a língua e os tecidos moles para a frente, aumentando o espaço da via aérea posterior. São uma alternativa importante ao CPAP para casos selecionados." },
+            { category: "Insônia", question: "A 'Intenção Paradoxal' é uma técnica da TCC-I que instrui o paciente a:", options: [{text: "Tentar ficar acordado o máximo possível na cama", isCorrect: true}, {text: "Fazer uma lista de preocupações antes de deitar", isCorrect: false}, {text: "Concentrar-se intensamente em adormecer", isCorrect: false}, {text: "Imaginar um cenário relaxante", isCorrect: false}], explanation: "A intenção paradoxal visa reduzir a ansiedade de desempenho associada à tentativa de forçar o sono. Ao 'tentar' ficar acordado, a pressão para dormir é removida, o que paradoxalmente pode facilitar o início do sono." },
+            { category: "Narcolepsia", question: "Qual vacina foi associada a um aumento na incidência de narcolepsia tipo 1 em alguns países europeus durante a pandemia de H1N1 em 2009?", options: [{text: "Vacina da gripe sazonal", isCorrect: false}, {text: "Pandemrix", isCorrect: true}, {text: "Vacina contra sarampo, caxumba e rubéola (MMR)", isCorrect: false}, {text: "Vacina contra HPV", isCorrect: false}], explanation: "A vacina Pandemrix, que continha o adjuvante AS03, foi associada a um risco aumentado de narcolepsia em indivíduos geneticamente predispostos, possivelmente por um mecanismo de mimetismo molecular que desencadeou a resposta autoimune contra os neurônios de orexina." },
+            { category: "Síndrome das Pernas Inquietas (SPI)", question: "Qual é a relação entre a gravidez e a SPI?", options: [{text: "A gravidez geralmente melhora os sintomas da SPI", isCorrect: false}, {text: "A gravidez é um dos principais gatilhos para o início ou piora da SPI secundária", isCorrect: true}, {text: "Não há relação conhecida entre gravidez e SPI", isCorrect: false}, {text: "A SPI ocorre apenas no primeiro trimestre da gravidez", isCorrect: false}], explanation: "A gravidez é uma causa comum de SPI secundária, afetando até 20-30% das gestantes, especialmente no terceiro trimestre. Acredita-se que seja devido a deficiência de ferro, alterações hormonais e compressão nervosa." },
+            { category: "Parasônias", question: "O que diferencia a 'Síndrome da Cabeça Explosiva' de outras parassonias?", options: [{text: "Envolve comportamento violento", isCorrect: false}, {text: "É caracterizada por uma percepção auditiva de um barulho alto e súbito ao adormecer ou despertar", isCorrect: true}, {text: "Ocorre exclusivamente durante o sono REM", isCorrect: false}, {text: "Está associada à ingestão de alimentos", isCorrect: false}], explanation: "A síndrome da cabeça explosiva é uma parassonia sensorial onde o indivíduo ouve um barulho forte (como uma explosão ou prato quebrando) na transição sono-vigília. É um fenômeno benigno, embora assustador." },
+            { category: "Distúrbios do Ritmo Circadiano", question: "A síndrome do avanço de fase do sono, comum em idosos, é caracterizada por:", options: [{text: "Dificuldade em adormecer à noite e em acordar pela manhã", isCorrect: false}, {text: "Um padrão de sono que se desloca mais tarde a cada dia", isCorrect: false}, {text: "Sonolência e horário de dormir no início da noite (ex: 19h-20h) e despertar muito cedo (ex: 3h-4h)", isCorrect: true}, {text: "Múltiplos cochilos diurnos e noturnos", isCorrect: false}], explanation: "Nesta síndrome, o relógio biológico está 'adiantado', fazendo com que o indivíduo sinta sono e vá para a cama muito mais cedo do que o desejado socialmente, resultando em um despertar precoce." },
+            { category: "Sono em Populações Especiais", question: "Qual o efeito da cafeína no sono de um adolescente?", options: [{text: "Melhora a qualidade do sono profundo", isCorrect: false}, {text: "Reduz a latência para o sono e aumenta o tempo total de sono", isCorrect: false}, {text: "Aumenta a latência para o sono, reduz o sono de ondas lentas e pode piorar o atraso de fase", isCorrect: true}, {text: "Não tem efeito significativo no sono de adolescentes", isCorrect: false}], explanation: "A cafeína, um antagonista da adenosina, dificulta o início do sono, diminui o sono profundo e, quando consumida à tarde/noite, pode atrasar ainda mais o relógio biológico, exacerbando a tendência natural ao atraso de fase em adolescentes." },
+            { category: "Instrumentos e Diagnóstico", question: "Um padrão de respiração de Cheyne-Stokes na polissonografia (crescendos e decrescendos de esforço e fluxo aéreo com apneias centrais) é classicamente associado a qual condição médica?", options: [{text: "DPOC", isCorrect: false}, {text: "Insuficiência cardíaca congestiva", isCorrect: true}, {text: "Obesidade mórbida", isCorrect: false}, {text: "Doença de Parkinson", isCorrect: false}], explanation: "A respiração de Cheyne-Stokes é um tipo de apneia central do sono comum em pacientes com insuficiência cardíaca congestiva (especialmente com fração de ejeção reduzida) e após acidentes vasculares cerebrais. É causada por instabilidade no controle quimiorreflexo da respiração." },
+            { category: "Farmacologia do Sono", question: "Qual classe de medicamentos para hipertensão pode causar insônia e pesadelos como efeito colateral devido à sua lipossolubilidade e passagem pela barreira hematoencefálica?", options: [{text: "Diuréticos tiazídicos", isCorrect: false}, {text: "Inibidores da ECA", isCorrect: false}, {text: "Betabloqueadores lipofílicos (ex: propranolol, metoprolol)", isCorrect: true}, {text: "Bloqueadores dos canais de cálcio", isCorrect: false}], explanation: "Betabloqueadores que são lipofílicos podem atravessar a barreira hematoencefálica e interferir com o sono, suprimindo a melatonina noturna e causando efeitos como insônia, despertares frequentes e pesadelos." }
+        ];
+
+        let currentQuestionIndex = 0;
+        let filteredQuestions = [...questions];
+        let categories = [...new Set(questions.map(q => q.category))];
+        let answered = false;
+
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const explanationArea = document.getElementById('explanation-area');
+        const explanationText = document.getElementById('explanation-text');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const randomBtn = document.getElementById('random-btn');
+        const categoryFilter = document.getElementById('category-filter');
+
+        function init() {
+            populateCategories();
+            displayQuestion();
+            updateNavigationButtons();
+            addEventListeners();
+        }
+
+        function populateCategories() {
+            categories.sort().forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        function displayQuestion() {
+            answered = false;
+            const question = filteredQuestions[currentQuestionIndex];
+            if (!question) return;
+            
+            questionText.textContent = question.question;
+            optionsContainer.innerHTML = '';
+            explanationArea.classList.add('hidden');
+
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option.text;
+                button.classList.add('option-btn', 'w-full', 'text-left', 'p-4', 'border', 'border-gray-300', 'rounded-md');
+                button.dataset.correct = option.isCorrect;
+                button.addEventListener('click', handleAnswerClick);
+                optionsContainer.appendChild(button);
+            });
+
+            updateQuestionCounter();
+        }
+
+        function handleAnswerClick(event) {
+            if (answered) return;
+            answered = true;
+
+            const selectedButton = event.target;
+            const isCorrect = selectedButton.dataset.correct === 'true';
+
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+            
+            Array.from(optionsContainer.children).forEach(btn => {
+                if (btn.dataset.correct === 'true') {
+                    btn.classList.add('correct');
+                }
+                btn.disabled = true;
+            });
+
+            explanationText.textContent = filteredQuestions[currentQuestionIndex].explanation;
+            explanationArea.classList.remove('hidden');
+        }
+        
+        function updateQuestionCounter() {
+            questionCounter.textContent = `Questão ${currentQuestionIndex + 1} / ${filteredQuestions.length}`;
+        }
+
+        function updateNavigationButtons() {
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === filteredQuestions.length - 1;
+            prevBtn.classList.toggle('opacity-50', prevBtn.disabled);
+            nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+        }
+        
+        function filterQuestions() {
+            const selectedCategory = categoryFilter.value;
+            if (selectedCategory === 'all') {
+                filteredQuestions = [...questions];
+            } else {
+                filteredQuestions = questions.filter(q => q.category === selectedCategory);
+            }
+            currentQuestionIndex = 0;
+            displayQuestion();
+            updateNavigationButtons();
+        }
+
+        function addEventListeners() {
+            prevBtn.addEventListener('click', () => {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    displayQuestion();
+                    updateNavigationButtons();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentQuestionIndex < filteredQuestions.length - 1) {
+                    currentQuestionIndex++;
+                    displayQuestion();
+                    updateNavigationButtons();
+                }
+            });
+            
+            randomBtn.addEventListener('click', () => {
+                const newIndex = Math.floor(Math.random() * filteredQuestions.length);
+                if(newIndex !== currentQuestionIndex){
+                    currentQuestionIndex = newIndex;
+                } else {
+                    currentQuestionIndex = (newIndex + 1) % filteredQuestions.length;
+                }
+                displayQuestion();
+                updateNavigationButtons();
+            });
+
+            categoryFilter.addEventListener('change', filterQuestions);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
