@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Interativo do Sono para Residência Médica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: The SPA is organized into four main, easily accessible sections via a sticky top navigation: Home, Physiology, Disorders, and Questions. This tabbed structure was chosen over a long scroll to allow medical students to quickly jump to a specific topic for targeted revision, a common study pattern. The 'Home' section acts as a dashboard with high-yield visuals like an interactive hypnogram. 'Physiology' breaks down complex topics into digestible parts (stages, regulation). 'Disorders' uses a filterable card system so users can focus on one pathology at a time. Finally, the 'Questions' section provides an interactive quiz for active recall, which is crucial for exam preparation. This structure prioritizes user control and efficient information retrieval. -->
+    <!-- Visualization & Content Choices: 
+    - Hypnogram (Home): Report Info: Sleep cycle progression -> Goal: Visualize Change -> Viz: Line Chart (Chart.js) -> Interaction: Hover to see stage details -> Justification: Dynamically shows a typical night's sleep architecture, more engaging than a static image.
+    - Sleep Stage Proportions (Physiology): Report Info: % of each sleep stage -> Goal: Inform/Compare -> Viz: Donut Chart (Chart.js) -> Interaction: Hover to see percentage -> Justification: Provides a quick, clear comparison of stage durations.
+    - Sleep Regulation Model (Physiology): Report Info: Process S vs. Process C -> Goal: Organize/Relationships -> Viz: HTML/CSS Diagram -> Interaction: None (static) -> Justification: A simple, non-library visual effectively explains this core concept without adding complexity.
+    - Disorders (Disorders): Report Info: Details of multiple disorders -> Goal: Organize/Inform -> Viz: Interactive Cards (HTML/CSS/JS) -> Interaction: Filter buttons to toggle visibility -> Justification: Manages cognitive load by allowing users to isolate and study one disorder at a time.
+    - Residency Questions (Questions): Report Info: Exam-style questions -> Goal: Engage/Test -> Viz: Quiz Interface (HTML/CSS/JS) -> Interaction: Click answer, reveal correction/explanation -> Justification: Simulates the exam experience and leverages active recall for better learning retention.
+    - Flashcards (Disorders): Report Info: Symptom triads -> Goal: Memorize/Test -> Viz: Flippable cards (HTML/CSS/JS) -> Interaction: Click to flip -> Justification: Uses active recall and spaced repetition principles for high-yield fact memorization.
+    - Timer (Global): Goal: Utility/Time Management -> Viz: Digital display with controls (HTML/CSS/JS) -> Interaction: Start/Pause/Reset -> Justification: Adds a practical study tool requested by the user.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 300px;
+            margin: auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .quiz-option {
+            transition: background-color 0.3s, border-color 0.3s;
+            cursor: pointer;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .quiz-option.selected {
+           border-width: 2px;
+        }
+        .flashcard-scene {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .flashcard-face--front {
+            color: white;
+        }
+        .flashcard-face--back {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            transform: rotateY(180deg);
+        }
+        .view-toggle-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="fixed top-4 right-4 z-20 bg-white/80 backdrop-blur-md p-3 rounded-lg shadow-lg text-slate-800">
+        <div class="text-center">
+            <div id="timer-display" class="text-2xl font-mono font-bold">00:00:00</div>
+            <div class="flex space-x-2 mt-2">
+                <button id="start-pause-btn" class="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors">Iniciar</button>
+                <button id="reset-btn" class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition-colors">Zerar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-5xl font-bold text-slate-800">Guia Interativo do Sono</h1>
+            <p class="text-md md:text-xl text-slate-600 mt-2">Um recurso focado em Fisiologia, Patologias e Questões de Residência Médica</p>
+        </header>
+
+        <nav class="sticky top-0 z-10 bg-slate-50/80 backdrop-blur-md shadow-sm rounded-lg mb-8">
+            <ul class="flex items-center justify-center p-2 md:p-4 space-x-2 md:space-x-8 text-sm md:text-lg font-semibold text-slate-600">
+                <li><a href="#inicio" class="nav-link px-3 py-2">Início</a></li>
+                <li><a href="#fisiologia" class="nav-link px-3 py-2">Fisiologia</a></li>
+                <li><a href="#transtornos" class="nav-link px-3 py-2">Transtornos</a></li>
+                <li><a href="#questoes" class="nav-link px-3 py-2">Questões</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <section id="inicio" class="content-section active">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4">Bem-vindo(a) ao Guia do Sono!</h2>
+                    <p class="text-slate-600 mb-6">Esta ferramenta foi criada para auxiliar seus estudos sobre a medicina do sono, um tema de crescente importância nas provas de residência. Explore as seções para revisar a fisiologia, entender os principais transtornos e testar seus conhecimentos. Abaixo, você pode ver um hipnograma interativo que demonstra a progressão das fases do sono ao longo de uma noite típica.</p>
+                    <div class="chart-container">
+                        <canvas id="hipnogramaChart"></canvas>
+                    </div>
+                     <p class="text-center text-sm text-slate-500 mt-2">Passe o mouse sobre o gráfico para ver os detalhes de cada fase do sono.</p>
+                </div>
+            </section>
+
+            <section id="fisiologia" class="content-section">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Fisiologia do Sono</h2>
+                    <p class="text-slate-600 mb-8">A compreensão da arquitetura e regulação do sono é fundamental. O sono não é um processo passivo, mas sim um estado complexo e dinâmico, dividido em fases distintas com funções específicas, desde a consolidação da memória até a restauração física. Nesta seção, exploramos as fases do sono e os mecanismos que o governam.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-700 mb-4">Arquitetura do Sono: Fases</h3>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-100 rounded-lg">
+                                    <h4 class="font-bold text-blue-700">Sono NREM (Não-REM)</h4>
+                                    <p class="text-sm text-slate-600">Composto por 3 estágios, representa cerca de 75-80% do sono total.</p>
+                                    <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                                        <li><strong>N1:</strong> Transição vigília-sono. Ondas teta.</li>
+                                        <li><strong>N2:</strong> Sono leve. Fusos do sono e Complexos K. Cerca de 50% do sono total.</li>
+                                        <li><strong>N3:</strong> Sono de ondas lentas (ondas delta). Sono profundo e restaurador.</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 bg-indigo-100 rounded-lg">
+                                    <h4 class="font-bold text-indigo-700">Sono REM (Rapid Eye Movement)</h4>
+                                    <p class="text-sm text-slate-600">Sono "paradoxal". Atividade cerebral intensa, atonia muscular e sonhos vívidos. Crucial para a consolidação da memória. Ocorre em ciclos ao longo da noite.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container h-64 md:h-80">
+                             <canvas id="fasesChart"></canvas>
+                             <p class="text-center text-sm text-slate-500 mt-2">Distribuição percentual das fases do sono em um adulto jovem.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-12">
+                         <h3 class="text-xl font-bold text-slate-700 mb-4">Regulação do Sono: Processos S e C</h3>
+                         <p class="text-slate-600 mb-6">O sono é regulado principalmente por dois processos que interagem: o Processo S (homeostático) e o Processo C (circadiano).</p>
+                         <div class="grid md:grid-cols-2 gap-8">
+                            <div class="p-4 border border-blue-200 bg-blue-50 rounded-lg">
+                                <h4 class="font-bold text-blue-800">Processo S (Homeostático)</h4>
+                                <p class="text-sm text-slate-700">Refere-se à "pressão de sono" que se acumula durante a vigília. Quanto mais tempo acordado, maior a pressão. A adenosina é um neuromodulador chave neste processo. Durante o sono, essa pressão é dissipada.</p>
+                            </div>
+                             <div class="p-4 border border-amber-200 bg-amber-50 rounded-lg">
+                                <h4 class="font-bold text-amber-800">Processo C (Circadiano)</h4>
+                                <p class="text-sm text-slate-700">É o nosso "relógio biológico", localizado no núcleo supraquiasmático do hipotálamo. Ele promove a vigília durante o dia e o sono durante a noite, independentemente da pressão de sono acumulada. É regulado principalmente pela luz.</p>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="transtornos" class="content-section">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Principais Transtornos do Sono</h2>
+                    <p class="text-slate-600 mb-6">Explore os transtornos em formato de texto detalhado ou use os flashcards para uma revisão rápida das tríades de sintomas clássicas.</p>
+                    
+                    <div class="flex justify-center items-center gap-4 mb-8 border-b pb-4">
+                        <div id="view-toggle" class="flex p-1 bg-slate-200 rounded-lg">
+                            <button data-view="details" class="view-toggle-btn px-4 py-1.5 text-sm font-semibold rounded-md active">Detalhes</button>
+                            <button data-view="flashcards" class="view-toggle-btn px-4 py-1.5 text-sm font-semibold rounded-md">Flashcards</button>
+                        </div>
+                    </div>
+
+                    <div id="details-view">
+                        <div class="flex flex-wrap justify-center gap-2 mb-8" id="disorder-filters">
+                            <button data-filter="all" class="filter-btn bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold">Todos</button>
+                            <button data-filter="apneia" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold">Apneia (SAOS)</button>
+                            <button data-filter="insonia" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold">Insônia</button>
+                            <button data-filter="narcolepsia" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold">Narcolepsia</button>
+                            <button data-filter="spi" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold">Pernas Inquietas</button>
+                            <button data-filter="parassonia" class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold">Parassonias</button>
+                        </div>
+                        <div id="disorders-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    </div>
+
+                    <div id="flashcards-view" class="hidden">
+                        <p class="text-center text-slate-500 mb-6">Clique nos cartões para virar e ver a tríade de sintomas.</p>
+                        <div id="flashcards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="questoes" class="content-section">
+                 <div class="bg-white p-6 md:p-8 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Questões de Residência</h2>
+                    <p class="text-slate-600 mb-6">Teste seus conhecimentos com questões baseadas nos concursos de residência médica mais concorridos do país. Após responder, a alternativa correta e um breve comentário serão exibidos.</p>
+                    <div id="quiz-container" class="max-w-4xl mx-auto"></div>
+                 </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const disordersData = [
+            { id: 'apneia', title: 'Apneia Obstrutiva do Sono (SAOS)', content: `<p><strong>Definição:</strong> Colapsos recorrentes da via aérea superior durante o sono, levando a hipóxia intermitente e fragmentação do sono.</p><p><strong>Clínica:</strong> Roncos altos, pausas respiratórias testemunhadas, sonolência diurna excessiva, nictúria, cefaleia matinal.</p><p><strong>Diagnóstico:</strong> Polissonografia (PSG) é o padrão-ouro. Índice de Apneia-Hipopneia (IAH) ≥ 5/h com sintomas, ou ≥ 15/h sem sintomas.</p><p><strong>Tratamento:</strong> CPAP (Continuous Positive Airway Pressure) é a primeira linha para casos moderados a graves. Mudanças no estilo de vida (perda de peso), aparelhos intraorais.</p><p class="font-bold mt-2 text-red-600">Dica de Prova: SAOS é um fator de risco independente para doenças cardiovasculares (HAS, IAM, AVC).</p>` },
+            { id: 'insonia', title: 'Transtorno de Insônia Crônica', content: `<p><strong>Definição:</strong> Dificuldade em iniciar, manter o sono ou despertar precoce, com prejuízo diurno, ocorrendo ≥ 3x/semana por ≥ 3 meses.</p><p><strong>Clínica:</strong> Fadiga, irritabilidade, dificuldade de concentração e memória.</p><p><strong>Diagnóstico:</strong> Clínico, baseado na história. Diário do sono pode ajudar.</p><p><strong>Tratamento:</strong> Terapia Cognitivo-Comportamental para Insônia (TCC-I) é o tratamento de primeira linha. Farmacoterapia pode ser usada como adjuvante ou em curto prazo.</p><p class="font-bold mt-2 text-red-600">Dica de Prova: A abordagem inicial NUNCA deve ser apenas medicamentosa. Priorize a TCC-I.</p>` },
+            { id: 'narcolepsia', title: 'Narcolepsia', content: `<p><strong>Definição:</strong> Transtorno de hipersonolência de origem central, caracterizado por intrusões de fenômenos do sono REM na vigília.</p><p><strong>Clínica (Tétrade clássica):</strong> Sonolência diurna excessiva, Cataplexia (perda súbita de tônus muscular desencadeada por emoções), Paralisia do sono, Alucinações hipnagógicas/hipnopômpicas.</p><p><strong>Tipos:</strong> Tipo 1 (com cataplexia ou deficiência de hipocretina/orexina no LCR) e Tipo 2 (sem cataplexia).</p><p><strong>Diagnóstico:</strong> PSG seguida de Teste de Latências Múltiplas do Sono (TLMS) mostrando latência média para o sono ≤ 8 min e ≥ 2 SOREMPs (Sleep-Onset REM Periods).</p><p class="font-bold mt-2 text-red-600">Dica de Prova: A cataplexia é o sintoma mais específico da Narcolepsia Tipo 1.</p>` },
+            { id: 'spi', title: 'Síndrome das Pernas Inquietas (SPI)', content: `<p><strong>Definição:</strong> Desconforto ou urgência em mover as pernas, classicamente piora à noite e em repouso, e melhora com o movimento.</p><p><strong>Clínica:</strong> Os 4 critérios essenciais são: 1) Urgência em mover as pernas, 2) Piora com inatividade, 3) Alívio com movimento, 4) Padrão circadiano (piora à noite).</p><p><strong>Diagnóstico:</strong> Clínico. Investigar deficiência de ferro (ferritina sérica).</p><p><strong>Tratamento:</strong> Reposição de ferro se deficiência. Agonistas dopaminérgicos (pramipexol, ropinirol) ou gabapentinoides (gabapentina, pregabalina).</p><p class="font-bold mt-2 text-red-600">Dica de Prova: Sempre dosear a ferritina em pacientes com SPI. A meta é mantê-la > 50-75 ng/mL.</p>` },
+            { id: 'parassonia', title: 'Parassonias', content: `<p><strong>Definição:</strong> Comportamentos ou experiências anormais que ocorrem durante o sono.</p><p><strong>Parassonias do Sono NREM:</strong> Ocorrem no 1/3 da noite (sono N3). Incluem Sonambulismo, Terror Noturno, Despertar Confusional. Há amnésia do evento.</p><p><strong>Transtorno Comportamental do Sono REM (TCSREM):</strong> Perda da atonia muscular do REM, fazendo com que o paciente "atue" em seus sonhos. Ocorre na 2ª metade da noite. Forte associação com sinucleinopatias (Doença de Parkinson, Demência com Corpos de Lewy).</p><p><strong>Pesadelos:</strong> Ocorrem no sono REM, paciente geralmente desperta e recorda o conteúdo do sonho.</p><p class="font-bold mt-2 text-red-600">Dica de Prova: TCSREM pode preceder o diagnóstico de Parkinson em anos. É um marcador prodrômico importante.</p>` },
+        ];
+        
+        const flashcardData = [
+            { id: 'apneia', title: 'SAOS', color: 'bg-blue-500', triad: ['Roncos altos', 'Pausas respiratórias', 'Sonolência diurna'] },
+            { id: 'insonia', title: 'Insônia Crônica', color: 'bg-purple-500', triad: ['Dificuldade em dormir', 'Prejuízo diurno', 'Critério tempo (≥3x/sem, ≥3m)'] },
+            { id: 'narcolepsia', title: 'Narcolepsia T1', color: 'bg-amber-500', triad: ['Sonolência diurna', 'Cataplexia', 'Fenômenos REM na vigília'] },
+            { id: 'spi', title: 'Síndrome das Pernas Inquietas', color: 'bg-teal-500', triad: ['Urgência em mover pernas', 'Piora no repouso/noite', 'Alívio com movimento'] },
+            { id: 'parassonia', title: 'TCSREM', color: 'bg-rose-500', triad: ['Atuação de sonhos', 'Sono REM sem atonia', 'Associação com sinucleinopatias'] },
+        ];
+
+        const quizData = [
+            { question: "Um homem de 52 anos, obeso (IMC 34 kg/m²), procura atendimento por sonolência diurna excessiva e relatos da esposa de roncos altos e pausas respiratórias durante a noite. Qual é o exame padrão-ouro para confirmar a principal hipótese diagnóstica?", options: ["Eletroencefalograma (EEG)", "Tomografia de Crânio", "Polissonografia (PSG)", "Teste de Latências Múltiplas do Sono (TLMS)", "Actigrafia"], answer: 2, explanation: "A apresentação clínica é altamente sugestiva de Síndrome da Apneia Obstrutiva do Sono (SAOS). A Polissonografia (PSG) é o exame padrão-ouro para o diagnóstico, pois monitora múltiplas variáveis fisiológicas (respiração, oxigenação, estágios do sono, etc.) e permite quantificar o Índice de Apneia-Hipopneia (IAH).", banca: "USP (Estilo)" },
+            { question: "Qual dos seguintes achados é característico do estágio N3 do sono NREM?", options: ["Fusos do sono e complexos K", "Ondas delta de alta amplitude", "Atonia muscular generalizada", "Movimentos oculares rápidos", "Ondas alfa"], answer: 1, explanation: "O estágio N3, também conhecido como sono de ondas lentas, é definido pela presença de ondas delta (lentas e de alta amplitude) em mais de 20% da época no EEG. Fusos do sono e complexos K são de N2. Atonia e movimentos oculares rápidos são do sono REM.", banca: "ENARE (Estilo)" },
+            { question: "Uma jovem de 24 anos relata episódios súbitos de fraqueza muscular nas pernas sempre que tem uma crise de riso, chegando a cair. Ela também se queixa de sonolência diurna incontrolável. Qual é o diagnóstico mais provável e o achado fisiopatológico subjacente?", options: ["Crise epiléptica; descarga neuronal anômala", "Síncope vasovagal; resposta parassimpática exacerbada", "Narcolepsia tipo 1; deficiência de hipocretina/orexina", "Transtorno de conversão; somatização de estresse", "Miastenia Gravis; anticorpos anti-receptor de acetilcolina"], answer: 2, explanation: "A combinação de sonolência diurna excessiva e cataplexia (perda de tônus muscular desencadeada por emoções fortes como o riso) é patognomônica da Narcolepsia Tipo 1. A fisiopatologia central é a perda de neurônios no hipotálamo lateral que produzem o neuropeptídeo hipocretina (ou orexina), essencial para a estabilidade da vigília.", banca: "UNICAMP (Estilo)" },
+            { question: "Qual das seguintes é considerada a terapia de primeira linha para o transtorno de insônia crônica?", options: ["Uso de benzodiazepínicos", "Uso de anti-histamínicos", "Terapia Cognitivo-Comportamental para Insônia (TCC-I)", "Uso de antidepressivos sedativos", "Uso de melatonina"], answer: 2, explanation: "Todas as principais diretrizes internacionais recomendam a Terapia Cognitivo-Comportamental para Insônia (TCC-I) como tratamento de primeira linha. A TCC-I aborda os fatores comportamentais e cognitivos que perpetuam a insônia e tem eficácia superior e mais duradoura que a farmacoterapia isolada.", banca: "ENARE (Estilo)" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            const disordersContainer = document.getElementById('disorders-container');
+            const filterButtonsContainer = document.getElementById('disorder-filters');
+            const quizContainer = document.getElementById('quiz-container');
+            const flashcardsContainer = document.getElementById('flashcards-container');
+            const viewToggleContainer = document.getElementById('view-toggle');
+            const detailsView = document.getElementById('details-view');
+            const flashcardsView = document.getElementById('flashcards-view');
+            
+            let currentQuestionIndex = 0;
+            let questionsAnswered = false;
+
+            function updateActiveLink(targetId) {
+                navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${targetId}`));
+            }
+
+            function showSection(targetId) {
+                sections.forEach(section => section.classList.toggle('active', section.id === targetId));
+                updateActiveLink(targetId);
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    showSection(targetId);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            function renderDisorders(filter = 'all') {
+                disordersContainer.innerHTML = '';
+                const filteredData = filter === 'all' ? disordersData : disordersData.filter(d => d.id === filter);
+                filteredData.forEach(disorder => {
+                    const card = document.createElement('div');
+                    card.className = 'disorder-card bg-slate-50 border border-slate-200 p-6 rounded-lg shadow-sm';
+                    card.innerHTML = `<h3 class="text-xl font-bold text-slate-800 mb-3">${disorder.title}</h3><div class="text-slate-600 text-sm space-y-2">${disorder.content}</div>`;
+                    disordersContainer.appendChild(card);
+                });
+            }
+
+            filterButtonsContainer.addEventListener('click', (e) => {
+                 if (e.target.tagName === 'BUTTON') {
+                    const filter = e.target.dataset.filter;
+                    renderDisorders(filter);
+                    filterButtonsContainer.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-slate-200', 'text-slate-700');
+                    });
+                    e.target.classList.add('bg-blue-600', 'text-white');
+                    e.target.classList.remove('bg-slate-200', 'text-slate-700');
+                 }
+            });
+            
+            function renderFlashcards() {
+                flashcardsContainer.innerHTML = '';
+                flashcardData.forEach(cardData => {
+                    const scene = document.createElement('div');
+                    scene.className = 'flashcard-scene h-48';
+                    scene.innerHTML = `
+                        <div class="flashcard">
+                            <div class="flashcard-face flashcard-face--front ${cardData.color}">
+                                <h3 class="text-2xl font-bold text-center">${cardData.title}</h3>
+                            </div>
+                            <div class="flashcard-face flashcard-face--back">
+                                <h4 class="text-lg font-semibold mb-2">Tríade Clássica</h4>
+                                <ul class="list-disc list-inside text-left">
+                                    ${cardData.triad.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    scene.addEventListener('click', () => {
+                        scene.querySelector('.flashcard').classList.toggle('is-flipped');
+                    });
+                    flashcardsContainer.appendChild(scene);
+                });
+            }
+
+            viewToggleContainer.addEventListener('click', (e) => {
+                if(e.target.tagName === 'BUTTON') {
+                    const view = e.target.dataset.view;
+                    viewToggleContainer.querySelectorAll('.view-toggle-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    if (view === 'details') {
+                        detailsView.classList.remove('hidden');
+                        flashcardsView.classList.add('hidden');
+                    } else {
+                        detailsView.classList.add('hidden');
+                        flashcardsView.classList.remove('hidden');
+                    }
+                }
+            });
+
+            function renderQuiz() {
+                const quiz = quizData[currentQuestionIndex];
+                questionsAnswered = false;
+                let optionsHtml = quiz.options.map((option, index) => `<div class="quiz-option border border-slate-300 p-4 rounded-lg hover:bg-slate-100" data-index="${index}">${String.fromCharCode(65 + index)}) ${option}</div>`).join('');
+                quizContainer.innerHTML = `<div class="mb-4"><p class="text-sm font-semibold text-blue-600">${quiz.banca}</p><p class="font-semibold text-slate-700 mt-1">${quiz.question}</p></div><div class="space-y-3 mb-4" id="quiz-options">${optionsHtml}</div><div id="explanation-container" class="hidden p-4 bg-gray-100 rounded-lg"></div><div class="flex justify-end mt-6"><button id="next-question-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed" disabled>Próxima</button></div>`;
+                document.getElementById('quiz-options').addEventListener('click', (e) => {
+                    if (questionsAnswered) return;
+                    const selectedOption = e.target.closest('.quiz-option');
+                    if(selectedOption) handleAnswerSelection(parseInt(selectedOption.dataset.index));
+                });
+                document.getElementById('next-question-btn').addEventListener('click', () => {
+                    currentQuestionIndex = (currentQuestionIndex + 1) % quizData.length;
+                    renderQuiz();
+                });
+            }
+
+            function handleAnswerSelection(selectedIndex) {
+                questionsAnswered = true;
+                const quiz = quizData[currentQuestionIndex];
+                const options = document.querySelectorAll('.quiz-option');
+                const explanationContainer = document.getElementById('explanation-container');
+                options.forEach((option, index) => {
+                    option.classList.remove('hover:bg-slate-100');
+                    if (index === quiz.answer) option.classList.add('correct');
+                    if (index === selectedIndex) {
+                        option.classList.add('selected');
+                        if(index !== quiz.answer) option.classList.add('incorrect');
+                    }
+                });
+                explanationContainer.innerHTML = `<p class="font-bold">Comentário:</p><p class="text-sm">${quiz.explanation}</p>`;
+                explanationContainer.classList.remove('hidden');
+                document.getElementById('next-question-btn').disabled = false;
+            }
+            
+            const timerDisplay = document.getElementById('timer-display');
+            const startPauseBtn = document.getElementById('start-pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            let timerInterval = null;
+            let totalSeconds = 0;
+            let isRunning = false;
+            
+            function updateTimerDisplay() {
+                let hours = Math.floor(totalSeconds / 3600);
+                let minutes = Math.floor((totalSeconds % 3600) / 60);
+                let seconds = totalSeconds % 60;
+                timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            startPauseBtn.addEventListener('click', () => {
+                if (isRunning) {
+                    clearInterval(timerInterval);
+                    startPauseBtn.textContent = 'Continuar';
+                    startPauseBtn.classList.replace('bg-yellow-500', 'bg-green-500');
+                } else {
+                    timerInterval = setInterval(() => {
+                        totalSeconds++;
+                        updateTimerDisplay();
+                    }, 1000);
+                    startPauseBtn.textContent = 'Pausar';
+                    startPauseBtn.classList.replace('bg-green-500', 'bg-yellow-500');
+                }
+                isRunning = !isRunning;
+            });
+
+            resetBtn.addEventListener('click', () => {
+                clearInterval(timerInterval);
+                isRunning = false;
+                totalSeconds = 0;
+                updateTimerDisplay();
+                startPauseBtn.textContent = 'Iniciar';
+                startPauseBtn.classList.replace('bg-yellow-500', 'bg-green-500');
+            });
+
+
+            const hipnogramaCtx = document.getElementById('hipnogramaChart').getContext('2d');
+            new Chart(hipnogramaCtx, { type: 'line', data: { labels: Array.from({length: 16}, (_, i) => `${i*30} min`), datasets: [{ label: 'Fase do Sono', data: [0, 1, 2, 3, 2, 4, 2, 3, 2, 4, 2, 4, 2, 1, 0, 0], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, stepped: true }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true, ticks: { callback: (value) => ({0: 'Vigília', 1: 'N1', 2: 'N2', 3: 'N3', 4: 'REM'}[value]) }, title: { display: true, text: 'Estágio do Sono' } }, x: { title: { display: true, text: 'Tempo de Sono' } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => ({0: 'Vigília', 1: 'N1', 2: 'N2', 3: 'N3', 4: 'REM'}[context.parsed.y]) } } } } });
+            const fasesCtx = document.getElementById('fasesChart').getContext('2d');
+            new Chart(fasesCtx, { type: 'doughnut', data: { labels: ['N1 (5%)', 'N2 (50%)', 'N3 (20%)', 'REM (25%)'], datasets: [{ data: [5, 50, 20, 25], backgroundColor: ['#93c5fd', '#60a5fa', '#3b82f6', '#4f46e5'], hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+            
+            showSection('inicio');
+            renderDisorders();
+            renderFlashcards();
+            renderQuiz();
+        });
+    </script>
+</body>
+</html>
+
+
+
+                <!-- Grid de Links -->
+                <div id="links-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Os links serão inseridos aqui pelo JavaScript -->
+                </div>
+                 <p id="no-results" class="text-center text-gray-500 dark:text-gray-400 mt-4 hidden">Nenhum resultado encontrado.</p>
+            </div>
+        </main>
+
+        <footer class="text-center mt-8 text-gray-500 dark:text-gray-400">
+            <p>&copy; 2024. Criado para o repositório 'migabd/Flashcards'.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const psychiatryBtn = document.getElementById('psychiatry-btn');
+            const linksSection = document.getElementById('links-section');
+            const searchBar = document.getElementById('search-bar');
+            const linksGrid = document.getElementById('links-grid');
+            const noResultsMsg = document.getElementById('no-results');
+
+            // Lista de páginas do seu repositório
+            const pages = [
+    { title: 'Conceitos para Transtornos Psicóticos', url: 'Conceitos úteis para transtornos psicóticos.html' },
+    { title: 'Transtornos Psicóticos', url: 'Transtornospsicóticos.html' },
+    { title: 'Tratamento para Transtornos Psicóticos', url: 'Tratamento para transtornos psicóticos.html' },
+    { title: 'Tratamento na Emergência Psiquiátrica', url: 'Tratamento para transtornos psicóticosnaemergencia.html' },
+    { title: 'Alguns Fármacos Úteis', url: 'alguns fármacos úteis.html' },
+    { title: 'Transtornos de Humor', url: 'transtornosdehumor.html' },
+    { title: 'Tratamento para Transtornos de Humor', url: 'tratamentotranstornosdehumor.html' }
+];
+
+            // Função para renderizar os botões de link
+            function renderLinks(filter = '') {
+                linksGrid.innerHTML = '';
+                const filteredPages = pages.filter(page => page.title.toLowerCase().includes(filter.toLowerCase()));
+
+                if (filteredPages.length === 0) {
+                    noResultsMsg.classList.remove('hidden');
+                } else {
+                    noResultsMsg.classList.add('hidden');
+                }
+
+                filteredPages.forEach(page => {
+                    const linkElement = document.createElement('a');
+                    linkElement.href = page.url;
+                    linkElement.className = 'link-btn block bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md hover:bg-teal-50 dark:hover:bg-gray-600 transition-all duration-300';
+                    linkElement.innerHTML = `
+                        <h3 class="font-semibold text-teal-700 dark:text-teal-300">${page.title}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Acessar material</p>
+                    `;
+                    linksGrid.appendChild(linkElement);
+                });
+            }
+
+            // Evento de clique no botão principal
+            psychiatryBtn.addEventListener('click', () => {
+                linksSection.classList.toggle('show');
+                // Renderiza todos os links quando a seção é aberta
+                if (linksSection.classList.contains('show')) {
+                    renderLinks();
+                }
+            });
+
+            // Evento de digitação na barra de pesquisa
+            searchBar.addEventListener('input', (e) => {
+                renderLinks(e.target.value);
+            });
+
+            // Renderiza os links inicialmente para que a busca funcione
+            // mas eles estarão ocultos pelo container
+            renderLinks();
+        });
+    </script>
+
+</body>
+</html>
