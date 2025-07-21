@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Métodos Científicos e Vertentes de Estudo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Academic Neutrals -->
+    <!-- Application Structure Plan: The application is structured into five thematic sections to guide the user from foundational concepts to specific applications and reflections. It starts with an introduction, then uses interactive cards for exploring 'Métodos Científicos' individually. A side-by-side comparison is used for 'Vertentes de Estudo' to highlight their differences. An interactive bar chart visually summarizes the core philosophical distinctions between quantitative and qualitative approaches. It concludes with a reflective comic. This non-linear, chunked structure enhances usability and learning by allowing users to explore at their own pace and preventing information overload, which is better than a simple linear scroll of the source source. -->
+    <!-- Visualization & Content Choices: 1. Method/Technique: Goal=Inform, Viz=Two-column HTML, Interaction=None, Justification=Clear separation for definition. 2. Scientific Methods: Goal=Organize/Explain, Viz=Interactive HTML cards, Interaction=Click to reveal details and CSS diagrams, Justification=Focussed learning, avoids wall of text, Method=Vanilla JS. 3. Study Approaches: Goal=Compare, Viz=Three-column layout with HTML/CSS triangulation diagram, Interaction=None, Justification=Easy side-by-side comparison. 4. Quant vs Quali: Goal=Compare, Viz=Horizontal Bar Chart, Interaction=Tooltips, Justification=Visually represents abstract differences for better retention, Library=Chart.js. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 500px;
+                max-height: 60vh;
+            }
+        }
+        .method-card-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .method-card.open .method-card-details {
+            max-height: 500px;
+            transition: max-height 0.7s ease-in;
+        }
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .flow-box {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        .flow-arrow {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+         .triangulation-diagram {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 2rem auto 1rem;
+        }
+        .tri-point {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .tri-point-a { top: 0; left: 50%; transform: translateX(-50%); }
+        .tri-point-b { bottom: 0; left: 0; }
+        .tri-point-c { bottom: 0; right: 0; }
+        .tri-line {
+            position: absolute;
+            background-color: #a3a3a3;
+            transform-origin: left;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center py-8 border-b-2 border-amber-200">
+            <h1 class="text-4xl md:text-5xl font-bold text-teal-800">Métodos Científicos e Vertentes de Estudo</h1>
+            <p class="mt-4 text-lg text-stone-600">Um guia interativo baseado na aula do Prof. Dr. João Luís da Silva</p>
+            <p class="text-sm text-stone-500">Universidade Federal de Pernambuco - Campus Agreste</p>
+        </header>
+
+        <main class="mt-10">
+
+            <section id="introduction" class="mb-16">
+                <h2 class="text-3xl font-bold text-center text-teal-700 mb-8">O que é Método Científico?</h2>
+                 <p class="max-w-3xl mx-auto text-center text-stone-600 mb-10">
+                    Esta seção introduz a base do conhecimento científico. O método científico é o roteiro que guia a pesquisa, garantindo rigor e validade. Entender a diferença entre o "método" (o caminho a seguir) e a "técnica" (as ferramentas usadas no caminho) é fundamental para planejar e executar qualquer estudo de forma estruturada e confiável.
+                </p>
+                <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-stone-200">
+                        <h3 class="text-2xl font-semibold text-amber-700 mb-3">Método Científico</h3>
+                        <p class="text-stone-600">É o <strong>caminho</strong> ou o <strong>modo de caminhar</strong>. Define um conjunto de normas e procedimentos lógicos que devem ser seguidos para produzir conhecimento científico, testar hipóteses e comprovar conteúdos.</p>
+                        <p class="mt-4 font-semibold text-stone-700">Pergunta-chave: <span class="font-normal">Como fazer?</span></p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md border border-stone-200">
+                        <h3 class="text-2xl font-semibold text-amber-700 mb-3">Técnica Científica</h3>
+                        <p class="text-stone-600">É a <strong>organização</strong> ou o <strong>plano de ação</strong>. Refere-se às ferramentas e aos procedimentos práticos utilizados para coletar e analisar dados dentro de um método escolhido.</p>
+                         <p class="mt-4 font-semibold text-stone-700">Pergunta-chave: <span class="font-normal">O que fazer?</span></p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="methods" class="mb-16">
+                <h2 class="text-3xl font-bold text-center text-teal-700 mb-8">Tipos de Métodos Científicos</h2>
+                 <p class="max-w-3xl mx-auto text-center text-stone-600 mb-10">
+                    A ciência não segue um caminho único. Existem diferentes métodos, cada um com uma lógica de raciocínio distinta para abordar problemas. Nesta seção interativa, você pode explorar os principais métodos científicos. Clique em cada cartão para revelar sua definição, características e um diagrama simples que ilustra seu fluxo de pensamento.
+                </p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <div class="method-card bg-white rounded-lg shadow-md border border-stone-200 cursor-pointer hover:shadow-xl hover:border-teal-300 transition-all duration-300">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-teal-800">Método Dedutivo</h3>
+                            <p class="text-sm text-stone-500 mt-1">Do geral para o particular.</p>
+                        </div>
+                        <div class="method-card-details px-6 pb-6">
+                            <p class="text-stone-600">Parte de premissas gerais, consideradas verdadeiras, para chegar a uma conclusão particular. Se as premissas são verdadeiras, a conclusão é inquestionável. Muito usado nas ciências exatas.</p>
+                            <div class="flow-diagram bg-teal-50">
+                                <div class="flow-box bg-teal-200 text-teal-900">Geral</div>
+                                <div class="flow-arrow text-teal-600">→</div>
+                                <div class="flow-box bg-teal-500 text-white">Particular</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="method-card bg-white rounded-lg shadow-md border border-stone-200 cursor-pointer hover:shadow-xl hover:border-teal-300 transition-all duration-300">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-teal-800">Método Indutivo</h3>
+                             <p class="text-sm text-stone-500 mt-1">Do particular para o geral.</p>
+                        </div>
+                        <div class="method-card-details px-6 pb-6">
+                            <p class="text-stone-600">Parte de observações de casos particulares para formular uma lei geral. A conclusão é uma probabilidade, não uma certeza absoluta, pois se baseia na generalização de dados.</p>
+                             <div class="flow-diagram bg-amber-50">
+                                <div class="flow-box bg-amber-200 text-amber-900">Particular</div>
+                                <div class="flow-arrow text-amber-600">→</div>
+                                <div class="flow-box bg-amber-500 text-white">Geral</div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="method-card bg-white rounded-lg shadow-md border border-stone-200 cursor-pointer hover:shadow-xl hover:border-teal-300 transition-all duration-300">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-teal-800">Método Dialético</h3>
+                            <p class="text-sm text-stone-500 mt-1">Confronto de ideias.</p>
+                        </div>
+                        <div class="method-card-details px-6 pb-6">
+                            <p class="text-stone-600">Baseia-se no confronto de uma tese (ideia inicial) com uma antítese (ideia oposta) para chegar a uma síntese (nova ideia que supera as anteriores), que pode se tornar uma nova tese.</p>
+                             <div class="flow-diagram bg-stone-100">
+                                <div class="flow-box bg-stone-300 text-stone-900">Tese</div>
+                                <div class="flow-arrow text-stone-600">↔</div>
+                                <div class="flow-box bg-stone-400 text-stone-900">Antítese</div>
+                                <div class="flow-arrow text-stone-600">→</div>
+                                <div class="flow-box bg-stone-600 text-white">Síntese</div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="method-card bg-white rounded-lg shadow-md border border-stone-200 cursor-pointer hover:shadow-xl hover:border-teal-300 transition-all duration-300">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-teal-800">Hipotético-Dedutivo</h3>
+                            <p class="text-sm text-stone-500 mt-1">Teste de hipóteses.</p>
+                        </div>
+                         <div class="method-card-details px-6 pb-6">
+                            <p class="text-stone-600">Proposto por Popper, inicia-se com um problema, para o qual se propõe uma conjectura (hipótese). A pesquisa então busca falsear (refutar) essa hipótese através de testes empíricos rigorosos.</p>
+                            <div class="flow-diagram bg-red-50 flex-wrap">
+                                <div class="flow-box bg-red-200 text-red-900">Problema</div>
+                                <div class="flow-arrow text-red-600">→</div>
+                                <div class="flow-box bg-red-300 text-red-900">Hipótese</div>
+                                <div class="flow-arrow text-red-600">→</div>
+                                <div class="flow-box bg-red-500 text-white">Tentativa de Falseamento</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="method-card bg-white rounded-lg shadow-md border border-stone-200 cursor-pointer hover:shadow-xl hover:border-teal-300 transition-all duration-300">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-teal-800">Método Fenomenológico</h3>
+                             <p class="text-sm text-stone-500 mt-1">Foco na consciência e experiência.</p>
+                        </div>
+                        <div class="method-card-details px-6 pb-6">
+                            <p class="text-stone-600">Busca descrever e compreender a essência dos fenômenos como são percebidos pela consciência. Não se preocupa com causa e efeito, mas com o significado da experiência vivida.</p>
+                        </div>
+                    </div>
+
+                    <div class="method-card bg-white rounded-lg shadow-md border border-stone-200 cursor-pointer hover:shadow-xl hover:border-teal-300 transition-all duration-300">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-teal-800">Método Histórico</h3>
+                            <p class="text-sm text-stone-500 mt-1">Análise do passado.</p>
+                        </div>
+                        <div class="method-card-details px-6 pb-6">
+                            <p class="text-stone-600">Consiste em investigar eventos passados para compreender sua influência no presente e, potencialmente, no futuro. Analisa processos, instituições e ideias ao longo do tempo.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="approaches" class="mb-16">
+                 <h2 class="text-3xl font-bold text-center text-teal-700 mb-8">Vertentes de Estudo</h2>
+                <p class="max-w-3xl mx-auto text-center text-stone-600 mb-10">
+                    Além do método, a pesquisa se orienta por uma "vertente" ou abordagem, que define a natureza dos dados e o tipo de análise. Aqui, comparamos as abordagens quantitativa, qualitativa e a combinação de ambas. Cada uma oferece uma perspectiva diferente para entender a realidade, seja medindo e generalizando, seja interpretando e aprofundando.
+                </p>
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-teal-500">
+                        <h3 class="text-2xl font-bold text-teal-700 mb-4">Pesquisa Quantitativa</h3>
+                        <ul class="space-y-3 text-stone-600 list-disc list-inside">
+                            <li><strong>Objetivo:</strong> Mensurar, quantificar e generalizar resultados.</li>
+                            <li><strong>Hipótese:</strong> Pré-concebida e testada estatisticamente.</li>
+                            <li><strong>Dados:</strong> Numéricos, coletados de forma estruturada (questionários, etc.).</li>
+                            <li><strong>Análise:</strong> Estatística, buscando correlações e causalidade.</li>
+                            <li><strong>Amostra:</strong> Exige cálculo amostral para garantir representatividade.</li>
+                            <li><strong>Foco:</strong> Generalização dos resultados para uma população maior.</li>
+                             <li><strong>Uso:</strong> Comum na área da Saúde para estudos epidemiológicos e ensaios clínicos.</li>
+                        </ul>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-amber-500">
+                        <h3 class="text-2xl font-bold text-amber-700 mb-4">Pesquisa Qualitativa</h3>
+                        <ul class="space-y-3 text-stone-600 list-disc list-inside">
+                            <li><strong>Objetivo:</strong> Compreender e interpretar a singularidade de um fenômeno.</li>
+                            <li><strong>Hipótese:</strong> Construída durante ou após a observação, não é pré-concebida.</li>
+                            <li><strong>Dados:</strong> Descritivos (entrevistas, observações, textos).</li>
+                            <li><strong>Análise:</strong> Interpretativa, buscando significados e padrões.</li>
+                            <li><strong>Amostra:</strong> Não exige cálculo, selecionada por relevância.</li>
+                            <li><strong>Foco:</strong> Aprofundamento e compreensão da complexidade de um caso.</li>
+                            <li><strong>Passos:</strong> Observação, descrição, compreensão e significado.</li>
+                        </ul>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-lg border-t-4 border-stone-500">
+                        <h3 class="text-2xl font-bold text-stone-700 mb-4">Pesquisa Quanti-Qualitativa</h3>
+                        <p class="text-stone-600 mb-4">Alia postulados de ambas as vertentes de forma complementar, permitindo uma análise mais ampla e complexa do objeto de estudo.</p>
+                        <p class="text-stone-600 font-semibold mb-2">Método chave: Triangulação</p>
+                        <div class="triangulation-diagram">
+                            <div class="tri-line" style="top: 20px; left: 20px; width: 110px; height: 3px; background-color:#a3a3a3; transform: rotate(90deg) translate(25px, -75px);"></div>
+                            <div class="tri-line" style="bottom: 20px; left: 20px; width: 110px; height: 3px; background-color:#a3a3a3;"></div>
+                            <div class="tri-line" style="top: 75px; right: -25px; width: 110px; height: 3px; background-color:#a3a3a3; transform: rotate(60deg) translate(0, 0);"></div>
+                             <div class="tri-line" style="top: 75px; left: -25px; width: 110px; height: 3px; background-color:#a3a3a3; transform: rotate(-60deg) translate(0, 0);"></div>
+
+                            <div class="tri-point tri-point-a bg-teal-600">A</div>
+                            <div class="tri-point tri-point-b bg-amber-600">B</div>
+                            <div class="tri-point tri-point-c bg-stone-600">C</div>
+                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-lg text-teal-800">α</div>
+                             <div class="absolute top-1/2 left-1/2 translate-x-1/2 -translate-y-1/4 font-bold text-lg text-amber-800">β</div>
+                        </div>
+                        <p class="text-xs text-center text-stone-500">Diagrama conceitual da Triangulação</p>
+                    </div>
+                </div>
+            </section>
+
+             <section id="comparison-chart" class="mb-16">
+                <h2 class="text-3xl font-bold text-center text-teal-700 mb-8">Comparativo Visual: Quanti vs. Quali</h2>
+                 <p class="max-w-3xl mx-auto text-center text-stone-600 mb-10">
+                    As diferenças entre as abordagens quantitativa e qualitativa podem ser abstratas. Este gráfico interativo oferece uma forma visual de comparar seus focos principais. Passe o mouse sobre as barras para ver como cada abordagem se posiciona em relação a conceitos como generalização, busca pela singularidade, uso de hipóteses e tipo de análise.
+                </p>
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <div class="chart-container">
+                        <canvas id="quantiQualiChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+             <section id="reflection" class="mb-12">
+                <h2 class="text-3xl font-bold text-center text-teal-700 mb-8">Reflexão: A Ciência Através do Tempo</h2>
+                 <p class="max-w-3xl mx-auto text-center text-stone-600 mb-10">
+                    Para finalizar, uma reflexão sobre a prática científica. Esta ilustração provoca uma comparação entre as motivações percebidas dos cientistas do passado e do presente, convidando a pensar sobre os objetivos e pressões do mundo acadêmico atual.
+                </p>
+                <div class="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md border border-stone-200">
+                    <div class="border-r-0 md:border-r-2 border-stone-200 pr-4">
+                        <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">Cientista do Século XIX</h3>
+                        <div class="flex justify-center items-center h-full">
+                            <p class="text-center italic text-lg text-stone-600">"Eu devo encontrar uma explicação para este fenômeno, a fim de compreender verdadeiramente a natureza..."</p>
+                        </div>
+                    </div>
+                     <div class="mt-6 md:mt-0">
+                        <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">Cientista do Século XXI</h3>
+                        <div class="flex justify-center items-center h-full">
+                            <p class="text-center italic text-lg text-stone-600">"Eu devo obter o resultado que se encaixe na minha narrativa para que eu possa submeter o meu artigo na Nature..."</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center mt-4 text-sm text-stone-500">Fonte: A Geração Ciência</p>
+            </section>
+
+        </main>
+
+        <footer class="text-center py-6 border-t border-stone-200 mt-8">
+            <p class="text-stone-500">Aplicação interativa criada para fins educacionais.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const methodCards = document.querySelectorAll('.method-card');
+            methodCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('open');
+                });
+            });
+
+            const ctx = document.getElementById('quantiQualiChart').getContext('2d');
+            const quantiQualiChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Foco na Generalização', 
+                        'Foco na Singularidade', 
+                        'Análise Numérica', 
+                        'Análise Interpretativa', 
+                        'Hipótese Prévia', 
+                        'Hipótese Emergente'
+                    ],
+                    datasets: [{
+                        label: 'Pesquisa Quantitativa',
+                        data: [10, 2, 10, 3, 10, 1],
+                        backgroundColor: 'rgba(13, 148, 136, 0.7)',
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Pesquisa Qualitativa',
+                        data: [2, 10, 1, 10, 2, 10],
+                        backgroundColor: 'rgba(217, 119, 6, 0.7)',
+                        borderColor: 'rgba(217, 119, 6, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Foco das Abordagens de Pesquisa',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    let value = context.raw;
+                                    let strength = 'Baixo';
+                                    if (value > 3 && value <= 7) strength = 'Médio';
+                                    if (value > 7) strength = 'Alto';
+                                    label += strength + ' (' + value + ')';
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 11,
+                            ticks: {
+                                display: false
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                           ticks: {
+                                font: {
+                                    size: 10
+                                }
+                           }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
