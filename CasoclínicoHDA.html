@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Interativo do Caso Clínico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: A dashboard-style, single-page application with a top navigation bar for smooth scrolling. The structure is thematic, breaking down the clinical case into logical sections (Overview, Symptoms, Vitals, Labs, Diagnosis, Plan) rather than following the report's linear SOAP format. This approach allows users to quickly jump to the information they need, with key data like lab results visualized in an interactive chart for rapid interpretation. A toggle between chart and table view for labs provides flexibility. This non-linear, visual-first design is chosen for enhanced usability and faster comprehension of complex medical data. -->
+    <!-- Visualization & Content Choices: Report Info: Lab Results (Hemoglobin, Hematocrit, GGT, AST). Goal: Compare patient values against reference ranges to highlight abnormalities. Viz/Presentation: Interactive vertical bar chart using Chart.js on a Canvas element, with abnormal values color-coded. A toggleable HTML table provides detailed data. Interaction: Hover tooltips on the chart for precise values; a button to switch between chart and table. Justification: Visual comparison via a chart is significantly faster and more intuitive than reading a table. Providing both views caters to different user needs. Library/Method: Chart.js/Canvas. Report Info: Treatment Plan. Goal: Organize the steps chronologically and clearly. Viz/Presentation: Styled HTML ordered list with icons. Interaction: None needed, clarity is key. Justification: A simple, clean list is the most effective way to present a procedural plan. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #3d3d3d;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #c0392b;
+            border-bottom-color: #c0392b;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl font-bold text-slate-700">Caso Clínico: H.M.S.B.</h1>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#overview" class="nav-link font-medium text-slate-600 pb-1">Visão Geral</a>
+                    <a href="#examination" class="nav-link font-medium text-slate-600 pb-1">Exame Físico</a>
+                    <a href="#labs" class="nav-link font-medium text-slate-600 pb-1">Laboratório</a>
+                    <a href="#plan" class="nav-link font-medium text-slate-600 pb-1">Plano</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="overview" class="mb-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Visão Geral do Caso</h2>
+            <p class="text-slate-600 mb-6 max-w-3xl">
+                Esta seção apresenta as informações de identificação da paciente e sua queixa principal. O objetivo é fornecer um contexto rápido sobre quem é a paciente e o motivo que a levou ao atendimento, destacando os sintomas chave de hematêmese e melena.
+            </p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="font-semibold text-lg text-slate-700 mb-3">👤 Identificação</h3>
+                    <div class="space-y-2 text-slate-600">
+                        <p><strong>Iniciais:</strong> H.M.S.B.</p>
+                        <p><strong>Idade:</strong> 72 anos</p>
+                        <p><strong>Sexo:</strong> Feminino</p>
+                        <p><strong>Residência:</strong> Caruaru (PE)</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 md:col-span-2 lg:col-span-2">
+                    <h3 class="font-semibold text-lg text-slate-700 mb-3">🗨️ Queixa Principal e História</h3>
+                    <blockquote class="border-l-4 border-red-400 pl-4 py-2 bg-red-50 rounded-r-lg mb-4">
+                        <p class="text-lg italic text-red-800">"Estou vomitando sangue e minhas fezes estão pretas há 5 dias."</p>
+                    </blockquote>
+                    <p class="text-slate-600">
+                        Paciente etilista crônica, com início súbito de <strong class="text-slate-700">hematêmese</strong> (vômito com sangue) e <strong class="text-slate-700">melena</strong> (fezes escuras). Nega outras doenças crônicas, uso de medicamentos ou alergias.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="examination" class="mb-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Exame Físico e Sinais Vitais</h2>
+            <p class="text-slate-600 mb-6 max-w-3xl">
+                Aqui são detalhados os achados objetivos do exame físico e a medição dos sinais vitais. Estas informações fornecem uma imagem do estado clínico atual da paciente, destacando sinais importantes como a palidez (hipocorada) e a estabilidade de seus sinais vitais no momento da avaliação.
+            </p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+                    <p class="text-4xl mb-2">🎯</p>
+                    <h4 class="font-semibold text-slate-700">Estado Geral</h4>
+                    <p class="text-slate-500 text-sm">Consciente, orientada, hipocorada 2+/4+</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+                    <p class="text-4xl mb-2">❤️</p>
+                    <h4 class="font-semibold text-slate-700">Frequência Cardíaca</h4>
+                    <p class="text-slate-500 text-2xl font-bold">72 <span class="text-sm font-normal">bpm</span></p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+                    <p class="text-4xl mb-2">💨</p>
+                    <h4 class="font-semibold text-slate-700">Pressão Arterial</h4>
+                    <p class="text-slate-500 text-2xl font-bold">106x80 <span class="text-sm font-normal">mmHg</span></p>
+                </div>
+                 <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100 text-center">
+                    <p class="text-4xl mb-2">🌡️</p>
+                    <h4 class="font-semibold text-slate-700">Saturação O₂</h4>
+                    <p class="text-slate-500 text-2xl font-bold">99% <span class="text-sm font-normal">em ar amb.</span></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="labs" class="mb-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Análise Laboratorial</h2>
+             <p class="text-slate-600 mb-6 max-w-3xl">
+                Esta seção oferece uma visualização interativa dos resultados laboratoriais. O gráfico destaca os valores anormais para uma rápida identificação dos problemas (anemia e possível lesão hepática). Use o botão para alternar entre a visualização gráfica e a tabela detalhada com todos os resultados.
+            </p>
+            <div class="text-center mb-6">
+                <button id="toggleViewBtn" class="bg-slate-700 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-slate-800 transition-colors">
+                    Ver Tabela Detalhada
+                </button>
+            </div>
+            
+            <div id="chartView">
+                <div class="chart-container bg-white p-4 rounded-xl shadow-md border border-gray-100">
+                    <canvas id="labChart"></canvas>
+                </div>
+            </div>
+
+            <div id="tableView" class="hidden">
+                <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100 overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-100">
+                            <tr>
+                                <th class="p-3 font-semibold text-slate-600">Exame</th>
+                                <th class="p-3 font-semibold text-slate-600">Resultado</th>
+                                <th class="p-3 font-semibold text-slate-600">Referência</th>
+                                <th class="p-3 font-semibold text-slate-600">Interpretação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="labTableBody" class="divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <section id="plan" class="mb-12">
+             <h2 class="text-3xl font-bold text-slate-800 mb-2">Avaliação e Plano Terapêutico</h2>
+             <p class="text-slate-600 mb-6 max-w-3xl">
+                Finalmente, esta seção resume as conclusões da equipe médica e o plano de ação estabelecido. As hipóteses diagnósticas são apresentadas claramente, seguidas por um passo a passo visual do tratamento planejado, desde a estabilização inicial até o diagnóstico definitivo e monitorização.
+            </p>
+
+            <div class="grid md:grid-cols-5 gap-8">
+                <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="font-semibold text-lg text-slate-700 mb-4">🤔 Avaliação Diagnóstica</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <span class="text-red-500 font-bold text-xl mr-3">1.</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Hemorragia Digestiva Alta (HDA)</h4>
+                                <p class="text-sm text-slate-500">Principal hipótese devido à hematêmese e melena. Causa provável: varizes esofágicas por doença hepática alcoólica.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="text-red-500 font-bold text-xl mr-3">2.</span>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Anemia Aguda</h4>
+                                <p class="text-sm text-slate-500">Secundária à perda de sangue, confirmada por exames.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="md:col-span-3 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                     <h3 class="font-semibold text-lg text-slate-700 mb-4">📋 Plano de Ação</h3>
+                     <ol class="space-y-4">
+                         <li class="flex items-center">
+                            <div class="flex-shrink-0 bg-slate-200 text-slate-700 h-10 w-10 rounded-full flex items-center justify-center font-bold text-lg mr-4">1</div>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Estabilização</h4>
+                                <p class="text-sm text-slate-500">Dieta zero, hemotransfusão e hidratação venosa.</p>
+                            </div>
+                         </li>
+                         <li class="flex items-center">
+                            <div class="flex-shrink-0 bg-slate-200 text-slate-700 h-10 w-10 rounded-full flex items-center justify-center font-bold text-lg mr-4">2</div>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Medicação</h4>
+                                <p class="text-sm text-slate-500">IBP endovenoso, Transamin e Vitamina K.</p>
+                            </div>
+                         </li>
+                         <li class="flex items-center">
+                            <div class="flex-shrink-0 bg-slate-200 text-slate-700 h-10 w-10 rounded-full flex items-center justify-center font-bold text-lg mr-4">3</div>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Diagnóstico</h4>
+                                <p class="text-sm text-slate-500">Aguardar Endoscopia Digestiva Alta (EDA).</p>
+                            </div>
+                         </li>
+                         <li class="flex items-center">
+                            <div class="flex-shrink-0 bg-slate-200 text-slate-700 h-10 w-10 rounded-full flex items-center justify-center font-bold text-lg mr-4">4</div>
+                            <div>
+                                <h4 class="font-semibold text-slate-700">Monitorização</h4>
+                                <p class="text-sm text-slate-500">Sinais vitais, débito urinário e novos exames.</p>
+                            </div>
+                         </li>
+                     </ol>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const labData = {
+                hemoglobina: { value: 7.8, ref: [12, 16], unit: 'g/dL' },
+                hematocrito: { value: 25, ref: [36, 48], unit: '%' },
+                leucocitos: { value: 4410, ref: [4000, 11000], unit: '/mm³' },
+                plaquetas: { value: 143000, ref: [150000, 450000], unit: '/mm³' },
+                inr: { value: 1.0, ref: [0.8, 1.2], unit: '' },
+                ast_tgo: { value: 69, ref: [5, 40], unit: 'U/L' },
+                alt_tgp: { value: 29, ref: [7, 56], unit: 'U/L' },
+                ggt: { value: 327, ref: [5, 38], unit: 'U/L' },
+                fa: { value: 125, ref: [40, 129], unit: 'U/L' },
+            };
+
+            const fullLabData = [
+                { name: 'Hemoglobina', value: '7,8 g/dL', ref: '12-16 g/dL', interpretation: '<span class="text-red-600 font-semibold">Baixo!</span> Indica anemia.' },
+                { name: 'Hematócrito', value: '25%', ref: '36-48%', interpretation: '<span class="text-red-600 font-semibold">Baixo!</span> Confirma anemia.' },
+                { name: 'Leucócitos', value: '4.410/mm³', ref: '4.000-11.000/mm³', interpretation: 'Normal.' },
+                { name: 'Plaquetas', value: '143.000/mm³', ref: '150-450 mil/mm³', interpretation: 'Levemente reduzido.' },
+                { name: 'INR', value: '1,0', ref: '~1,0', interpretation: 'Normal.' },
+                { name: 'Bilirrubinas (T/D)', value: '0,45 / 0,25', ref: '< 1.2 / < 0.3', interpretation: 'Normal.' },
+                { name: 'AST (TGO)', value: '69 U/L', ref: '< 40 U/L', interpretation: '<span class="text-amber-600 font-semibold">Elevado!</span> Sugere dano hepático.' },
+                { name: 'ALT (TGP)', value: '29 U/L', ref: '< 56 U/L', interpretation: 'Normal.' },
+                { name: 'GGT', value: '327 U/L', ref: '< 38 U/L', interpretation: '<span class="text-amber-600 font-semibold">Elevado!</span> Sugere dano hepático.' },
+                { name: 'Fosfatase Alcalina', value: '125 U/L', ref: '40-129 U/L', interpretation: 'Normal/Limítrofe.' },
+                { name: 'Ureia/Creatinina', value: '40 / 0,7', ref: '13-43 / 0.6-1.3', interpretation: 'Normal.' },
+            ];
+
+            const tableBody = document.getElementById('labTableBody');
+            fullLabData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="p-3 text-slate-700 font-medium">${item.name}</td>
+                    <td class="p-3 text-slate-600">${item.value}</td>
+                    <td class="p-3 text-slate-600">${item.ref}</td>
+                    <td class="p-3 text-slate-600">${item.interpretation}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            const chartData = {
+                labels: ['Hemoglobina', 'Hematócrito', 'AST (TGO)', 'GGT'],
+                datasets: [
+                    {
+                        label: 'Resultado da Paciente',
+                        data: [labData.hemoglobina.value, labData.hematocrito.value, labData.ast_tgo.value, labData.ggt.value],
+                        backgroundColor: [
+                            'rgba(220, 38, 38, 0.6)', // red
+                            'rgba(220, 38, 38, 0.6)', // red
+                            'rgba(245, 158, 11, 0.6)', // amber
+                            'rgba(245, 158, 11, 0.6)', // amber
+                        ],
+                        borderColor: [
+                            'rgba(220, 38, 38, 1)',
+                            'rgba(220, 38, 38, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(245, 158, 11, 1)',
+                        ],
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Valor de Referência (Máximo)',
+                        data: [labData.hemoglobina.ref[1], labData.hematocrito.ref[1], labData.ast_tgo.ref[1], labData.ggt.ref[1]],
+                        backgroundColor: 'rgba(100, 116, 139, 0.2)',
+                        borderColor: 'rgba(100, 116, 139, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+            
+            const ctx = document.getElementById('labChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#475569'
+                            },
+                             grid: {
+                                color: '#e2e8f0'
+                            }
+                        },
+                        x: {
+                             ticks: {
+                                color: '#475569'
+                            },
+                             grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                             labels: {
+                                color: '#334155'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Resultados Laboratoriais Críticos vs. Referência',
+                            font: {
+                                size: 16
+                            },
+                            color: '#1e293b',
+                            padding: {
+                                bottom: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const toggleBtn = document.getElementById('toggleViewBtn');
+            const chartView = document.getElementById('chartView');
+            const tableView = document.getElementById('tableView');
+
+            toggleBtn.addEventListener('click', () => {
+                const isChartVisible = !chartView.classList.contains('hidden');
+                if (isChartVisible) {
+                    chartView.classList.add('hidden');
+                    tableView.classList.remove('hidden');
+                    toggleBtn.textContent = 'Ver Gráfico Interativo';
+                } else {
+                    chartView.classList.remove('hidden');
+                    tableView.classList.add('hidden');
+                    toggleBtn.textContent = 'Ver Tabela Detalhada';
+                }
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
