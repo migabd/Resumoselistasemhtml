@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Resumos</title>
+    <style>
+        /* --- Estilos Gerais --- */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Gradiente de fundo claro */
+            color: #333; /* Cor do texto principal (escuro) */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- Container Principal --- */
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9); /* Fundo branco semi-transparente */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        /* --- Cabeçalho --- */
+        header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2c3e50; /* Cor do título (azul escuro) */
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #555; /* Cor do subtítulo (cinza escuro) */
+            margin-bottom: 40px;
+        }
+
+        /* --- Barra de Pesquisa --- */
+        .search-container {
+            margin-bottom: 40px;
+        }
+
+        #searchInput {
+            width: 80%;
+            padding: 15px;
+            font-size: 1em;
+            border: 2px solid #dcdcdc; /* Borda cinza claro */
+            border-radius: 25px;
+            background-color: #fff;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+        }
+
+        #searchInput::placeholder {
+            color: #aaa;
+        }
+
+        /* --- Grade de Botões --- */
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* --- Estilo dos Botões de Link --- */
+        .button {
+            display: block;
+            padding: 20px;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #3498db; /* Cor do texto do botão (azul) */
+            background-color: #ffffff; /* Fundo do botão (branco) */
+            border-radius: 10px;
+            border: 2px solid #3498db; /* Borda do botão (azul) */
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .button:hover {
+            transform: translateY(-5px);
+            background-color: #3498db; /* Cor de fundo ao passar o mouse (azul) */
+            color: #ffffff; /* Cor do texto ao passar o mouse (branco) */
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Meus Resumos e Listas</h1>
+            <p>Selecione um tópico ou utilize a barra de pesquisa para filtrar.</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" onkeyup="filterButtons()" placeholder="Pesquisar por título...">
+        </div>
+
+        <nav class="button-grid" id="buttonGrid">
+            <a href="Concentração.html" class="button">Concentração</a>
+            <a href="Exame físico neurológico.html" class="button">Exame Físico Neurológico</a>
+            <a href="Questões de sono.html" class="button">Questões de Sono</a>
+            <a href="Transtornos de sono.html" class="button">Transtornos de Sono</a>
+            <a href="Aula2transversal.html" class="button">Aula 2 Transversal</a>
+            <a href="CasoclínicoHDA.html" class="button">Caso Clínico HDA</a>
+            <a href="HDA.html" class="button">HDA</a>
+            <a href="Aula3transversal.html" class="button">Aula 3 Transversal</a>
+            <a href="dependência química.html" class="button">Dependência Química</a>
+            <a href="Cessarotabagismo.html" class="button">Cessar o Tabagismo</a>
+            <a href="disunçõessexuais.html" class="button">Disfunções Sexuais</a>
+        </nav>
+    </div>
+
+    <script>
+        // --- Lógica da Barra de Pesquisa ---
+        function filterButtons() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const grid = document.getElementById('buttonGrid');
+            const buttons = grid.getElementsByTagName('a');
+
+            for (let i = 0; i < buttons.length; i++) {
+                const button = buttons[i];
+                const textValue = button.textContent || button.innerText;
+
+                if (textValue.toUpperCase().indexOf(filter) > -1) {
+                    button.style.display = "";
+                } else {
+                    button.style.display = "none";
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
+
+
