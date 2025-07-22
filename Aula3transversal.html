@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chosen Palette: Calm Academia -->
+    <!-- Application Structure Plan: A single-page, scrollable application designed as an interactive learning guide. The structure flows from a general introduction to a deep dive into each data type (using tabs for clear separation), followed by a practical decision-making tool, and concludes with a visual summary chart. This task-oriented flow was chosen over mirroring the linear slide deck to enhance user engagement and comprehension, allowing users to explore concepts non-linearly and apply their knowledge within the app itself. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Primary vs. Secondary Data definitions. Goal: Inform. Viz/Method: Interactive cards with icons. Interaction: Click to reveal details. Justification: Breaks down information into digestible chunks. Library: Vanilla JS.
+        - Report Info: Pros and Cons of each data type. Goal: Compare. Viz/Method: Radar Chart. Interaction: Static visualization. Justification: Provides an immediate, multi-dimensional visual comparison of trade-offs (cost, time, control, relevance), which is more impactful than a simple list. Library: Chart.js.
+        - Report Info: The choice between data types. Goal: Organize/Guide. Viz/Method: A step-by-step decision helper diagram built with HTML/Tailwind. Interaction: User clicks buttons to answer questions, revealing the recommended data path. Justification: Transforms abstract concepts into a practical, guided experience, reinforcing learning. Library: Vanilla JS.
+        - Report Info: Data collection methods and sources. Goal: Inform. Viz/Method: Toggled content panels within tabs. Interaction: Clicking on method/source cards. Justification: Organizes detailed information neatly without cluttering the main view. Library: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <title>Guia Interativo de Tipologia de Dados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #333;
+        }
+        .tab-active {
+            background-color: #2c3e50;
+            color: #ffffff;
+            border-color: #2c3e50;
+        }
+        .tab-inactive {
+            background-color: #ffffff;
+            color: #2c3e50;
+            border-color: #e0e0e0;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4">
+            <h1 class="text-3xl font-bold text-center text-[#2c3e50]">Guia Interativo de Tipologia de Dados na Pesquisa</h1>
+            <p class="text-center text-gray-600 mt-2">Uma ferramenta para entender e escolher entre dados primários e secundários.</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="introduction" class="text-center mb-16">
+            <h2 class="text-2xl font-semibold text-[#2c3e50] mb-4">O Ponto de Partida de Toda Pesquisa</h2>
+            <p class="max-w-3xl mx-auto text-gray-700">
+                A escolha do tipo de dado é uma decisão metodológica fundamental que molda o futuro de uma investigação. Este guia interativo descomplica os conceitos de dados primários e secundários, apresentados na aula do Prof. Dr. João Luís da Silva (UFPE), ajudando você a navegar por suas vantagens, desvantagens e aplicações práticas.
+            </p>
+        </section>
+
+        <section id="core-concepts" class="mb-16">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+                    <div class="text-5xl mb-4">🌱</div>
+                    <h3 class="text-xl font-bold text-[#2c3e50] mb-2">Dados Primários</h3>
+                    <p class="text-gray-600">São informações inéditas, coletadas pelo próprio pesquisador para atender aos objetivos específicos da sua pesquisa. Eles não existiam antes do estudo começar.</p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+                    <div class="text-5xl mb-4">📚</div>
+                    <h3 class="text-xl font-bold text-[#2c3e50] mb-2">Dados Secundários</h3>
+                    <p class="text-gray-600">São informações que já existem, coletadas anteriormente por outras pessoas ou instituições para outros fins, e que são reaproveitadas em uma nova pesquisa.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="deep-dive" class="bg-gray-50 p-8 rounded-lg shadow-inner mb-16">
+            <h2 class="text-2xl font-semibold text-center text-[#2c3e50] mb-2">Explore cada Tipo de Dado</h2>
+            <p class="text-center text-gray-600 mb-8">Clique nas abas abaixo para um mergulho profundo nas características, métodos de coleta e fontes de cada tipo de dado.</p>
+            
+            <div class="flex justify-center mb-8 border-b-2 border-gray-200">
+                <button id="tab-primary" class="tab-active text-lg font-semibold py-3 px-6 rounded-t-lg focus:outline-none">Dados Primários</button>
+                <button id="tab-secondary" class="tab-inactive text-lg font-semibold py-3 px-6 rounded-t-lg focus:outline-none">Dados Secundários</button>
+            </div>
+
+            <div id="content-primary">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-bold text-lg text-[#2c3e50] mb-3">Métodos de Coleta</h4>
+                        <p class="text-gray-700 mb-4">A coleta de dados primários é um processo ativo. O pesquisador vai a campo para gerar suas próprias informações, utilizando diversas ferramentas:</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <span class="text-xl mr-3 text-[#4db6ac]">📝</span>
+                                <div><strong class="text-gray-800">Questionários:</strong> Instrumentos elaborados pelo pesquisador para capturar informações específicas através de perguntas diretas.</div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-xl mr-3 text-[#4db6ac]">📏</span>
+                                <div><strong class="text-gray-800">Medidas Antropométricas:</strong> Aferições físicas como peso, altura e circunferências para avaliar o estado nutricional e de saúde.</div>
+                            </li>
+                             <li class="flex items-start">
+                                <span class="text-xl mr-3 text-[#4db6ac]">🔬</span>
+                                <div><strong class="text-gray-800">Exames Laboratoriais:</strong> Coleta de amostras biológicas (sangue, urina) para análises bioquímicas e de imagem.</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-[#2c3e50] mb-3">Vantagens e Desvantagens</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="font-semibold text-green-600">Vantagens</h5>
+                                <ul class="list-disc list-inside text-gray-700">
+                                    <li>Maior controle sobre a qualidade dos dados.</li>
+                                    <li>Dados atualizados e diretamente relevantes para a pesquisa.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-red-600">Desvantagens</h5>
+                                <ul class="list-disc list-inside text-gray-700">
+                                    <li>Custo financeiro mais elevado.</li>
+                                    <li>Exige mais tempo para planejamento e coleta.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-secondary" class="hidden">
+                 <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-bold text-lg text-[#2c3e50] mb-3">Principais Fontes</h4>
+                        <p class="text-gray-700 mb-4">Dados secundários são encontrados em grandes repositórios, geralmente mantidos por instituições governamentais ou internacionais:</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <span class="text-xl mr-3 text-[#4db6ac]">🇧🇷</span>
+                                <div><strong class="text-gray-800">DATASUS:</strong> O Departamento de Informática do SUS, com dados de mortalidade (SIM), nascimentos (SINASC), internações (SIH) e muito mais.</div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-xl mr-3 text-[#4db6ac]">📊</span>
+                                <div><strong class="text-gray-800">IBGE:</strong> Instituto Brasileiro de Geografia e Estatística, fonte de pesquisas populacionais como a Pesquisa Nacional de Saúde (PNS).</div>
+                            </li>
+                             <li class="flex items-start">
+                                <span class="text-xl mr-3 text-[#4db6ac]">🌐</span>
+                                <div><strong class="text-gray-800">OMS (WHO):</strong> A Organização Mundial da Saúde, que compila dados de saúde de todos os países membros.</div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg text-[#2c3e50] mb-3">Vantagens e Desvantagens</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <h5 class="font-semibold text-green-600">Vantagens</h5>
+                                <ul class="list-disc list-inside text-gray-700">
+                                    <li>Financeiramente mais baratos (ou gratuitos).</li>
+                                    <li>Coleta de dados muito mais rápida (já estão prontos).</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold text-red-600">Desvantagens</h5>
+                                <ul class="list-disc list-inside text-gray-700">
+                                    <li>Menor controle do pesquisador sobre a coleta e qualidade.</li>
+                                    <li>Podem estar desatualizados ou ser irrelevantes para a pergunta específica.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="decision-tool" class="mb-16">
+            <h2 class="text-2xl font-semibold text-center text-[#2c3e50] mb-2">Qual tipo de dado usar?</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Responda à pergunta abaixo para receber uma recomendação. Esta é uma ferramenta simplificada para guiar sua decisão inicial.</p>
+            <div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
+                <div id="question-start">
+                    <p class="text-lg font-semibold text-center mb-6">A sua pergunta de pesquisa pode ser respondida com dados que já existem em fontes como DATASUS, IBGE ou artigos científicos?</p>
+                    <div class="flex justify-center gap-4">
+                        <button onclick="showRecommendation('secondary')" class="bg-[#4db6ac] text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-600 transition">Sim</button>
+                        <button onclick="showRecommendation('primary')" class="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400 transition">Não / Não sei</button>
+                    </div>
+                </div>
+                <div id="recommendation-primary" class="hidden text-center">
+                     <div class="text-5xl mb-4">🌱</div>
+                    <h4 class="text-xl font-bold text-[#2c3e50] mb-2">Recomendação: Dados Primários</h4>
+                    <p class="text-gray-700">Parece que você precisa de informações inéditas e específicas. O caminho ideal é planejar a coleta de seus próprios dados. Isso lhe dará máximo controle e relevância, mas prepare-se para um maior investimento de tempo e recursos.</p>
+                    <button onclick="resetTool()" class="mt-6 text-sm text-[#2c3e50] hover:underline">Recomeçar</button>
+                </div>
+                 <div id="recommendation-secondary" class="hidden text-center">
+                    <div class="text-5xl mb-4">📚</div>
+                    <h4 class="text-xl font-bold text-[#2c3e50] mb-2">Recomendação: Dados Secundários</h4>
+                    <p class="text-gray-700">Excelente! Aproveitar dados já existentes é uma forma eficiente de conduzir pesquisas de alto impacto. Explore as fontes disponíveis, mas lembre-se de avaliar cuidadosamente a qualidade e a adequação dos dados para sua pergunta.</p>
+                    <button onclick="resetTool()" class="mt-6 text-sm text-[#2c3e50] hover:underline">Recomeçar</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison-chart">
+            <h2 class="text-2xl font-semibold text-center text-[#2c3e50] mb-2">Comparativo Visual</h2>
+            <p class="text-center text-gray-600 mb-8">Este gráfico resume o "trade-off" entre dados primários e secundários. Cada eixo representa um fator importante na decisão da pesquisa.</p>
+            <div class="bg-white p-4 sm:p-8 rounded-lg shadow-lg">
+                <div class="chart-container">
+                    <canvas id="comparisonRadarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-4 text-center">
+            <p>Conteúdo adaptado da aula "Natureza (tipologia) dos Dados".</p>
+            <p class="text-sm text-gray-400">Prof. Dr. João Luís da Silva - Universidade Federal de Pernambuco (UFPE), Campus Agreste.</p>
+        </div>
+    </footer>
+
+    <script>
+        const tabPrimary = document.getElementById('tab-primary');
+        const tabSecondary = document.getElementById('tab-secondary');
+        const contentPrimary = document.getElementById('content-primary');
+        const contentSecondary = document.getElementById('content-secondary');
+
+        tabPrimary.addEventListener('click', () => {
+            tabPrimary.classList.add('tab-active');
+            tabPrimary.classList.remove('tab-inactive');
+            tabSecondary.classList.add('tab-inactive');
+            tabSecondary.classList.remove('tab-active');
+
+            contentPrimary.classList.remove('hidden');
+            contentSecondary.classList.add('hidden');
+        });
+
+        tabSecondary.addEventListener('click', () => {
+            tabSecondary.classList.add('tab-active');
+            tabSecondary.classList.remove('tab-inactive');
+            tabPrimary.classList.add('tab-inactive');
+            tabPrimary.classList.remove('tab-active');
+
+            contentSecondary.classList.remove('hidden');
+            contentPrimary.classList.add('hidden');
+        });
+
+        const questionStart = document.getElementById('question-start');
+        const recPrimary = document.getElementById('recommendation-primary');
+        const recSecondary = document.getElementById('recommendation-secondary');
+
+        function showRecommendation(type) {
+            questionStart.classList.add('hidden');
+            if (type === 'primary') {
+                recPrimary.classList.remove('hidden');
+            } else {
+                recSecondary.classList.remove('hidden');
+            }
+        }
+
+        function resetTool() {
+            questionStart.classList.remove('hidden');
+            recPrimary.classList.add('hidden');
+            recSecondary.classList.add('hidden');
+        }
+        
+        const ctx = document.getElementById('comparisonRadarChart').getContext('2d');
+        const comparisonRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Custo Baixo', 'Tempo Rápido', 'Alto Controle', 'Alta Relevância', 'Escala Ampla'],
+                datasets: [{
+                    label: 'Dados Primários',
+                    data: [1, 1, 5, 5, 2],
+                    backgroundColor: 'rgba(77, 182, 172, 0.2)',
+                    borderColor: 'rgba(77, 182, 172, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(77, 182, 172, 1)',
+                }, {
+                    label: 'Dados Secundários',
+                    data: [5, 5, 2, 3, 5],
+                    backgroundColor: 'rgba(44, 62, 80, 0.2)',
+                    borderColor: 'rgba(44, 62, 80, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(44, 62, 80, 1)',
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: '#e0e0e0'
+                        },
+                        grid: {
+                            color: '#e0e0e0'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            max: 5,
+                            stepSize: 1,
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                let value = context.raw;
+                                let description = '';
+                                if (value <= 1) description = 'Muito Baixo';
+                                else if (value === 2) description = 'Baixo';
+                                else if (value === 3) description = 'Médio';
+                                else if (value === 4) description = 'Alto';
+                                else if (value === 5) description = 'Muito Alto';
+                                return label + description;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
+
+
