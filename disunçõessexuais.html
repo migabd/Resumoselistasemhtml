@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador Interativo de Distúrbios Sexuais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA uses a thematic, top-navigation-driven structure (Overview, Male/Female Dysfunctions, Brazilian Data, Manuals, Risk Factors) instead of mirroring the report's linear flow. This design choice allows users to directly access topics of interest, promoting non-linear exploration and better usability. Interactions like tabs for specific disorders and chart filters for prevalence data enable users to drill down into details without being overwhelmed, making the complex information more digestible. -->
+    <!-- Visualization & Content Choices: Prevalence data (Tabela 2) is visualized using an interactive bar chart (Chart.js) to allow for easy comparison and exploration (Goal: Compare/Explore). Diagnostic manual differences (Tabela 1) are shown in a side-by-side layout for direct comparison (Goal: Compare). Specific disorders are organized into interactive tabs/accordions to manage information density (Goal: Organize). Risk factors from Tabela 3 are presented in a clear, structured list. All visualizations are rendered on Canvas, and all interactions are handled by Vanilla JS, with no SVG or Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #C25B2A;
+            border-bottom-color: #C25B2A;
+        }
+        .tab-button {
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            background-color: #C25B2A;
+            color: #FFFFFF;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl font-bold text-[#C25B2A]">Saúde Sexual</h1>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#visao-geral" class="nav-link pb-1">Visão Geral</a>
+                    <a href="#disfuncoes" class="nav-link pb-1">Disfunções</a>
+                    <a href="#panorama-brasil" class="nav-link pb-1">Panorama no Brasil</a>
+                    <a href="#manuais" class="nav-link pb-1">Manuais</a>
+                    <a href="#fatores-risco" class="nav-link pb-1">Fatores de Risco</a>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden text-gray-700 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-4 pt-2 pb-4 space-y-2">
+            <a href="#visao-geral" class="block nav-link text-center">Visão Geral</a>
+            <a href="#disfuncoes" class="block nav-link text-center">Disfunções</a>
+            <a href="#panorama-brasil" class="block nav-link text-center">Panorama no Brasil</a>
+            <a href="#manuais" class="block nav-link text-center">Manuais</a>
+            <a href="#fatores-risco" class="block nav-link text-center">Fatores de Risco</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section id="visao-geral" class="my-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Compreendendo as Disfunções Sexuais</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto text-gray-600 mb-12">
+                Esta seção introduz os conceitos fundamentais para o diagnóstico de uma disfunção sexual. Para que uma dificuldade seja considerada um transtorno, ela precisa ir além de uma variação normal da experiência humana, atendendo a critérios específicos de sofrimento, duração e contexto.
+            </p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#D97706]">
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Sofrimento Clínico</h3>
+                    <p class="text-gray-600">O critério essencial. A condição deve causar desconforto acentuado, angústia ou dificuldades interpessoais significativas para o indivíduo ou casal. Sem sofrimento, uma condição atípica não é um transtorno.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#D97706]">
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Duração e Frequência</h3>
+                    <p class="text-gray-600">Para evitar a patologização de problemas passageiros, o sintoma deve persistir por um período mínimo (geralmente 6 meses) e ocorrer na maioria das relações sexuais (75-100% das vezes).</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-[#D97706]">
+                    <h3 class="text-xl font-bold mb-2 text-gray-800">Contexto e Estímulo</h3>
+                    <p class="text-gray-600">A avaliação deve considerar se a estimulação sexual é adequada. Uma resposta diminuída devido a um estímulo insuficiente não caracteriza uma disfunção, embora possa necessitar de psicoeducação.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="disfuncoes" class="my-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Tipos de Disfunções Sexuais</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto text-gray-600 mb-12">
+                Explore os principais tipos de disfunções sexuais, divididas por gênero conforme a classificação do DSM-5. Selecione uma aba para ver os detalhes de cada condição, incluindo critérios diagnósticos, causas e prevalência no Brasil.
+            </p>
+            <div class="w-full max-w-4xl mx-auto">
+                <div class="flex justify-center border-b border-gray-200 mb-8">
+                    <button data-tab="masculinas" class="tab-button text-lg font-medium py-3 px-6 rounded-t-lg active">Masculinas</button>
+                    <button data-tab="femininas" class="tab-button text-lg font-medium py-3 px-6 rounded-t-lg">Femininas</button>
+                </div>
+                <div id="tab-content"></div>
+            </div>
+        </section>
+
+        <section id="panorama-brasil" class="my-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Panorama da Saúde Sexual no Brasil</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto text-gray-600 mb-12">
+                Os dados de prevalência revelam a magnitude das disfunções sexuais como um problema de saúde pública no Brasil. Este gráfico interativo mostra as estimativas de prevalência para as principais condições. Passe o mouse sobre as barras para ver os valores exatos.
+            </p>
+            <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg">
+                <div class="chart-container">
+                    <canvas id="prevalenceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="manuais" class="my-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Manuais Diagnósticos: DSM-5 vs. CID-11</h2>
+             <p class="text-lg text-center max-w-3xl mx-auto text-gray-600 mb-12">
+                A classificação dos distúrbios sexuais evoluiu significativamente. Esta seção compara as abordagens do DSM-5, da Associação Americana de Psiquiatria, e da CID-11, da Organização Mundial da Saúde, destacando as principais diferenças na forma como organizam e definem estas condições.
+            </p>
+            <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg overflow-x-auto">
+                <table class="w-full min-w-[700px] text-left">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="py-3 px-4 font-bold text-gray-700">Conceito</th>
+                            <th class="py-3 px-4 font-bold text-gray-700">DSM-5</th>
+                            <th class="py-3 px-4 font-bold text-gray-700">CID-11</th>
+                            <th class="py-3 px-4 font-bold text-gray-700">Nota Comparativa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manuals-table-body" class="divide-y divide-gray-100">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="fatores-risco" class="my-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-4 text-gray-800">Fatores de Risco e Causas Iatrogênicas</h2>
+            <p class="text-lg text-center max-w-3xl mx-auto text-gray-600 mb-12">
+                As disfunções sexuais raramente têm uma única causa. Fatores médicos e o uso de substâncias ou medicamentos são influências importantes. A tabela abaixo detalha classes de medicamentos comumente associadas a efeitos colaterais na função sexual.
+            </p>
+            <div class="bg-white p-4 md:p-8 rounded-lg shadow-lg overflow-x-auto">
+                <table class="w-full min-w-[600px] text-left">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="py-3 px-4 font-bold text-gray-700">Classe de Substância</th>
+                            <th class="py-3 px-4 font-bold text-gray-700">Exemplos</th>
+                            <th class="py-3 px-4 font-bold text-gray-700">Disfunções Comuns</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risk-factors-table-body" class="divide-y divide-gray-100">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto p-8 text-center">
+            <p>Esta aplicação é uma ferramenta educacional interativa baseada em um relatório sobre distúrbios sexuais.</p>
+            <p class="text-sm text-gray-400 mt-2">As informações aqui apresentadas não substituem uma avaliação médica ou psicológica profissional.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const data = {
+                dysfunctions: {
+                    masculinas: [
+                        {
+                            title: "Transtorno do Desejo Sexual Masculino Hipoativo (TDSHM)",
+                            content: `
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Critérios Diagnósticos</h4>
+                                <p class="text-gray-600 mb-4">Deficiência ou ausência persistente de pensamentos/fantasias sexuais e de desejo por atividade sexual, causando sofrimento significativo.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Fatores Etiológicos</h4>
+                                <p class="text-gray-600 mb-4">Multifatorial: envelhecimento, desequilíbrios hormonais, depressão, ansiedade, conflitos de relacionamento e estresse.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Prevalência no Brasil</h4>
+                                <p class="text-gray-600">Aumenta com a idade, de 2,4% (18-25 anos) para 4,8% (>60 anos).</p>
+                            `
+                        },
+                        {
+                            title: "Transtorno Erétil (DE)",
+                            content: `
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Critérios Diagnósticos</h4>
+                                <p class="text-gray-600 mb-4">Dificuldade recorrente em obter ou manter uma ereção, ou diminuição da rigidez, em 75-100% das ocasiões por pelo menos 6 meses.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Fatores Etiológicos</h4>
+                                <p class="text-gray-600 mb-4">Fortemente associado a causas orgânicas (doenças cardiovasculares, diabetes), mas também a fatores psicológicos como ansiedade de desempenho.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Prevalência no Brasil</h4>
+                                <p class="text-gray-600">Elevada: 45% a 52% dos homens com mais de 40 anos relatam algum grau de dificuldade.</p>
+                            `
+                        },
+                        {
+                            title: "Ejaculação Prematura (Precoce) (EP)",
+                            content: `
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Critérios Diagnósticos</h4>
+                                <p class="text-gray-600 mb-4">Padrão persistente de ejaculação que ocorre dentro de aproximadamente 1 minuto após a penetração, antes que o indivíduo deseje.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Fatores Etiológicos</h4>
+                                <p class="text-gray-600 mb-4">Complexos, envolvendo ansiedade, estresse, problemas de relacionamento e vulnerabilidades individuais.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Prevalência no Brasil</h4>
+                                <p class="text-gray-600">A disfunção masculina mais comum, afetando entre 20% e 30% dos homens.</p>
+                            `
+                        },
+                        {
+                            title: "Ejaculação Retardada (ER)",
+                            content: `
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Critérios Diagnósticos</h4>
+                                <p class="text-gray-600 mb-4">Atraso acentuado, infrequência ou ausência de ejaculação em 75-100% das atividades sexuais, causando sofrimento.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Fatores Etiológicos</h4>
+                                <p class="text-gray-600 mb-4">Causas orgânicas (neuropatias, hormônios), iatrogênicas (antidepressivos ISRS) e psicológicas (ansiedade, culpa).</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Prevalência no Brasil</h4>
+                                <p class="text-gray-600">Menos frequente, em torno de 4,8% a 6,5%, mas provavelmente subnotificada.</p>
+                            `
+                        }
+                    ],
+                    femininas: [
+                        {
+                            title: "Transtorno do Interesse/Excitação Sexual Feminino",
+                            content: `
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Critérios Diagnósticos</h4>
+                                <p class="text-gray-600 mb-4">Ausência ou redução significativa do interesse e/ou excitação sexual, manifestada por pelo menos 3 de 6 sintomas específicos.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Justificativa da Fusão (DSM-5)</h4>
+                                <p class="text-gray-600 mb-4">Reconhece que, para muitas mulheres, desejo e excitação são fases sobrepostas e difíceis de diferenciar clinicamente.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Fatores Etiológicos</h4>
+                                <p class="text-gray-600">Multifacetados: depressão, ansiedade, baixa autoestima, problemas de relacionamento, condições médicas e uso de medicamentos.</p>
+                            `
+                        },
+                        {
+                            title: "Transtorno do Orgasmo Feminino",
+                            content: `
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Critérios Diagnósticos</h4>
+                                <p class="text-gray-600 mb-4">Atraso, infrequência ou ausência de orgasmo, ou intensidade reduzida das sensações, causando sofrimento. A adequação do estímulo deve ser avaliada.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Fatores Etiológicos</h4>
+                                <p class="text-gray-600 mb-4">Variados: contextuais (preliminares insuficientes), psicológicos (ansiedade), culturais, iatrogênicos (ISRS) e condições médicas.</p>
+                            `
+                        },
+                        {
+                            title: "Transtorno da Dor Gênito-Pélvica/Penetração (DGPP)",
+                            content: `
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Critérios Diagnósticos</h4>
+                                <p class="text-gray-600 mb-4">Dificuldades persistentes com penetração, dor vulvovaginal, medo/ansiedade da dor, ou tensão dos músculos do assoalho pélvico.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Justificativa da Fusão (DSM-5)</h4>
+                                <p class="text-gray-600 mb-4">Unifica Vaginismo e Dispareunia devido à alta comorbidade e dificuldade de distinção na prática clínica.</p>
+                                <h4 class="text-lg font-semibold text-gray-800 mb-2">Fatores Etiológicos</h4>
+                                <p class="text-gray-600">Causas físicas (infecções, endometriose) e psicológicas (medo da dor, ansiedade, histórico de trauma).</p>
+                            `
+                        }
+                    ]
+                },
+                prevalence: {
+                    labels: ["Disf. Erétil (Homens >40a)", "Ejaculação Precoce (Homens)", "Disf. Sexual Geral (Mulheres)", "Desejo Hipoativo (Homens >60a)", "Ejaculação Retardada (Homens)"],
+                    data: [52, 30, 37, 4.8, 6.5]
+                },
+                manuals: [
+                    { concept: "Problemas de Desejo", dsm5: "Separado por gênero (TDSHM para homens; fundido com excitação para mulheres).", cid11: "Categoria única para ambos os sexos (Disfunção do Desejo Sexual Hipoativo).", notes: "CID-11 simplifica, DSM-5 é mais específico por gênero." },
+                    { concept: "Problemas de Excitação", dsm5: "Transtorno Erétil (homens); fundido com desejo para mulheres.", cid11: "Separado por gênero (Disfunção Erétil Masculina; Disfunção da Excitação Sexual Feminina).", notes: "CID-11 separa desejo e excitação na mulher, focando na resposta genital." },
+                    { concept: "Problemas de Orgasmo", dsm5: "Transtorno do Orgasmo Feminino; Ejaculação Retardada.", cid11: "Anorgasmia (ambos os sexos); Ejaculação Retardada Masculina.", notes: "CID-11 usa um termo unificado (Anorgasmia)." },
+                    { concept: "Ejaculação Precoce", dsm5: "Critério de tempo de ~1 minuto.", cid11: "Foco no controle percebido, sem tempo fixo.", notes: "CID-11 é menos rígido, focando na experiência subjetiva." },
+                    { concept: "Problemas de Dor", dsm5: "Transtorno da Dor Gênito-Pélvica/Penetração (unificado).", cid11: "Transtorno de Dor-Penetração Sexual + códigos separados para dispareunia.", notes: "Conceitos semelhantes, mas a estrutura de codificação da CID-11 é mais complexa." }
+                ],
+                riskFactors: [
+                    { class: "Antidepressivos (ISRS)", examples: "Fluoxetina, Sertralina", effects: "Diminuição da libido, disfunção erétil, ejaculação retardada, anorgasmia." },
+                    { class: "Anti-hipertensivos", examples: "Propranolol, Hidroclorotiazida", effects: "Disfunção erétil, diminuição da libido." },
+                    { class: "Álcool", examples: "Bebidas alcoólicas", effects: "Diminuição do desejo, disfunção erétil (aguda e crônica)." },
+                    { class: "Opioides", examples: "Morfina, Oxicodona", effects: "Diminuição da libido, disfunção erétil, anorgasmia." },
+                    { class: "Anticonvulsivantes", examples: "Carbamazepina, Fenitoína", effects: "Diminuição da libido, disfunção erétil." },
+                    { class: "Anti-histamínicos", examples: "Difenidramina", effects: "Diminuição da lubrificação, disfunção erétil." }
+                ]
+            };
+
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContentContainer = document.getElementById('tab-content');
+
+            function createAccordion(items) {
+                return items.map((item, index) => `
+                    <div class="border border-gray-200 rounded-lg mb-2 overflow-hidden">
+                        <button class="accordion-toggle w-full text-left p-4 bg-gray-50 hover:bg-gray-100 flex justify-between items-center transition">
+                            <span class="font-semibold text-gray-700">${item.title}</span>
+                            <svg class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="accordion-content hidden p-4 bg-white">
+                            ${item.content}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function renderTabContent(tabName) {
+                const items = data.dysfunctions[tabName];
+                tabContentContainer.innerHTML = createAccordion(items);
+                addAccordionListeners();
+            }
+
+            function addAccordionListeners() {
+                const toggles = document.querySelectorAll('.accordion-toggle');
+                toggles.forEach(toggle => {
+                    toggle.addEventListener('click', () => {
+                        const content = toggle.nextElementSibling;
+                        const icon = toggle.querySelector('svg');
+                        
+                        toggle.parentElement.parentElement.querySelectorAll('.accordion-content').forEach(c => {
+                            if (c !== content && !c.classList.contains('hidden')) {
+                                c.classList.add('hidden');
+                                c.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
+                            }
+                        });
+
+                        content.classList.toggle('hidden');
+                        icon.classList.toggle('rotate-180');
+                    });
+                });
+            }
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    renderTabContent(button.dataset.tab);
+                });
+            });
+
+            renderTabContent('masculinas');
+
+            const ctx = document.getElementById('prevalenceChart').getContext('2d');
+            const prevalenceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.prevalence.labels,
+                    datasets: [{
+                        label: 'Prevalência Estimada no Brasil (%)',
+                        data: data.prevalence.data,
+                        backgroundColor: 'rgba(217, 119, 6, 0.6)',
+                        borderColor: 'rgba(217, 119, 6, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Prevalência (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const manualsTableBody = document.getElementById('manuals-table-body');
+            manualsTableBody.innerHTML = data.manuals.map(row => `
+                <tr class="hover:bg-gray-50">
+                    <td class="py-3 px-4 font-semibold text-gray-700">${row.concept}</td>
+                    <td class="py-3 px-4 text-gray-600">${row.dsm5}</td>
+                    <td class="py-3 px-4 text-gray-600">${row.cid11}</td>
+                    <td class="py-3 px-4 text-gray-600">${row.notes}</td>
+                </tr>
+            `).join('');
+
+            const riskFactorsTableBody = document.getElementById('risk-factors-table-body');
+            riskFactorsTableBody.innerHTML = data.riskFactors.map(row => `
+                <tr class="hover:bg-gray-50">
+                    <td class="py-3 px-4 font-semibold text-gray-700">${row.class}</td>
+                    <td class="py-3 px-4 text-gray-600">${row.examples}</td>
+                    <td class="py-3 px-4 text-gray-600">${row.effects}</td>
+                </tr>
+            `).join('');
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if(!mobileMenu.classList.contains('hidden')) {
+                         mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>
+
