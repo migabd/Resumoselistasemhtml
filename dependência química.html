@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Interativo de Dependência Química para Residência Médica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Clinical Accents -->
+    <!-- Application Structure Plan: A tabbed dashboard structure was chosen to facilitate non-linear learning, which is ideal for exam preparation. Instead of a long scroll, users can instantly navigate between "Visão Geral", "Toxidromes", "Substâncias", and "Antídotos". This allows for quick comparison and focused study sessions on specific topics (e.g., comparing toxidromes or reviewing withdrawal syndromes). This task-oriented design is more usable and efficient for a medical student than a simple linear document. -->
+    <!-- Visualization & Content Choices: 
+        - Toxidrome Comparison: Report Info -> Toxidrome table. Goal -> Compare. Viz/Method -> Interactive buttons that display data for one syndrome at a time. Interaction -> Click button to update display. Justification -> Avoids a large, hard-to-read table on mobile and encourages active comparison. Library -> Vanilla JS.
+        - Alcohol Withdrawal Timeline: Report Info -> Withdrawal chronology. Goal -> Show Change. Viz/Method -> Interactive HTML/CSS timeline. Interaction -> Click on a time segment to highlight symptoms. Justification -> More engaging and visually clearer than a plain list. Library -> Vanilla JS.
+        - Critical Contraindications (Flumazenil, Beta-blockers): Report Info -> Text warnings. Goal -> Warn/Inform. Viz/Method -> Prominent, distinctly colored HTML boxes. Interaction -> None. Justification -> Highlighting critical safety information is paramount for medical exams. Library -> Tailwind CSS.
+        - Specific Syndromes (CHS, HPPD): Report Info -> Text descriptions. Goal -> Inform. Viz/Method -> Collapsible accordion sections. Interaction -> Click to expand/collapse. Justification -> Keeps the UI clean while providing access to detailed, specific knowledge. Library -> Vanilla JS.
+        - Antidote Review: Report Info -> Antidote table. Goal -> Organize/Review. Viz/Method -> Interactive card grid. Interaction -> Click on a card to reveal details. Justification -> "Flashcard" style interaction is a proven study method and is mobile-friendly. Library -> Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #2c3e50;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+        }
+        .tab-button.active {
+            border-bottom-color: #3498db;
+            color: #3498db;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .substance-button {
+            transition: all 0.3s ease;
+        }
+        .substance-button.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .timeline-item {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .timeline-item:hover, .timeline-item.active {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .warning-box {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+        .info-box {
+            background-color: #e0f2fe;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+        }
+        .key-point-box {
+            background-color: #fefce8;
+            border-left: 4px solid #facc15;
+            color: #854d0e;
+        }
+        .antidote-card {
+            transition: transform 0.3s;
+        }
+        .antidote-card:hover {
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Guia Interativo de Dependência Química</h1>
+            <p class="text-lg text-gray-600 mt-2">Ferramenta de estudo para provas de Residência Médica</p>
+        </header>
+
+        <nav class="flex justify-center border-b border-gray-300 mb-8 flex-wrap">
+            <button class="tab-button active text-sm md:text-base py-4 px-2 md:px-6 font-semibold text-gray-600" onclick="showTab('visao-geral')">Visão Geral</button>
+            <button class="tab-button text-sm md:text-base py-4 px-2 md:px-6 font-semibold text-gray-600" onclick="showTab('toxidromes')">Toxidromes</button>
+            <button class="tab-button text-sm md:text-base py-4 px-2 md:px-6 font-semibold text-gray-600" onclick="showTab('substancias')">Substâncias</button>
+            <button class="tab-button text-sm md:text-base py-4 px-2 md:px-6 font-semibold text-gray-600" onclick="showTab('antidotos')">Antídotos</button>
+        </nav>
+
+        <main>
+            <section id="visao-geral" class="content-section active">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Fundamentos Diagnósticos e Abordagem</h2>
+                    <p class="text-gray-600 mb-6">Esta seção aborda os conceitos essenciais que formam a base do diagnóstico e manejo na dependência química. Compreender os critérios do DSM-5 e a abordagem sistemática ao paciente intoxicado (ABCDE) é o primeiro passo para o sucesso nas provas e na prática clínica.</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-3 text-blue-600">Critérios Diagnósticos (DSM-5)</h3>
+                            <p class="mb-4 text-sm text-gray-500">Pelo menos 2 dos 11 critérios em 12 meses. Gravidade: 2-3 (Leve), 4-5 (Moderado), ≥6 (Grave).</p>
+                            <ul class="space-y-3">
+                                <li class="p-3 bg-blue-50 rounded-md"><strong>Controle Prejudicado (4):</strong> Uso > pretendido, falha em cortar, muito tempo gasto, fissura.</li>
+                                <li class="p-3 bg-green-50 rounded-md"><strong>Prejuízo Social (3):</strong> Falha em obrigações, problemas interpessoais, abandono de atividades.</li>
+                                <li class="p-3 bg-yellow-50 rounded-md"><strong>Uso de Risco (2):</strong> Uso em situações perigosas, uso apesar de danos.</li>
+                                <li class="p-3 bg-red-50 rounded-md"><strong>Farmacológicos (2):</strong> Tolerância, Abstinência.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-3 text-blue-600">Abordagem na Emergência (ABCDE)</h3>
+                            <p class="mb-4 text-sm text-gray-500">Priorize a estabilização antes de identificar o tóxico.</p>
+                            <ul class="space-y-3">
+                                <li class="p-3 bg-gray-100 rounded-md"><strong>A (Airway):</strong> Vias Aéreas pérvias.</li>
+                                <li class="p-3 bg-gray-100 rounded-md"><strong>B (Breathing):</strong> Respiração e oxigenação.</li>
+                                <li class="p-3 bg-gray-100 rounded-md"><strong>C (Circulation):</strong> Estado hemodinâmico, acesso venoso.</li>
+                                <li class="p-3 bg-gray-100 rounded-md"><strong>D (Disability):</strong> Nível de consciência (Glasgow), pupilas, glicemia.</li>
+                                <li class="p-3 bg-gray-100 rounded-md"><strong>E (Exposure):</strong> Exame completo, controle de temperatura.</li>
+                            </ul>
+                            <div class="key-point-box p-4 mt-4 rounded-md">
+                                <p class="font-semibold">Lembrete:</p>
+                                <p>Notificação compulsória ao SINAN e contato com o CIATox são essenciais na prática brasileira.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="toxidromes" class="content-section">
+                 <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Comparador Interativo de Toxidromes</h2>
+                    <p class="text-gray-600 mb-6">As síndromes tóxicas (toxidromes) são constelações de sinais e sintomas que sugerem uma classe de substância. Use os botões abaixo para selecionar uma toxidrome e visualizar suas características. A diferenciação entre elas é um tema clássico de prova.</p>
+                    
+                    <div class="flex flex-wrap justify-center gap-2 mb-6">
+                        <button class="toxidrome-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showToxidrome('simpaticomimetica')">Simpaticomimética</button>
+                        <button class="toxidrome-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showToxidrome('anticolinergica')">Anticolinérgica</button>
+                        <button class="toxidrome-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showToxidrome('colinergica')">Colinérgica</button>
+                        <button class="toxidrome-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showToxidrome('opioide')">Opioide</button>
+                        <button class="toxidrome-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showToxidrome('sedativa')">Sedativo-Hipnótica</button>
+                    </div>
+
+                    <div id="toxidrome-display" class="p-6 bg-gray-50 rounded-lg min-h-[300px] flex items-center justify-center">
+                        <p class="text-gray-500">Selecione uma toxidrome para ver os detalhes.</p>
+                    </div>
+                 </div>
+            </section>
+
+            <section id="substancias" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Guia de Substâncias Psicoativas</h2>
+                    <p class="text-gray-600 mb-6">Explore os quadros clínicos de intoxicação e abstinência para as principais classes de substâncias. Selecione uma substância para ver os detalhes, pontos-chave e armadilhas clínicas frequentemente cobradas em provas.</p>
+
+                    <div class="flex flex-wrap justify-center gap-2 mb-6 border-b pb-4">
+                        <button class="substance-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showSubstance('alcool')">Álcool</button>
+                        <button class="substance-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showSubstance('opioides')">Opioides</button>
+                        <button class="substance-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showSubstance('sedativos')">Sedativos</button>
+                        <button class="substance-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showSubstance('estimulantes')">Estimulantes</button>
+                        <button class="substance-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showSubstance('cannabis')">Cannabis</button>
+                        <button class="substance-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded" onclick="showSubstance('alucinogenos')">Alucinógenos</button>
+                    </div>
+
+                    <div id="substance-display">
+                        <p class="text-center text-gray-500">Selecione uma substância acima.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="antidotos" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-700">Revisão Rápida de Antídotos</h2>
+                    <p class="text-gray-600 mb-6">Esta seção funciona como um "flashcard" para os principais antídotos e tratamentos específicos em toxicologia. Clique em cada cartão para revelar o tratamento e as observações clínicas cruciais. Saber quando usar (e quando NÃO usar) um antídoto é vital.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="antidote-card bg-blue-100 p-6 rounded-lg shadow-md cursor-pointer" onclick="toggleAntidote(this)">
+                            <h3 class="text-xl font-bold text-blue-800">Opioides</h3>
+                            <div class="antidote-details hidden mt-4">
+                                <p><strong>Tratamento:</strong> Naloxona</p>
+                                <p class="text-sm mt-2"><strong>Observação Crucial:</strong> Meia-vida curta! Risco de ressedação com opioides de ação longa. Titular a dose em usuários crônicos para não precipitar abstinência grave.</p>
+                            </div>
+                        </div>
+                        <div class="antidote-card bg-red-100 p-6 rounded-lg shadow-md cursor-pointer" onclick="toggleAntidote(this)">
+                            <h3 class="text-xl font-bold text-red-800">Benzodiazepínicos</h3>
+                            <div class="antidote-details hidden mt-4">
+                                <p><strong>Tratamento:</strong> Flumazenil</p>
+                                <p class="text-sm mt-2"><strong>Observação Crucial:</strong> USO RESTRITO! Contraindicado em uso crônico, co-ingestão de ADTs e epilepsia pelo risco de convulsões refratárias.</p>
+                            </div>
+                        </div>
+                        <div class="antidote-card bg-yellow-100 p-6 rounded-lg shadow-md cursor-pointer" onclick="toggleAntidote(this)">
+                            <h3 class="text-xl font-bold text-yellow-800">Álcool (Profilaxia)</h3>
+                            <div class="antidote-details hidden mt-4">
+                                <p><strong>Tratamento:</strong> Tiamina (Vit. B1)</p>
+                                <p class="text-sm mt-2"><strong>Observação Crucial:</strong> Administrar SEMPRE ANTES da glicose para prevenir a Encefalopatia de Wernicke.</p>
+                            </div>
+                        </div>
+                        <div class="antidote-card bg-green-100 p-6 rounded-lg shadow-md cursor-pointer" onclick="toggleAntidote(this)">
+                            <h3 class="text-xl font-bold text-green-800">Cocaína/Anfetaminas</h3>
+                            <div class="antidote-details hidden mt-4">
+                                <p><strong>Tratamento:</strong> Benzodiazepínicos</p>
+                                <p class="text-sm mt-2"><strong>Observação Crucial:</strong> "Antídoto" fisiológico. Controla agitação, HAS, taquicardia. EVITAR betabloqueadores puros na fase aguda (risco de vasoconstrição paradoxal).</p>
+                            </div>
+                        </div>
+                         <div class="antidote-card bg-purple-100 p-6 rounded-lg shadow-md cursor-pointer" onclick="toggleAntidote(this)">
+                            <h3 class="text-xl font-bold text-purple-800">Barbitúricos</h3>
+                            <div class="antidote-details hidden mt-4">
+                                <p><strong>Tratamento:</strong> Alcalinização Urinária, Carvão Ativado</p>
+                                <p class="text-sm mt-2"><strong>Observação Crucial:</strong> Não há antídoto direto. Aumentar a eliminação renal (fenobarbital) e diminuir a absorção são as estratégias.</p>
+                            </div>
+                        </div>
+                         <div class="antidote-card bg-gray-200 p-6 rounded-lg shadow-md cursor-pointer" onclick="toggleAntidote(this)">
+                            <h3 class="text-xl font-bold text-gray-800">Anticolinérgicos</h3>
+                            <div class="antidote-details hidden mt-4">
+                                <p><strong>Tratamento:</strong> Fisostigmina</p>
+                                <p class="text-sm mt-2"><strong>Observação Crucial:</strong> Uso controverso e arriscado. Reservado para casos graves com monitorização cardíaca devido ao risco de bradicardia e convulsões.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const toxidromeData = {
+            simpaticomimetica: {
+                title: 'Simpaticomimética (Cocaína, Anfetaminas)',
+                content: `
+                    <ul class="space-y-2 text-left">
+                        <li><strong>Estado Mental:</strong> Agitação, Psicose, Paranoia</li>
+                        <li><strong>Sinais Vitais:</strong> Taquicardia, Hipertensão, Hipertermia, Taquipneia</li>
+                        <li><strong>Pupilas:</strong> Midríase (dilatadas)</li>
+                        <li><strong>Pele:</strong> <span class="font-bold text-blue-600">Úmida (Diaforese)</span></li>
+                        <li><strong>RHA:</strong> Hiperativos</li>
+                        <li class="mt-4 key-point-box p-3 rounded-md"><strong>Ponto-chave:</strong> A pele úmida diferencia da síndrome anticolinérgica.</li>
+                    </ul>`
+            },
+            anticolinergica: {
+                title: 'Anticolinérgica (Atropina, ADTs)',
+                content: `
+                    <ul class="space-y-2 text-left">
+                        <li><strong>Estado Mental:</strong> Delirium, Alucinações Visuais</li>
+                        <li><strong>Sinais Vitais:</strong> Taquicardia, Hipertensão, Hipertermia</li>
+                        <li><strong>Pupilas:</strong> Midríase (dilatadas)</li>
+                        <li><strong>Pele:</strong> <span class="font-bold text-red-600">Seca, Quente, Ruborizada</span></li>
+                        <li><strong>RHA:</strong> Hipoativos/Ausentes (íleo paralítico)</li>
+                        <li class="mt-4 key-point-box p-3 rounded-md"><strong>Mnemônico:</strong> "Quente como uma lebre, cego como um morcego, seco como um osso, vermelho como uma beterraba, louco como um chapeleiro".</li>
+                    </ul>`
+            },
+            colinergica: {
+                title: 'Colinérgica (Organofosforados, Carbamatos)',
+                content: `
+                    <ul class="space-y-2 text-left">
+                        <li><strong>Estado Mental:</strong> Confusão, Coma, Convulsões</li>
+                        <li><strong>Sinais Vitais:</strong> Bradicardia ou Taquicardia</li>
+                        <li><strong>Pupilas:</strong> Miose (contraídas)</li>
+                        <li><strong>Secreções:</strong> <span class="font-bold text-blue-600">Aumento Generalizado</span> (Salivação, Lacrimejamento, Urina, Defecação)</li>
+                        <li><strong>RHA:</strong> Hiperativos</li>
+                        <li class="mt-4 key-point-box p-3 rounded-md"><strong>Mnemônico:</strong> SLUDGE (Salivation, Lacrimation, Urination, Defecation, GI distress, Emesis) ou DUMBELS.</li>
+                    </ul>`
+            },
+            opioide: {
+                title: 'Opioide (Heroína, Morfina, Fentanil)',
+                content: `
+                    <div class="text-left">
+                        <h4 class="font-bold text-lg mb-2">Tríade Clássica:</h4>
+                        <ol class="list-decimal list-inside space-y-2">
+                            <li><strong>Depressão do SNC:</strong> Sonolência a Coma</li>
+                            <li><strong>Depressão Respiratória:</strong> Bradipneia a Apneia (causa da morte)</li>
+                            <li><strong>Miose:</strong> Pupilas puntiformes</li>
+                        </ol>
+                        <p class="mt-4"><strong>Outros:</strong> Hipotensão, Bradicardia, Hipotermia, RHA hipoativos.</p>
+                    </div>`
+            },
+            sedativa: {
+                title: 'Sedativo-Hipnótica (Benzodiazepínicos, Barbitúricos)',
+                content: `
+                    <ul class="space-y-2 text-left">
+                        <li><strong>Estado Mental:</strong> Sonolência, Confusão, Coma, Fala arrastada</li>
+                        <li><strong>Sinais Vitais:</strong> Hipotensão, Bradicardia, Bradipneia, Hipotermia</li>
+                        <li><strong>Pupilas:</strong> Normal ou Miose</li>
+                        <li><strong>Achados:</strong> Ataxia, Nistagmo</li>
+                        <li class="mt-4 key-point-box p-3 rounded-md"><strong>Ponto-chave:</strong> Quadro semelhante à intoxicação alcoólica. O risco de morte aumenta drasticamente com co-ingestão de outros depressores (álcool).</li>
+                    </ul>`
+            }
+        };
+
+        const substanceData = {
+            alcool: {
+                title: 'Álcool (Etanol)',
+                content: `
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Intoxicação Aguda</h4>
+                            <p>Desinibição, disartria, ataxia, nistagmo. Em casos graves: coma e depressão respiratória. Manejo de suporte, verificar e corrigir hipoglicemia.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Síndrome de Abstinência (SAA) - Potencialmente FATAL</h4>
+                            <p class="mb-4">Uma síndrome de hiperexcitabilidade do SNC. Clique nos estágios para ver os sintomas:</p>
+                            <div id="timeline-container" class="flex flex-col md:flex-row justify-between gap-4">
+                                <div class="timeline-item flex-1 p-4 bg-gray-100 rounded-lg shadow" onclick="showTimelineDetails('stage1')"><strong>6-24h:</strong> Hiperatividade Autonômica</div>
+                                <div class="timeline-item flex-1 p-4 bg-gray-100 rounded-lg shadow" onclick="showTimelineDetails('stage2')"><strong>12-48h:</strong> Alucinações, Convulsões</div>
+                                <div class="timeline-item flex-1 p-4 bg-gray-100 rounded-lg shadow" onclick="showTimelineDetails('stage3')"><strong>48-96h:</strong> Delirium Tremens</div>
+                            </div>
+                            <div id="timeline-details" class="mt-4 p-4 bg-blue-50 rounded-lg min-h-[100px]">Selecione um estágio da timeline.</div>
+                        </div>
+                        <div class="warning-box p-4 rounded-md">
+                            <p class="font-bold">TIAMINA ANTES DA GLICOSE!</p>
+                            <p>A administração de glicose sem tiamina em um paciente com deficiência crônica (alcoolista) pode precipitar a Encefalopatia de Wernicke (confusão, oftalmoplegia, ataxia).</p>
+                        </div>
+                    </div>`
+            },
+            opioides: {
+                title: 'Opioides',
+                content: `
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Intoxicação Aguda (Overdose)</h4>
+                            <p>Tríade clássica: <strong>depressão do SNC, depressão respiratória, miose puntiforme</strong>. Tratamento com <strong>Naloxona</strong>.</p>
+                            <div class="key-point-box p-4 mt-2 rounded-md">
+                                <p class="font-bold">Ponto-chave: Risco de Ressedação</p>
+                                <p>A meia-vida da naloxona (60-90 min) é mais curta que a de muitos opioides. O paciente precisa de observação prolongada após a reversão.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Síndrome de Abstinência</h4>
+                            <p>Quadro semelhante a uma "gripe severa": midríase, piloereção, dores musculares, rinorreia, lacrimejamento, vômitos, diarreia. É muito desconfortável, mas <strong>NÃO apresenta risco de vida</strong>.</p>
+                        </div>
+                    </div>`
+            },
+            sedativos: {
+                title: 'Sedativos (Benzodiazepínicos, Barbitúricos)',
+                content: `
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Intoxicação Aguda</h4>
+                            <p>Sonolência, disartria, ataxia, depressão respiratória. Barbitúricos são mais letais que BZDs.</p>
+                            <div class="warning-box p-4 mt-2 rounded-md">
+                                <p class="font-bold">Contraindicações do FLUMAZENIL</p>
+                                <p>O uso do antídoto para BZD é restrito! <strong>NÃO USAR</strong> em:</p>
+                                <ul class="list-disc list-inside mt-2">
+                                    <li>Uso crônico de BZD / Dependência</li>
+                                    <li>Co-ingestão com pró-convulsivantes (ex: ADTs)</li>
+                                    <li>História de epilepsia</li>
+                                </ul>
+                                <p class="mt-1">Risco de precipitar convulsões de difícil controle.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Síndrome de Abstinência - Potencialmente FATAL</h4>
+                            <p>Quadro muito semelhante à abstinência alcoólica: ansiedade, tremores, insônia, que pode evoluir para <strong>convulsões e delirium</strong>. O manejo é feito com desmame lento e gradual de um BZD de longa ação.</p>
+                        </div>
+                    </div>`
+            },
+            estimulantes: {
+                title: 'Estimulantes (Cocaína, Crack, Anfetaminas)',
+                content: `
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Intoxicação Aguda</h4>
+                            <p>Agitação, paranoia, psicose, taquicardia, hipertensão, midríase, diaforese, hipertermia. Tratamento de primeira linha: <strong>Benzodiazepínicos</strong>.</p>
+                            <div class="warning-box p-4 mt-2 rounded-md">
+                                <p class="font-bold">Dor Torácica e Betabloqueadores</p>
+                                <p>O uso de betabloqueadores puros (ex: propranolol) é contraindicado na fase aguda. Risco de <strong>"vasoconstrição paradoxal"</strong> pela estimulação alfa-1 sem oposição.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Síndrome de Abstinência ("Crash")</h4>
+                            <p>Disforia, humor deprimido, fadiga intensa, hipersonia, anedonia. Alto risco de ideação suicida, mas <strong>não é fisicamente perigosa</strong>.</p>
+                        </div>
+                    </div>`
+            },
+            cannabis: {
+                title: 'Cannabis',
+                content: `
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Intoxicação e Abstinência</h4>
+                            <p><strong>Intoxicação:</strong> Euforia, relaxamento, hiperemia conjuntival, taquicardia, aumento do apetite, prejuízo de memória. <strong>Abstinência:</strong> Irritabilidade, ansiedade, insônia.</p>
+                        </div>
+                        <div class="info-box p-4 rounded-md">
+                            <p class="font-bold">Síndrome de Hiperêmese Canabinoide (SHC)</p>
+                            <p>Condição paradoxal em usuários crônicos de altas doses. Caracteriza-se por episódios cíclicos de <strong>náuseas e vômitos incoercíveis</strong>.</p>
+                            <p class="mt-2"><strong>Pista Diagnóstica Patognomônica:</strong> Alívio dos sintomas com um comportamento compulsivo de tomar <strong>banhos quentes</strong>.</p>
+                            <p class="mt-2"><strong>Tratamento:</strong> Haloperidol, creme de capsaicina. Cura: cessação completa do uso.</p>
+                        </div>
+                    </div>`
+            },
+            alucinogenos: {
+                title: 'Alucinógenos (LSD, Psilocibina)',
+                content: `
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-gray-800">Intoxicação ("Trip")</h4>
+                            <p>Alterações da percepção, alucinações (principalmente visuais), sinestesias. Uma "bad trip" é uma reação de pânico aguda.</p>
+                             <div class="key-point-box p-4 mt-2 rounded-md">
+                                <p class="font-bold">Manejo da "Bad Trip"</p>
+                                <p>O principal tratamento é o <strong>reasseguramento verbal ("talking down")</strong> em um ambiente calmo e seguro. Benzodiazepínicos podem ser usados para ansiedade severa.</p>
+                            </div>
+                        </div>
+                        <div class="info-box p-4 rounded-md">
+                            <p class="font-bold">Transtorno Perceptivo Persistente por Alucinógenos (HPPD)</p>
+                            <p>Recorrência crônica de distúrbios perceptuais (principalmente visuais) após o fim do uso. Sintomas incluem <strong>neve visual</strong>, palinopsia (rastros), halos. É um diagnóstico de exclusão.</p>
+                        </div>
+                    </div>`
+            }
+        };
+
+        const timelineDetailsData = {
+            stage1: "<strong>Tremores, ansiedade, insônia, taquicardia, hipertensão, sudorese, náuseas.</strong> O paciente está consciente e orientado, mas desconfortável.",
+            stage2: "<strong>Alucinações</strong> (geralmente visuais, com crítica preservada) e <strong>crises convulsivas</strong> tônico-clônicas generalizadas ('convulsões do rum').",
+            stage3: "<strong>Delirium Tremens (DT):</strong> A forma mais grave. Caracterizada por <strong>delirium</strong> (rebaixamento flutuante da consciência, desorientação), agitação intensa, alucinações vívidas e instabilidade autonômica severa. Alta mortalidade."
+        };
+
+        function showTab(tabId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        function showToxidrome(toxidromeKey) {
+            const display = document.getElementById('toxidrome-display');
+            const data = toxidromeData[toxidromeKey];
+            display.innerHTML = `
+                <div class="text-center">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">${data.title}</h3>
+                    ${data.content}
+                </div>
+            `;
+            const buttons = document.querySelectorAll('.toxidrome-button');
+            buttons.forEach(button => button.classList.remove('bg-blue-500', 'text-white'));
+            document.querySelector(`.toxidrome-button[onclick="showToxidrome('${toxidromeKey}')"]`).classList.add('bg-blue-500', 'text-white');
+        }
+
+        function showSubstance(substanceKey) {
+            const display = document.getElementById('substance-display');
+            const data = substanceData[substanceKey];
+            display.innerHTML = `
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">${data.title}</h3>
+                    ${data.content}
+                </div>
+            `;
+            const buttons = document.querySelectorAll('.substance-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            document.querySelector(`.substance-button[onclick="showSubstance('${substanceKey}')"]`).classList.add('active');
+            
+            if (substanceKey === 'alcool') {
+                showTimelineDetails('stage1');
+            }
+        }
+
+        function showTimelineDetails(stageKey) {
+            const detailsDiv = document.getElementById('timeline-details');
+            if(detailsDiv) {
+                detailsDiv.innerHTML = timelineDetailsData[stageKey];
+            }
+            const items = document.querySelectorAll('.timeline-item');
+            items.forEach(item => item.classList.remove('active', 'bg-blue-200'));
+            document.querySelector(`.timeline-item[onclick="showTimelineDetails('${stageKey}')"]`).classList.add('active', 'bg-blue-200');
+        }
+        
+        function toggleAntidote(cardElement) {
+            const details = cardElement.querySelector('.antidote-details');
+            details.classList.toggle('hidden');
+        }
+
+        window.onload = () => {
+            showSubstance('alcool');
+            showTab('visao-geral');
+        };
+
+    </script>
+</body>
+</html>
+
+
+
+
