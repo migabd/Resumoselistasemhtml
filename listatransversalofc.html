@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Exercícios: Residência Médica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Teal Accent -->
+    <!-- Application Structure Plan: A user-centric, interactive quiz application. The structure is designed for active learning, not passive reading. It includes: 1. A topic selector for user control. 2. A core interactive quiz module that presents one question at a time with immediate feedback and rationale, which is the most effective way to study Q&A material. 3. A results screen to provide a summary of performance. This structure was chosen because it directly serves the user's goal (studying for an exam) by transforming a static document into an engaging and effective learning tool. The intro chart was removed per user request to focus solely on the questions. -->
+    <!-- Visualization & Content Choices: Report Info: 50 MCQs with rationales. Goal: Test user knowledge and explain concepts. Viz/Presentation Method: Questions are presented in an interactive card format. Answer options are clickable buttons. Feedback is color-coded (green/correct, red/incorrect). Rationales are shown post-answer. Interaction: Users click topic buttons to filter questions, click answer options to get immediate feedback. Justification: This interactive quiz format is the optimal way to engage with test preparation material. Library/Method: Vanilla JS for quiz logic. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+        }
+        .quiz-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .answer-btn {
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+        }
+        .answer-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .feedback-correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            color: #166534 !important;
+        }
+        .feedback-incorrect {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            color: #991b1b !important;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-teal-800">Exercícios Interativos para Residência</h1>
+            <p class="mt-2 text-lg text-gray-600">Metodologia Científica e Sistemas de Informação em Saúde</p>
+        </header>
+
+        <main id="main-content">
+            <section id="quiz-selector" class="text-center mb-8 bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-4 text-teal-700">Escolha uma seção para começar a praticar:</h3>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <button onclick="startQuiz('fundamentos')" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-teal-700 transition-colors">Fundamentos (1-10)</button>
+                    <button onclick="startQuiz('coleta')" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-teal-700 transition-colors">Coleta e Viés (11-20)</button>
+                    <button onclick="startQuiz('sistemas')" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-teal-700 transition-colors">Sistemas de Informação (21-35)</button>
+                    <button onclick="startQuiz('indicadores')" class="bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-teal-700 transition-colors">Indicadores (36-50)</button>
+                    <button onclick="startQuiz('all')" class="bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-gray-800 transition-colors">Todas as Questões</button>
+                </div>
+            </section>
+
+            <div id="quiz-container" class="hidden">
+                <div id="quiz-card" class="bg-white p-6 md:p-8 rounded-xl shadow-lg quiz-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <div id="realtime-score" class="text-lg font-bold text-teal-600"></div>
+                        <div id="progress-indicator" class="text-sm font-medium text-gray-500"></div>
+                    </div>
+                    <p id="question-text" class="text-lg md:text-xl font-semibold mb-6"></p>
+                    <div id="answer-options" class="space-y-3"></div>
+                    <div id="feedback-container" class="hidden mt-6 border-t pt-4">
+                        <h4 class="text-lg font-bold text-teal-800 mb-2">Comentário:</h4>
+                        <p id="rationale-text" class="text-gray-700"></p>
+                    </div>
+                </div>
+                <div id="navigation-controls" class="flex justify-between mt-6">
+                    <button id="prev-btn" class="bg-gray-200 text-gray-700 font-semibold py-2 px-5 rounded-lg hover:bg-gray-300 disabled:opacity-50 transition-colors">Anterior</button>
+                    <button id="next-btn" class="bg-teal-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-teal-700 transition-colors">Próxima</button>
+                </div>
+            </div>
+
+            <div id="results-container" class="hidden text-center bg-white p-8 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold text-teal-800 mb-4">Sessão Concluída!</h2>
+                <p id="score-text" class="text-xl mb-6"></p>
+                <button onclick="restartQuiz()" class="bg-teal-600 text-white font-semibold py-2 px-6 rounded-lg shadow hover:bg-teal-700 transition-colors">Escolher outra seção</button>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 text-sm text-gray-500">
+            <p>Aplicação de estudo desenvolvida com base no "Relatório de Questões Comentadas para Residência Médica".</p>
+        </footer>
+    </div>
+
+<script>
+const allQuestions = [
+    { section: 'fundamentos', question: 'Um médico, ao atender um paciente com febre alta, cefaleia intensa, mialgia e dor retro-orbitária, imediatamente pensa no diagnóstico de Dengue, pois sabe que "a combinação desses sintomas em uma área endêmica é altamente sugestiva de Dengue". Ele então solicita exames sorológicos para confirmar sua suspeita. O raciocínio clínico utilizado pelo médico para chegar à hipótese diagnóstica principal parte de uma premissa geral para um caso específico. Assinale a alternativa que classifica corretamente o método de raciocínio empregado.', options: [{text: 'Método Indutivo'}, {text: 'Método Dedutivo', isCorrect: true}, {text: 'Método Fenomenológico'}, {text: 'Método Dialético'}], rationale: 'O método de raciocínio empregado pelo médico é o dedutivo. Este método parte de uma premissa geral ou universal para chegar a uma conclusão particular. No cenário descrito, a premissa maior é a regra geral: "pacientes com febre, cefaleia, mialgia e dor retro-orbitária em área endêmica provavelmente têm Dengue". A premissa menor é a observação do caso específico. A conclusão lógica é a hipótese diagnóstica.' },
+    { section: 'fundamentos', question: 'Uma equipe de epidemiologistas investiga um surto de uma doença gastrointestinal em uma pequena comunidade. Após entrevistar os primeiros 15 doentes, eles observam que todos consumiram água de um mesmo poço artesiano. Com base nessas observações particulares, os pesquisadores formulam a hipótese de que a água daquele poço é a fonte de contaminação para toda a comunidade. Este processo de raciocínio, que parte de observações específicas para formular uma conclusão geral, é característico do:', options: [{text: 'Método Dedutivo'}, {text: 'Método Dialético'}, {text: 'Método Indutivo', isCorrect: true}, {text: 'Paradigma da Complexidade de Morin'}], rationale: 'A questão descreve um exemplo clássico do método indutivo. Este método se caracteriza por partir de dados particulares para inferir uma verdade geral. Os pesquisadores observaram um padrão em um número limitado de casos e, a partir disso, generalizaram uma conclusão para a população inteira.' },
+    { section: 'fundamentos', question: 'Segundo Karl Popper, o critério que demarca a ciência da não ciência é a falseabilidade. Um pesquisador, seguindo o método hipotético-dedutivo, observa um aumento na incidência de câncer de pulmão em uma cidade após a instalação de uma nova indústria. Ele formula a hipótese de que "a exposição a um poluente específico (substância X) emitido pela indústria aumenta o risco de câncer de pulmão". De acordo com o método hipotético-dedutivo, qual é o próximo passo crucial que o pesquisador deve tomar para testar sua hipótese?', options: [{text: 'Realizar uma pesquisa qualitativa para entender a percepção da comunidade.'}, {text: 'Aplicar o método dialético para analisar as influências políticas.'}, {text: 'Conduzir um experimento ou estudo observacional para tentar refutar a hipótese.', isCorrect: true}, {text: 'Utilizar o método indutivo para encontrar mais casos.'}], rationale: 'O cerne do método hipotético-dedutivo, popularizado por Karl Popper, não é provar uma hipótese como verdadeira, mas sim submetê-la a testes rigorosos na tentativa de falseá-la (refutá-la). Após a formulação da hipótese, o passo seguinte é a experimentação ou teste.' },
+    { section: 'fundamentos', question: 'Um gestor de saúde pública deseja compreender as razões da baixa adesão à vacinação contra a COVID-19. Ele realiza um inquérito para medir a prevalência da não vacinação e suas associações estatísticas, e também entrevistas em profundidade para explorar crenças e medos. A abordagem de pesquisa utilizada pelo gestor pode ser classificada como:', options: [{text: 'Exclusivamente quantitativa'}, {text: 'Exclusivamente qualitativa'}, {text: 'Quanti-qualitativa, utilizando a triangulação de métodos.', isCorrect: true}, {text: 'Fenomenológica'}], rationale: 'O gestor está combinando duas vertentes de pesquisa. O primeiro estudo é quantitativo (inquérito estatístico). O segundo estudo é qualitativo (entrevistas em profundidade). A combinação dessas duas abordagens é denominada quanti-qualitativa ou mista, utilizando a triangulação de métodos para uma análise mais rica.' },
+    { section: 'fundamentos', question: 'Um pesquisador está planejando um estudo para avaliar a eficácia de um novo anti-hipertensivo. O objetivo é comparar a redução da pressão arterial em um grupo que recebe o novo medicamento com um grupo que recebe placebo. O estudo será randomizado e duplo-cego. Esta pesquisa é um exemplo clássico de:', options: [{text: 'Pesquisa qualitativa'}, {text: 'Pesquisa quantitativa, pois mede numericamente uma variável e testa uma hipótese.', isCorrect: true}, {text: 'Pesquisa documental'}, {text: 'Pesquisa fenomenológica'}], rationale: 'A pesquisa descrita é inequivocamente quantitativa. Suas características centrais são: medição numérica (pressão arterial), teste de hipótese (medicamento vs. placebo) e busca de generalização. O ensaio clínico randomizado é o padrão-ouro da pesquisa quantitativa.' },
+    { section: 'fundamentos', question: 'A transição histórica da crença de que as doenças infecciosas eram causadas por "miasmas" para a Teoria dos Germes representou uma ruptura que alterou os problemas considerados legítimos e os métodos para resolvê-los. Segundo a filosofia da ciência de Thomas Kuhn, este evento é um exemplo de:', options: [{text: 'Um teste do método hipotético-dedutivo'}, {text: 'Uma aplicação do método dialético'}, {text: 'Uma revolução científica com mudança de paradigma.', isCorrect: true}, {text: 'Um processo puramente indutivo'}], rationale: 'Thomas Kuhn introduziu o conceito de paradigmas. Quando anomalias se acumulam e o paradigma vigente não consegue mais explicá-las, pode ocorrer uma crise, levando a uma revolução científica, que é a substituição do antigo paradigma por um novo. A passagem da teoria dos miasmas para a teoria dos germes é o exemplo arquetípico.' },
+    { section: 'fundamentos', question: 'Um estudo busca compreender a jornada de pacientes com doenças raras. O pesquisador utiliza conversas abertas, permitindo que os pacientes contem suas histórias e sentimentos. O objetivo não é calcular a frequência de problemas, mas sim descrever e interpretar a profundidade da experiência humana. Esta abordagem metodológica é melhor descrita como:', options: [{text: 'Pesquisa quantitativa'}, {text: 'Pesquisa qualitativa com método fenomenológico.', isCorrect: true}, {text: 'Estudo transversal'}, {text: 'Pesquisa hipotético-dedutiva'}], rationale: 'As características do estudo são a marca de uma pesquisa qualitativa. Especificamente, a ênfase em compreender a experiência a partir da perspectiva de quem a vivenciou, focando em percepções e vivências, alinha-se perfeitamente com o método fenomenológico.' },
+    { section: 'fundamentos', question: 'Edgar Morin critica o método científico cartesiano por sua tendência a dividir o objeto de estudo em partes isoladas, perdendo a visão do todo. Ele propõe a "Teoria da Complexidade". Qual das seguintes abordagens de pesquisa em saúde mais se alinha com a proposta de Morin?', options: [{text: 'Um ensaio clínico randomizado que isola o efeito de um único fármaco.'}, {text: 'Um estudo que analisa a saúde de uma comunidade considerando a interação entre fatores biológicos, sociais, econômicos e ambientais.', isCorrect: true}, {text: 'Uma pesquisa que utiliza o método dedutivo para partir de leis gerais.'}, {text: 'Um estudo que foca exclusivamente na análise estatística.'}], rationale: 'A proposta de Edgar Morin, com a Teoria da Complexidade, é superar a fragmentação do conhecimento e adotar uma visão sistêmica. Portanto, um estudo que analisa a saúde como um sistema complexo, onde múltiplos fatores estão interligados, é o que melhor reflete seu pensamento.' },
+    { section: 'fundamentos', question: 'Um médico residente, ao seguir o fluxograma do método hipotético-dedutivo para um paciente com dor torácica, formula hipóteses diagnósticas e solicita exames (ECG, troponina). Qual etapa, segundo o método científico, corresponde à solicitação e análise dos exames?', options: [{text: 'Formulação da hipótese'}, {text: 'Revisão bibliográfica'}, {text: 'Observação'}, {text: 'Experimentação/Teste', isCorrect: true}], rationale: 'No contexto da aplicação do método hipotético-dedutivo à prática clínica, a solicitação de exames complementares funciona como a etapa de experimentação ou teste. Os resultados dos exames permitem ao médico rejeitar ou corroborar as hipóteses iniciais.' },
+    { section: 'fundamentos', question: 'Considere as duas afirmações: I. O método dedutivo é infalível se as premissas forem verdadeiras e amplia o conhecimento ao gerar novas verdades. II. O método indutivo parte de observações particulares para chegar a uma conclusão geral, cujas conclusões são prováveis, mas não garantidamente certas. Assinale a alternativa correta:', options: [{text: 'As duas são verdadeiras.'}, {text: 'I é verdadeira, II é falsa.'}, {text: 'I é falsa, II é verdadeira.', isCorrect: true}, {text: 'As duas são falsas.'}], rationale: 'Afirmação I é falsa porque o método dedutivo não amplia o conhecimento; ele apenas torna explícito o que já estava implícito nas premissas. Afirmação II é verdadeira, pois descreve corretamente o processo indutivo e sua natureza probabilística.' },
+    { section: 'coleta', question: 'Um pesquisador deseja estudar a associação entre o consumo de alimentos ultraprocessados e os níveis de glicemia em adolescentes de uma escola. Para isso, ele mesmo aplica um questionário que elaborou e coleta amostras de sangue dos alunos. Quanto à natureza dos dados coletados, é correto afirmar que são:', options: [{text: 'Dados secundários'}, {text: 'Dados primários, pois foram coletados especificamente para os fins desta pesquisa.', isCorrect: true}, {text: 'Dados documentais'}, {text: 'Dados do DATASUS'}], rationale: 'Dados primários são aqueles que não existiam antes do estudo e são gerados pelo próprio pesquisador para atender aos objetivos específicos da sua investigação. Ambos os dados (questionário e glicemia) foram coletados diretamente pelo pesquisador para este estudo.' },
+    { section: 'coleta', question: 'Um epidemiologista planeja realizar um estudo sobre a tendência da mortalidade por doenças cardiovasculares no Brasil nos últimos 20 anos, utilizando as bases de dados do DATASUS. Qual a principal vantagem e desvantagem do uso desses dados?', options: [{text: 'Vantagem: dados relacionados à pergunta; Desvantagem: alto custo.'}, {text: 'Vantagem: dados mais atualizados; Desvantagem: exige tempo para coleta.'}, {text: 'Vantagem: baixo custo e rapidez; Desvantagem: podem estar desatualizados ou ser irrelevantes.', isCorrect: true}, {text: 'Vantagem: maior controle de qualidade; Desvantagem: dificuldade de acesso.'}], rationale: 'O uso de dados secundários (DATASUS) tem como principal vantagem a economicidade (baixo custo e rapidez). A principal desvantagem é a falta de controle do pesquisador sobre os dados, que podem não ser perfeitamente adequados à pergunta da pesquisa ou conter erros.' },
+    { section: 'coleta', question: 'Uma pesquisa sobre a qualidade do atendimento em uma UBS foi planejada. A equipe, composta por enfermeiros da própria unidade, abordava os usuários com a pergunta: "O senhor não concorda que o nosso atendimento melhorou muito e está excelente agora?". Este procedimento pode introduzir qual tipo de viés?', options: [{text: 'Viés de seleção'}, {text: 'Viés de medição'}, {text: 'Viés do entrevistador (ou pesquisador)', isCorrect: true}, {text: 'Viés de publicação'}], rationale: 'Este é um exemplo claro de viés do entrevistador. Ocorre quando a postura ou a forma de perguntar do entrevistador influencia as respostas. A pergunta é formulada de maneira a induzir uma resposta positiva e o fato de serem profissionais da unidade pode constranger o usuário.' },
+    { section: 'coleta', question: 'Em um estudo multicêntrico para avaliar o IMC, uma das equipes de campo utiliza uma balança que, de forma consistente, registra um peso 2 kg acima do real para todos os indivíduos. Este erro sistemático é um exemplo de:', options: [{text: 'Viés de seleção'}, {text: 'Viés de medição (ou aferição)', isCorrect: true}, {text: 'Viés do entrevistador'}, {text: 'Erro aleatório'}], rationale: 'O viés de medição (ou aferição) ocorre quando há um erro sistemático na forma como uma variável é medida. O uso de um equipamento descalibrado (a balança que sempre adiciona 2 kg) é o exemplo prototípico deste viés. O erro não é aleatório, é sistemático.' },
+    { section: 'coleta', question: 'Um pesquisador deseja realizar um estudo sobre os hábitos de vida de estudantes universitários. Ele decide aplicar seu questionário apenas nos alunos que frequentam a biblioteca no período da manhã. A estratégia de amostragem adotada pode levar a qual tipo de viés?', options: [{text: 'Viés de aferição'}, {text: 'Viés do entrevistador'}, {text: 'Viés de seleção', isCorrect: true}, {text: 'Viés de publicação'}], rationale: 'O viés de seleção ocorre quando a maneira de escolher os participantes resulta em uma amostra que não é representativa da população-alvo. Ao escolher apenas estudantes da biblioteca, o pesquisador está sistematicamente excluindo alunos com outros perfis, comprometendo a generalização dos resultados.' },
+    { section: 'coleta', question: 'Para garantir a uniformidade na coleta de dados em uma pesquisa quantitativa com um questionário complexo, é fundamental o pré-teste do questionário e o treinamento rigoroso da equipe. Esse processo de padronização de instrumentos e procedimentos é denominado:', options: [{text: 'Validação'}, {text: 'Triangulação'}, {text: 'Calibração', isCorrect: true}, {text: 'Saturação'}], rationale: 'O termo calibração, no contexto da metodologia de pesquisa, refere-se ao processo de ajuste e padronização de instrumentos e procedimentos para garantir que a coleta de dados seja consistente e uniforme. Isso se aplica tanto a equipamentos quanto a questionários e entrevistadores.' },
+    { section: 'coleta', question: 'Um historiador da saúde investiga as políticas de saúde durante a epidemia de gripe espanhola, usando relatórios oficiais da época, jornais e registros de hospitais. O instrumento de coleta de dados utilizado é classificado como:', options: [{text: 'Questionário estruturado'}, {text: 'Roteiro de entrevista'}, {text: 'Coleta indireta documental', isCorrect: true}, {text: 'Coleta direta por observação'}], rationale: 'A pesquisa utiliza a coleta indireta de dados, pois o pesquisador analisa fontes que já existem. Trata-se de uma coleta documental, que envolve a análise de documentos formais (relatórios) e informais (jornais) para compreender um fenômeno.' },
+    { section: 'coleta', question: 'O IBGE realiza diversas pesquisas amostrais periódicas de grande relevância para a saúde. Qual das seguintes pesquisas NÃO é realizada pelo IBGE?', options: [{text: 'Pesquisa Nacional de Saúde (PNS)'}, {text: 'Pesquisa Nacional por Amostra de Domicílios (PNAD)'}, {text: 'Pesquisa Nacional de Saúde do Escolar (PeNSE)'}, {text: 'Vigilância de Fatores de Risco e Proteção para Doenças Crônicas por Inquérito Telefônico (Vigitel)', isCorrect: true}], rationale: 'A PNS, PNAD e PeNSE são pesquisas do IBGE. A Vigitel, no entanto, é um sistema de monitoramento do Ministério da Saúde, conduzido anualmente nas capitais, e não pelo IBGE.' },
+    { section: 'coleta', question: 'Um pesquisador conduz uma entrevista em profundidade com uma mãe que perdeu um filho. Ele utiliza um roteiro com tópicos-guia, mas permite que a entrevistada fale livremente, explorando temas que surgem na conversa. O tipo de instrumento utilizado é:', options: [{text: 'Roteiro de entrevista estruturada'}, {text: 'Questionário auto-responsivo'}, {text: 'Roteiro de entrevista não estruturada', isCorrect: true}, {text: 'Grupo focal'}], rationale: 'A descrição corresponde a um roteiro de entrevista não estruturada (ou semiestruturada). Este instrumento, predominante em estudos qualitativos, oferece liberdade ao entrevistador para adaptar a condução da entrevista, visando profundidade e flexibilidade.' },
+    { section: 'coleta', question: 'A distinção entre dado e informação é fundamental. Assinale a alternativa que define corretamente a relação entre eles.', options: [{text: 'Dado é o resultado da análise da informação.'}, {text: 'Dado e informação são sinônimos.'}, {text: 'Informação é o resultado da organização e análise de um conjunto de dados.', isCorrect: true}, {text: 'Dado é qualitativo, informação é quantitativa.'}], rationale: 'A relação é hierárquica: o dado é a unidade básica, um registro bruto (ex: um óbito). A informação é o que emerge quando um conjunto de dados é organizado e analisado, ganhando significado (ex: a taxa de mortalidade de uma cidade).' },
+    { section: 'sistemas', question: 'Um gestor municipal precisa planejar ações de saúde materno-infantil. Ele necessita de dados sobre o número de nascidos vivos, percentual de baixo peso, idade das mães e número de consultas de pré-natal. Qual sistema é a fonte primária para esses dados?', options: [{text: 'SIM'}, {text: 'SINASC', isCorrect: true}, {text: 'SINAN'}, {text: 'SIA'}], rationale: 'O SINASC (Sistema de Informações sobre Nascidos Vivos) é o sistema responsável por registrar todos os nascimentos. Seu instrumento, a Declaração de Nascido Vivo (DN), contém todas as informações mencionadas, sendo essencial para o planejamento materno-infantil.' },
+    { section: 'sistemas', question: 'A vigilância epidemiológica de óbitos é fundamental. O sistema de informação que tem como evento o óbito e utiliza a Declaração de Óbito (DO) como instrumento de coleta é o:', options: [{text: 'SINASC'}, {text: 'SIH'}, {text: 'SINAN'}, {text: 'SIM', isCorrect: true}], rationale: 'O SIM (Sistema de Informações sobre Mortalidade) é o sistema nacional que consolida os dados de mortalidade. O evento que ele registra é o óbito, e seu instrumento de coleta padrão é a Declaração de Óbito (DO).' },
+    { section: 'sistemas', question: 'Após a confirmação de um caso de febre amarela, a secretaria de saúde precisa iniciar uma investigação epidemiológica. Qual sistema é utilizado para a notificação e o acompanhamento de casos de doenças de notificação compulsória?', options: [{text: 'SIM'}, {text: 'SIH'}, {text: 'SIA'}, {text: 'SINAN', isCorrect: true}], rationale: 'O SINAN (Sistema de Informação de Agravos de Notificação) é o principal sistema da vigilância epidemiológica para o monitoramento de doenças e agravos que constam na lista nacional de notificação compulsória, como a febre amarela.' },
+    { section: 'sistemas', question: 'O Coeficiente de Mortalidade Infantil (CMI) é um indicador sensível que reflete as condições de vida e a qualidade da assistência. Para o seu cálculo, é necessária a combinação de dados de quais dois sistemas?', options: [{text: 'SIM e SINAN'}, {text: 'SINASC e SIH'}, {text: 'SIM e SINASC', isCorrect: true}, {text: 'SINAN e SIA'}], rationale: 'A fórmula do CMI é: (Número de óbitos em menores de 1 ano / Número de nascidos vivos) x 1.000. O numerador (óbitos) vem do SIM e o denominador (nascidos vivos) vem do SINASC. O cálculo preciso depende da boa qualidade de ambos.' },
+    { section: 'sistemas', question: 'Um administrador hospitalar precisa analisar a produtividade e o perfil de morbidade das internações realizadas pelo SUS. A fonte de dados para essa análise é o:', options: [{text: 'SIA'}, {text: 'SIH', isCorrect: true}, {text: 'SIM'}, {text: 'CNES'}], rationale: 'O SIH (Sistema de Informações Hospitalares) é o sistema que registra todas as internações financiadas pelo SUS. Seu instrumento é a Autorização de Internação Hospitalar (AIH). É a ferramenta essencial para a gestão hospitalar e análise de morbidade.' },
+    { section: 'sistemas', question: 'Qual é a principal função do Departamento de Informática do SUS (DATASUS)?', options: [{text: 'Realizar a coleta de dados primários em campo.'}, {text: 'Preencher as Declarações de Óbito nos hospitais.'}, {text: 'Disponibilizar informações para subsidiar a análise da situação sanitária e a tomada de decisão.', isCorrect: true}, {text: 'Fiscalizar o exercício profissional dos médicos.'}], rationale: 'A função primordial do DATASUS é coletar, processar e disseminar a informação em saúde. Ele gerencia os sistemas e disponibiliza as informações de forma organizada e acessível para que gestores, pesquisadores e a sociedade possam analisar a situação de saúde.' },
+    { section: 'sistemas', question: 'Um gerente de uma clínica de fisioterapia conveniada ao SUS precisa comprovar a produção de serviços realizados no último mês para receber o repasse financeiro. O registro dessa produção ambulatorial é feito através de qual sistema?', options: [{text: 'SIH'}, {text: 'SIM'}, {text: 'SINAN'}, {text: 'SIA', isCorrect: true}], rationale: 'O SIA (Sistema de Informações Ambulatoriais) é o sistema utilizado para registrar a produção de todos os serviços de saúde realizados em regime ambulatorial (que não envolvem internação). Seu instrumento principal é o Boletim de Produção Ambulatorial (BPA).' },
+    { section: 'sistemas', question: 'Qual é a principal medida recomendada para melhorar a qualidade das estatísticas de mortalidade, que são frequentemente afetadas pelo preenchimento incorreto da Declaração de Óbito (DO)?', options: [{text: 'Aumentar o número de sistemas de informação.'}, {text: 'Sensibilizar e treinar os médicos sobre a importância e a forma correta de preenchimento.', isCorrect: true}, {text: 'Transferir a responsabilidade do preenchimento para nível médio.'}, {text: 'Utilizar exclusivamente dados do IBGE.'}], rationale: 'A qualidade dos dados do SIM depende diretamente da qualidade do preenchimento da DO, que é uma responsabilidade médica. Portanto, a estratégia mais eficaz é a educação continuada, a sensibilização e o treinamento dos médicos e profissionais envolvidos.' },
+    { section: 'sistemas', question: 'O TABNET é uma ferramenta de grande utilidade disponibilizada pelo DATASUS. Qual é a sua principal funcionalidade?', options: [{text: 'Um aplicativo para agendamento de consultas.'}, {text: 'Um software para preenchimento online da DO.'}, {text: 'Um gerador de tabelas e gráficos que permite ao usuário tabular dados dos sistemas de informação.', isCorrect: true}, {text: 'Um sistema de prontuário eletrônico unificado.'}], rationale: 'O TABNET é um software de tabulação online que permite a qualquer usuário criar tabelas, gráficos e mapas personalizados a partir das imensas bases de dados dos sistemas de informação (SIM, SINASC, SIH, etc.), gerando informações sob medida.' },
+    { section: 'sistemas', question: 'O Registro Civil, embora não seja um sistema exclusivo da saúde, é uma fonte de dados histórica e fundamental. Qual é o seu objeto principal do ponto de vista legal e para a saúde pública?', options: [{text: 'Registrar a produção ambulatorial.'}, {text: 'Notificar doenças compulsórias.'}, {text: 'Realizar o registro oficial de nascimentos, casamentos e óbitos.', isCorrect: true}, {text: 'Cadastrar os estabelecimentos de saúde.'}], rationale: 'O Registro Civil tem como função legal primordial o registro oficial de eventos vitais que marcam a vida de um cidadão. Para a saúde pública, os registros mais importantes são os de nascimento e óbito, que historicamente foram a base para as primeiras estatísticas de saúde.' },
+    { section: 'sistemas', question: 'Um pesquisador estuda a distribuição espacial da esquistossomose, correlacionando a prevalência da doença com as condições de saneamento por área. A menor unidade territorial de coleta definida pelo IBGE que permite essa análise detalhada é o:', options: [{text: 'Município'}, {text: 'Microrregião de Saúde'}, {text: 'Distrito Sanitário'}, {text: 'Setor Censitário', isCorrect: true}], rationale: 'O Setor Censitário é a menor unidade territorial de coleta definida pelo IBGE. A desagregação dos dados a este nível permite análises espaciais de alta resolução, como a identificação de "clusters" de doenças e a correlação com características socioeconômicas e ambientais.' },
+    { section: 'sistemas', question: 'A OMS define um sistema de informação em saúde como um mecanismo que engloba um ciclo completo de manejo da informação. Qual das seguintes opções descreve melhor este ciclo?', options: [{text: 'Coleta, processamento, análise e transmissão da informação para subsidiar a ação.', isCorrect: true}, {text: 'Apenas a coleta e o armazenamento de dados.'}, {text: 'Apenas a análise estatística por acadêmicos.'}, {text: 'O preenchimento de formulários e seu arquivamento.'}], rationale: 'A definição da OMS descreve um ciclo com quatro etapas essenciais: coleta, processamento, análise e transmissão da informação. O objetivo final desse ciclo é subsidiar a ação — ou seja, o planejamento, a organização e a avaliação dos serviços de saúde.' },
+    { section: 'sistemas', question: 'Um estudo pretende avaliar o impacto de um programa de expansão do saneamento básico sobre a mortalidade por doenças diarreicas em menores de 5 anos. Quais sistemas seriam as fontes mais diretas para o numerador e o denominador da taxa de mortalidade?', options: [{text: 'Numerador: SINAN; Denominador: SINASC'}, {text: 'Numerador: SIM; Denominador: Dados populacionais do IBGE', isCorrect: true}, {text: 'Numerador: SIH; Denominador: CNES'}, {text: 'Numerador: SIA; Denominador: SIM'}], rationale: 'Para calcular uma taxa de mortalidade por causa específica em uma faixa etária, o numerador (óbitos por diarreia em menores de 5 anos) vem do SIM. O denominador (população total de menores de 5 anos) vem do IBGE (Censos ou projeções).' },
+    { section: 'sistemas', question: 'O instrumento de coleta do SIH é a AIH, e o do SIA é o BPA. Qual é o instrumento de coleta do SINAN?', options: [{text: 'Declaração de Óbito (DO)'}, {text: 'Declaração de Nascido Vivo (DN)'}, {text: 'Ficha de Investigação/Notificação (FIN)', isCorrect: true}, {text: 'Cartão Nacional de Saúde'}], rationale: 'Para o SINAN (Sistema de Informação de Agravos de Notificação), o instrumento de coleta é a Ficha de Investigação/Notificação (FIN). Para cada agravo, existe uma ficha específica que deve ser preenchida pelos profissionais de saúde.' },
+    { section: 'sistemas', question: 'Com base nas imagens do tutorial do TABNET, qual das seguintes opções NÃO é um nível de agregação geográfica tipicamente disponível para seleção dentro de um estado?', options: [{text: 'Município'}, {text: 'Microrregião'}, {text: 'Regional de Saúde'}, {text: 'Setor Censitário', isCorrect: true}], rationale: 'O TABNET permite a desagregação por diversas unidades geográficas (Município, Microrregião, Regional de Saúde). No entanto, o Setor Censitário, por ser a menor unidade e gerar um volume de dados muito grande, geralmente não está disponível como opção padrão de tabulação no TABNET público.' },
+    { section: 'indicadores', question: 'Em um município com 200.000 habitantes, foram registrados 1.200 óbitos totais em um ano. Desses, 60 foram por acidentes de trânsito. A Taxa de Mortalidade Geral (TMG) e a Taxa de Mortalidade por Causa Específica (TMCE) por acidentes de trânsito foram, respectivamente:', options: [{text: '6,0 por 1.000 hab e 30,0 por 100.000 hab.', isCorrect: true}, {text: '60,0 por 1.000 hab e 3,0 por 100.000 hab.'}, {text: '0,6 por 1.000 hab e 300,0 por 100.000 hab.'}, {text: '6,0 por 1.000 hab e 5,0 por 100.000 hab.'}], rationale: 'TMG = (1.200 / 200.000) * 1.000 = 6,0 por 1.000 hab. TMCE = (60 / 200.000) * 100.000 = 30,0 por 100.000 hab.' },
+    { section: 'indicadores', question: 'Em uma cidade, em 2022, ocorreram 5.000 nascimentos vivos. No mesmo período, foram registrados 75 óbitos de crianças com menos de 1 ano, sendo 50 nos primeiros 27 dias de vida. O Coeficiente de Mortalidade Infantil (CMI) e o Coeficiente de Mortalidade Neonatal (CMN) foram, respectivamente:', options: [{text: '15,0 por 1.000 NV e 10,0 por 1.000 NV.', isCorrect: true}, {text: '10,0 por 1.000 NV e 15,0 por 1.000 NV.'}, {text: '15,0 por 1.000 NV e 5,0 por 1.000 NV.'}, {text: '75,0 por 1.000 NV e 50,0 por 1.000 NV.'}], rationale: 'CMI = (75 / 5.000) * 1.000 = 15,0 por 1.000 NV. CMN = (50 / 5.000) * 1.000 = 10,0 por 1.000 NV.' },
+    { section: 'indicadores', question: 'Utilizando os mesmos dados da questão anterior (5.000 nascidos vivos, 75 óbitos infantis totais, 50 óbitos neonatais), qual é o valor do Coeficiente de Mortalidade Pós-Neonatal (CMPN)?', options: [{text: '5,0 por 1.000 nascidos vivos.', isCorrect: true}, {text: '10,0 por 1.000 nascidos vivos.'}, {text: '15,0 por 1.000 nascidos vivos.'}, {text: '25,0 por 1.000 nascidos vivos.'}], rationale: 'Óbitos pós-neonatais = Total de óbitos infantis - Óbitos neonatais = 75 - 50 = 25. CMPN = (25 / 5.000) * 1.000 = 5,0 por 1.000 NV.' },
+    { section: 'indicadores', question: 'Em uma cidade com 50.000 habitantes, havia 100 pessoas em tratamento para tuberculose em 1º de janeiro. Ao longo do ano, foram diagnosticados 50 novos casos. A taxa de incidência e a prevalência pontual (em 1º de janeiro) foram, respectivamente:', options: [{text: '100 por 100.000 hab e 200 por 100.000 hab.', isCorrect: true}, {text: '200 por 100.000 hab e 100 por 100.000 hab.'}, {text: '50 por 100.000 hab e 100 por 100.000 hab.'}, {text: '100 por 100.000 hab e 300 por 100.000 hab.'}], rationale: 'Incidência (casos novos) = (50 / 50.000) * 100.000 = 100 por 100.000 hab. Prevalência (casos existentes) = (100 / 50.000) * 100.000 = 200 por 100.000 hab.' },
+    { section: 'indicadores', question: 'Para avaliar a eficácia de uma nova campanha de prevenção primária contra o HIV no seu primeiro ano, qual indicador epidemiológico seria o mais sensível e apropriado para ser monitorado?', options: [{text: 'A prevalência de HIV.'}, {text: 'A taxa de mortalidade por AIDS.'}, {text: 'A taxa de incidência de HIV.', isCorrect: true}, {text: 'O número de pessoas vivendo com HIV/AIDS.'}], rationale: 'Uma campanha de prevenção primária visa a evitar a ocorrência de casos novos. O indicador que mede diretamente a frequência de casos novos é a taxa de incidência. Se a campanha for eficaz, espera-se uma redução na taxa de incidência.' },
+    { section: 'indicadores', question: 'A análise de séries temporais de taxas de mortalidade, como a apresentada no gráfico do material de referência, é fundamental para:', options: [{text: 'Calcular a prevalência de causas externas.'}, {text: 'Identificar padrões, tendências e avaliar o impacto de políticas públicas ao longo do tempo.', isCorrect: true}, {text: 'Determinar a incidência de lesões não fatais.'}, {text: 'Provar a causalidade entre fatores de risco e os óbitos.'}], rationale: 'A análise de séries temporais é uma ferramenta da epidemiologia descritiva cujo objetivo é identificar padrões (sazonalidade), tendências (aumento, queda, estabilização) e mudanças no comportamento de um agravo ao longo do tempo, permitindo monitorar e avaliar o impacto de políticas públicas.' },
+    { section: 'indicadores', question: 'A prevalência de uma doença crônica estável em uma população fechada é determinada por quais dois fatores principais?', options: [{text: 'Incidência e mortalidade'}, {text: 'Incidência e duração da doença', isCorrect: true}, {text: 'Mortalidade e letalidade'}, {text: 'Prevalência e incidência'}], rationale: 'A prevalência pode ser vista como um "reservatório". A incidência é o que "entra" e a duração da doença (tempo até a cura ou morte) é o que determina a "saída". Em equilíbrio, Prevalência ≈ Incidência x Duração da Doença.' },
+    { section: 'indicadores', question: 'O Coeficiente de Mortalidade Infantil Neonatal é subdividido em Precoce e Tardio. O componente Neonatal Precoce se refere aos óbitos ocorridos em qual período?', options: [{text: 'Nas primeiras 24 horas de vida.'}, {text: 'Nos primeiros 7 dias de vida (0 a 6 dias completos).', isCorrect: true}, {text: 'Do 7º ao 27º dia de vida.'}, {text: 'Antes do parto (óbito fetal).'}], rationale: 'O período neonatal precoce ocorre do nascimento até o 6º dia de vida completo (ou seja, nos primeiros 7 dias). As mortes neste período estão fortemente ligadas a problemas da gestação e da assistência ao parto.' },
+    { section: 'indicadores', question: 'Qual é a definição correta de Taxa de Letalidade?', options: [{text: 'A proporção de óbitos por uma doença em relação à população total.'}, {text: 'A proporção de óbitos por uma doença em relação ao número de pessoas que tiveram a doença.', isCorrect: true}, {text: 'A proporção de casos novos de uma doença em relação à população exposta.'}, {text: 'A proporção de óbitos totais em relação à população total.'}], rationale: 'A Taxa de Letalidade mede a gravidade de uma doença, expressando a probabilidade de morrer uma vez que se tenha contraído a doença. A fórmula é: (Nº de óbitos pela doença / Nº total de casos da mesma doença) x 100.' },
+    { section: 'indicadores', question: 'Em 2021, um município registrou 10.000 nascidos vivos. Ocorreram 40 óbitos em crianças de 0 a 6 dias, 20 óbitos de 7 a 27 dias, e 30 óbitos de 28 dias a menos de 1 ano. Qual o Coeficiente de Mortalidade Infantil (CMI)?', options: [{text: '4,0 por 1.000 NV'}, {text: '6,0 por 1.000 NV'}, {text: '7,0 por 1.000 NV'}, {text: '9,0 por 1.000 NV', isCorrect: true}], rationale: 'Total de óbitos infantis = 40 (neonatal precoce) + 20 (neonatal tardio) + 30 (pós-neonatal) = 90. CMI = (90 / 10.000) * 1.000 = 9,0 por 1.000 NV.' },
+    { section: 'indicadores', question: 'A principal diferença conceitual entre a Taxa de Mortalidade por uma doença e a Taxa de Letalidade por essa mesma doença é:', options: [{text: 'O numerador utilizado no cálculo.'}, {text: 'O denominador utilizado no cálculo.', isCorrect: true}, {text: 'O fator de multiplicação.'}, {text: 'O sistema de informação de onde os dados são extraídos.'}], rationale: 'A distinção fundamental reside no denominador. A Taxa de Mortalidade usa a população geral no denominador (risco para a população). A Taxa de Letalidade usa o número de doentes no denominador (risco para quem adoeceu).' },
+    { section: 'indicadores', question: 'Um surto de gastroenterite ocorreu em um acampamento com 500 pessoas. 100 pessoas adoeceram, todas consumiram maionese. Entre as 400 que não adoeceram, 50 também consumiram a maionese. Qual a taxa de ataque da doença entre os que consumiram a maionese?', options: [{text: '20%'}, {text: '66,7%', isCorrect: true}, {text: '25%'}, {text: '83,3%'}], rationale: 'A Taxa de Ataque é uma medida de incidência em surtos. Total de expostos (comeram maionese) = 100 (doentes) + 50 (não doentes) = 150. Taxa de Ataque = (Doentes que comeram / Total que comeu) * 100 = (100 / 150) * 100 = 66,7%.' },
+    { section: 'indicadores', question: 'A análise do componente pós-neonatal da mortalidade infantil (óbitos entre 28 dias e 1 ano) é crucial. A predominância de óbitos neste período geralmente indica problemas relacionados a:', options: [{text: 'Má-formações congênitas graves.'}, {text: 'Qualidade da assistência ao parto.'}, {text: 'Fatores ambientais, condições socioeconômicas e acesso à atenção primária.', isCorrect: true}, {text: 'Qualidade do preenchimento da DN.'}], rationale: 'A mortalidade pós-neonatal está fortemente associada a fatores exógenos. As principais causas de morte neste período são as doenças infecciosas (diarreia, pneumonia) e a desnutrição, diretamente influenciadas por fatores ambientais, socioeconômicos e pela qualidade da atenção primária.' },
+    { section: 'indicadores', question: 'No dia 15 de maio, uma equipe de vigilância visitou uma creche com 200 crianças. Constataram que 30 crianças estavam com conjuntivite naquele dia. Outras 10 já haviam tido a doença no início do mês e estavam curadas. Qual foi a prevalência pontual de conjuntivite no dia 15 de maio?', options: [{text: '5%'}, {text: '10%'}, {text: '15%', isCorrect: true}, {text: '20%'}], rationale: 'A prevalência pontual mede a proporção de indivíduos com a doença em um ponto específico no tempo. Nº de casos existentes no dia 15 = 30. População = 200. Prevalência = (30 / 200) * 100 = 15%.' },
+    { section: 'indicadores', question: 'Uma cidade com 1.000.000 de habitantes registrou 8.000 óbitos totais, 2.400 por doenças circulatórias, 15.000 nascidos vivos e 180 óbitos infantis. Qual afirmação está INCORRETA?', options: [{text: 'A Taxa de Mortalidade Geral foi de 8,0 por 1.000 hab.'}, {text: 'O Coeficiente de Mortalidade Infantil foi de 12,0 por 1.000 NV.'}, {text: 'A proporção de óbitos por Doenças do Aparelho Circulatório foi de 30%.'}, {text: 'A Taxa de Natalidade foi de 8,0 por 1.000 habitantes.', isCorrect: true}], rationale: 'A Taxa de Natalidade é calculada como (Nascidos vivos / População total) * 1.000. (15.000 / 1.000.000) * 1.000 = 15,0 por 1.000 habitantes. A afirmação de que foi 8,0 está incorreta. As outras estão corretas.' },
+];
+
+let currentQuestions = [];
+let currentQuestionIndex = 0;
+let userScore = 0;
+let userAnswers = {};
+
+const quizSelector = document.getElementById('quiz-selector');
+const quizContainer = document.getElementById('quiz-container');
+const resultsContainer = document.getElementById('results-container');
+
+const questionText = document.getElementById('question-text');
+const answerOptionsContainer = document.getElementById('answer-options');
+const feedbackContainer = document.getElementById('feedback-container');
+const rationaleText = document.getElementById('rationale-text');
+const progressIndicator = document.getElementById('progress-indicator');
+const scoreText = document.getElementById('score-text');
+const realtimeScore = document.getElementById('realtime-score');
+
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+
+
+function startQuiz(section) {
+    if (section === 'all') {
+        currentQuestions = [...allQuestions];
+    } else {
+        currentQuestions = allQuestions.filter(q => q.section === section);
+    }
+    
+    currentQuestionIndex = 0;
+    userScore = 0;
+    userAnswers = {};
+
+    quizSelector.classList.add('hidden');
+    resultsContainer.classList.add('hidden');
+    quizContainer.classList.remove('hidden');
+
+    displayQuestion();
+}
+
+function displayQuestion() {
+    feedbackContainer.classList.add('hidden');
+    const question = currentQuestions[currentQuestionIndex];
+    questionText.textContent = question.question;
+    answerOptionsContainer.innerHTML = '';
+
+    const hasAnswered = userAnswers.hasOwnProperty(currentQuestionIndex);
+
+    question.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = option.text;
+        button.classList.add('w-full', 'text-left', 'p-4', 'rounded-lg', 'border-2', 'border-gray-300', 'bg-white', 'hover:bg-teal-50', 'hover:border-teal-400', 'answer-btn');
+        
+        if (hasAnswered) {
+            button.disabled = true;
+            const userAnswer = userAnswers[currentQuestionIndex];
+            if (option.isCorrect) {
+                button.classList.add('feedback-correct');
+            } else if (index === userAnswer.selectedIndex) {
+                button.classList.add('feedback-incorrect');
+            }
+        } else {
+            button.onclick = () => selectAnswer(index, question.options.findIndex(o => o.isCorrect));
+        }
+        
+        answerOptionsContainer.appendChild(button);
+    });
+
+    if (hasAnswered) {
+        rationaleText.textContent = question.rationale;
+        feedbackContainer.classList.remove('hidden');
+    }
+
+    updateNavigation();
+    updateRealtimeScore();
+}
+
+function selectAnswer(selectedIndex, correctIndex) {
+    // This check ensures a question is answered only once.
+    if (userAnswers.hasOwnProperty(currentQuestionIndex)) {
+        return;
+    }
+
+    const isCorrect = selectedIndex === correctIndex;
+    if (isCorrect) {
+        userScore++;
+    }
+    userAnswers[currentQuestionIndex] = { selectedIndex, isCorrect };
+
+    const buttons = answerOptionsContainer.getElementsByTagName('button');
+    for (let btn of buttons) {
+        btn.disabled = true;
+    }
+
+    buttons[correctIndex].classList.add('feedback-correct');
+    if (!isCorrect) {
+        buttons[selectedIndex].classList.add('feedback-incorrect');
+    }
+
+    rationaleText.textContent = currentQuestions[currentQuestionIndex].rationale;
+    feedbackContainer.classList.remove('hidden');
+    updateRealtimeScore();
+}
+
+function updateRealtimeScore() {
+    const questionsAnswered = Object.keys(userAnswers).length;
+    if (questionsAnswered === 0) {
+        realtimeScore.textContent = '';
+        return;
+    }
+    const percentage = Math.round((userScore / questionsAnswered) * 100);
+    realtimeScore.textContent = `Acertos: ${userScore}/${questionsAnswered} (${percentage}%)`;
+}
+
+
+function updateNavigation() {
+    progressIndicator.textContent = `Questão ${currentQuestionIndex + 1} de ${currentQuestions.length}`;
+    prevBtn.disabled = currentQuestionIndex === 0;
+    
+    if (currentQuestionIndex === currentQuestions.length - 1) {
+        nextBtn.textContent = 'Finalizar';
+    } else {
+        nextBtn.textContent = 'Próxima';
+    }
+}
+
+prevBtn.addEventListener('click', () => {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        displayQuestion();
+    }
+});
+
+nextBtn.addEventListener('click', () => {
+    if (currentQuestionIndex < currentQuestions.length - 1) {
+        currentQuestionIndex++;
+        displayQuestion();
+    } else {
+        showResults();
+    }
+});
+
+function showResults() {
+    quizContainer.classList.add('hidden');
+    resultsContainer.classList.remove('hidden');
+    const percentage = currentQuestions.length > 0 ? Math.round((userScore / currentQuestions.length) * 100) : 0;
+    scoreText.innerHTML = `Você acertou <span class="font-bold text-teal-600">${userScore}</span> de <span class="font-bold">${currentQuestions.length}</span> questões (${percentage}%).`;
+}
+
+function restartQuiz() {
+    resultsContainer.classList.add('hidden');
+    quizSelector.classList.remove('hidden');
+    realtimeScore.textContent = '';
+}
+
+</script>
+</body>
+</html>
