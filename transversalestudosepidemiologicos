@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador Interativo de Estudos Epidemiológicos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Teal -->
+    <!-- Application Structure Plan: The application is designed as an interactive dashboard for non-linear exploration. The core is a tab-based navigation system ('Observacionais', 'Experimentais', 'Comparar', 'Hierarquia') that allows users to freely switch between different modes of learning. This structure was chosen over a linear report format to empower users to directly access the information they need, compare concepts dynamically, and visualize relationships, which is more effective for understanding complex classification systems. The user flow is centered on selection and dynamic content display, promoting active engagement rather than passive reading. -->
+    <!-- Visualization & Content Choices: Report Info: Classification of study types. -> Goal: Organize & Compare. -> Viz/Presentation Method: Interactive tabs and buttons for selection, dynamic text blocks for detailed info, a dynamic HTML table for side-by-side comparison, a custom-built interactive pyramid for hierarchy, and a Chart.js bar chart to visualize trade-offs (Cost vs. Evidence Strength). -> Interaction: User clicks on a study type to see its details. User selects two studies from dropdowns to generate a comparison table. User hovers/clicks on pyramid levels for info. -> Justification: This multi-faceted approach caters to different learning styles. The interactive explorer is for focused learning, the comparison tool for analytical thinking, the pyramid for understanding evidence strength, and the chart for a quick visual summary. -> Library/Method: Vanilla JS for logic, Tailwind for styling, Chart.js (Canvas) for the chart. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfbf7;
+            color: #333;
+        }
+        .tab-active {
+            border-color: #0d9488;
+            color: #0d9488;
+            background-color: #f0fdfa;
+        }
+        .tab-inactive {
+            border-color: transparent;
+            color: #52525b;
+        }
+        .study-button-active {
+            background-color: #0d9488;
+            color: white;
+            transform: scale(1.05);
+        }
+        .pyramid-level {
+            clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);
+            transition: all 0.3s ease;
+        }
+        .pyramid-level:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-teal-800 mb-2">Explorador Interativo de Estudos Epidemiológicos</h1>
+            <p class="text-lg text-zinc-600 max-w-3xl mx-auto">Uma ferramenta para compreender, comparar e analisar os diferentes delineamentos de pesquisa em saúde pública.</p>
+        </header>
+
+        <main>
+            <div class="w-full max-w-5xl mx-auto mb-8">
+                <div class="border-b border-zinc-200">
+                    <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                        <button id="tab-observacionais" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 tab-active">Observacionais</button>
+                        <button id="tab-experimentais" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 tab-inactive">Experimentais</button>
+                        <button id="tab-comparar" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 tab-inactive">Comparar Estudos</button>
+                        <button id="tab-hierarquia" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 tab-inactive">Hierarquia & Síntese</button>
+                    </nav>
+                </div>
+            </div>
+
+            <div id="content-area">
+                <!-- Observational Studies Content -->
+                <div id="content-observacionais" class="tab-content">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-semibold text-teal-700">Estudos Observacionais</h2>
+                        <p class="text-zinc-600 mt-1">Nesta categoria, o pesquisador observa os eventos sem intervir. Explore os tipos de estudo abaixo para entender como descrevemos e analisamos os fenómenos de saúde no mundo real.</p>
+                    </div>
+                    <div id="study-selector-observacionais" class="flex flex-wrap justify-center gap-3 mb-8"></div>
+                    <div id="study-details-observacionais" class="bg-white p-6 rounded-2xl shadow-lg transition-opacity duration-500 min-h-[300px]"></div>
+                </div>
+
+                <!-- Experimental Studies Content -->
+                <div id="content-experimentais" class="tab-content hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-semibold text-teal-700">Estudos Experimentais</h2>
+                        <p class="text-zinc-600 mt-1">Aqui, o pesquisador atua ativamente, aplicando uma intervenção para testar uma hipótese. Estes estudos são o padrão-ouro para estabelecer relações de causa e efeito.</p>
+                    </div>
+                    <div id="study-selector-experimentais" class="flex flex-wrap justify-center gap-3 mb-8"></div>
+                    <div id="study-details-experimentais" class="bg-white p-6 rounded-2xl shadow-lg transition-opacity duration-500 min-h-[300px]"></div>
+                </div>
+
+                <!-- Comparison Tool Content -->
+                <div id="content-comparar" class="tab-content hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-semibold text-teal-700">Ferramenta de Comparação</h2>
+                        <p class="text-zinc-600 mt-1">Selecione dois tipos de estudo para ver uma comparação lado a lado das suas principais características, vantagens e desvantagens.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+                            <select id="compare-select-1" class="w-full sm:w-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-2.5"></select>
+                            <span class="font-bold text-zinc-500">vs.</span>
+                            <select id="compare-select-2" class="w-full sm:w-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 block p-2.5"></select>
+                            <button id="compare-button" class="px-6 py-2.5 bg-teal-600 text-white font-medium text-sm rounded-lg hover:bg-teal-700 transition-colors">Comparar</button>
+                        </div>
+                        <div id="comparison-table-container" class="overflow-x-auto"></div>
+                    </div>
+                </div>
+
+                <!-- Hierarchy & Synthesis Content -->
+                <div id="content-hierarquia" class="tab-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                        <div class="w-full">
+                             <div class="text-center mb-6">
+                                <h2 class="text-2xl font-semibold text-teal-700">Pirâmide da Evidência</h2>
+                                <p class="text-zinc-600 mt-1">Este modelo classifica os estudos com base na sua capacidade de minimizar vieses. Clique num nível para saber mais.</p>
+                            </div>
+                            <div id="pyramid-container" class="w-full max-w-md mx-auto flex flex-col-reverse gap-1 text-center text-white font-semibold text-sm">
+                                <div id="pyramid-level-1" data-level="1" class="pyramid-level bg-teal-800 p-3 cursor-pointer">Opinião, Pesquisa Básica</div>
+                                <div id="pyramid-level-2" data-level="2" class="pyramid-level bg-teal-700 p-3 cursor-pointer">Relato/Série de Casos</div>
+                                <div id="pyramid-level-3" data-level="3" class="pyramid-level bg-teal-600 p-3 cursor-pointer">Caso-Controle</div>
+                                <div id="pyramid-level-4" data-level="4" class="pyramid-level bg-teal-500 p-3 cursor-pointer">Coorte</div>
+                                <div id="pyramid-level-5" data-level="5" class="pyramid-level bg-teal-400 p-3 cursor-pointer">Ensaio Clínico Randomizado</div>
+                                <div id="pyramid-level-6" data-level="6" class="pyramid-level bg-teal-300 p-3 cursor-pointer text-teal-900">Revisão Sistemática / Metanálise</div>
+                            </div>
+                            <div id="pyramid-details" class="mt-6 bg-white p-4 rounded-lg shadow-inner text-center min-h-[100px]">
+                                <p class="text-zinc-500">Clique num nível da pirâmide para ver a sua descrição.</p>
+                            </div>
+                        </div>
+                        <div class="w-full">
+                            <div class="text-center mb-6">
+                                <h2 class="text-2xl font-semibold text-teal-700">Custo vs. Força da Evidência</h2>
+                                <p class="text-zinc-600 mt-1">Uma visualização das vantagens e desvantagens de cada delineamento em termos de custo/tempo e rigor metodológico.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl shadow-lg chart-container h-96 max-h-[400px] w-full max-w-2xl mx-auto">
+                                <canvas id="tradeoff-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 pt-6 border-t border-zinc-200">
+            <p class="text-sm text-zinc-500">Desenvolvido com base no documento "Tipos de Estudos Epidemiológicos".</p>
+        </footer>
+    </div>
+
+    <script>
+        const studyData = {
+            'relato-serie-casos': {
+                name: 'Relato e Série de Casos',
+                category: 'observacionais',
+                description: 'Uma descrição detalhada da experiência de um ou mais pacientes. Serve como um alerta para doenças novas ou efeitos inesperados, gerando hipóteses.',
+                direction: 'N/A (Descritivo)',
+                unit: 'Indivíduo',
+                temporality: 'N/A',
+                measure: 'Nenhuma (descritivo)',
+                pros: [
+                    'Simples, rápido e de baixo custo.',
+                    'Excelente para identificar fenómenos novos ou raros.',
+                    'Gera hipóteses para estudos futuros.'
+                ],
+                cons: [
+                    'Ausência de grupo de controlo.',
+                    'Incapaz de testar hipóteses ou estabelecer causalidade.',
+                    'Alta suscetibilidade a vieses.'
+                ],
+                example: 'A publicação, em 1981, de uma série de casos de pneumonia rara em homens jovens, que foi o primeiro alerta para a epidemia de SIDA.'
+            },
+            'transversal': {
+                name: 'Transversal / Seccional',
+                category: 'observacionais',
+                description: 'Uma "fotografia" da população num único momento, medindo exposição e desfecho simultaneamente. Ideal para determinar a prevalência de doenças.',
+                direction: 'Simultâneo',
+                unit: 'Indivíduo',
+                temporality: 'Instantâneo',
+                measure: 'Razão de Prevalência (RP)',
+                pros: [
+                    'Rápido e de baixo custo.',
+                    'Mede a prevalência, útil para planeamento em saúde.',
+                    'Pode investigar múltiplas exposições e desfechos.'
+                ],
+                cons: [
+                    'Ambiguidade temporal (não se sabe quem veio primeiro).',
+                    'Inadequado para doenças raras ou de curta duração.',
+                    'Suscetível ao viés de sobrevivência.'
+                ],
+                example: 'Uma pesquisa numa cidade para determinar a prevalência de hipertensão e sua associação com o sedentarismo, com dados recolhidos na mesma semana.'
+            },
+            'ecologico': {
+                name: 'Ecológico',
+                category: 'observacionais',
+                description: 'Compara dados agregados (de grupos, não de indivíduos), como taxas de mortalidade entre países. Útil para gerar hipóteses com dados já existentes.',
+                direction: 'Simultâneo',
+                unit: 'Grupo / População',
+                temporality: 'Geralmente Instantâneo',
+                measure: 'Correlação',
+                pros: [
+                    'Muito rápido e barato, usa dados secundários.',
+                    'Bom para gerar hipóteses e avaliar políticas públicas.',
+                    'Único método para estudar exposições de nível de grupo.'
+                ],
+                cons: [
+                    'Falácia Ecológica: a associação no grupo pode não ser verdade no indivíduo.',
+                    'Alta vulnerabilidade a fatores de confusão.',
+                    'Incapacidade de inferir causalidade.'
+                ],
+                example: 'Correlacionar a venda per capita de cigarros em vários países com as respetivas taxas de mortalidade por cancro do pulmão.'
+            },
+            'caso-controle': {
+                name: 'Caso-Controle',
+                category: 'observacionais',
+                description: 'Parte do desfecho (doença) para investigar a causa. Compara a exposição a fatores de risco no passado entre um grupo de doentes (casos) e um grupo de não doentes (controlos).',
+                direction: 'Efeito → Causa (Retrospectivo)',
+                unit: 'Indivíduo',
+                temporality: 'Longitudinal (lógica retrospectiva)',
+                measure: 'Odds Ratio (OR)',
+                pros: [
+                    'Eficiente para doenças raras e de longa latência.',
+                    'Rápido e de custo relativamente baixo.',
+                    'Permite investigar múltiplas exposições para uma doença.'
+                ],
+                cons: [
+                    'Suscetível a viés de seleção (escolha dos controlos).',
+                    'Suscetível a viés de memória (casos lembram-se de forma diferente).',
+                    'Não calcula incidência diretamente.'
+                ],
+                example: 'Para investigar a relação entre cancro do pâncreas e tabagismo, compara-se o histórico de fumo de pacientes com a doença (casos) e de pacientes sem a doença (controlos).'
+            },
+            'coorte': {
+                name: 'Coorte',
+                category: 'observacionais',
+                description: 'Segue um grupo de indivíduos (expostos e não expostos a um fator) ao longo do tempo para ver quem desenvolve a doença. Estabelece a sequência temporal entre causa e efeito.',
+                direction: 'Causa → Efeito (Prospectivo)',
+                unit: 'Indivíduo',
+                temporality: 'Longitudinal',
+                measure: 'Risco Relativo (RR)',
+                pros: [
+                    'Estabelece a sequência temporal (causa precede o efeito).',
+                    'Calcula a incidência e o Risco Relativo.',
+                    'Menos sujeito a viés de memória.',
+                    'Bom para exposições raras e múltiplos desfechos.'
+                ],
+                cons: [
+                    'Caro, demorado e logisticamente complexo.',
+                    'Ineficiente para doenças raras.',
+                    'Sujeito a perdas de seguimento, que podem enviesar os resultados.'
+                ],
+                example: 'O Estudo dos Médicos Britânicos, que acompanhou fumantes e não fumantes por décadas para provar a ligação entre tabaco e cancro do pulmão.'
+            },
+            'ensaio-clinico': {
+                name: 'Ensaio Clínico Randomizado',
+                category: 'experimentais',
+                description: 'Padrão-ouro para testar a eficácia de intervenções. Os participantes são aleatoriamente distribuídos para receber a intervenção (ex: um novo medicamento) ou um controlo (ex: placebo).',
+                direction: 'Causa → Efeito',
+                unit: 'Indivíduo',
+                temporality: 'Longitudinal',
+                measure: 'Risco Relativo (RR), Redução de Risco',
+                pros: [
+                    'Padrão-ouro para inferência causal.',
+                    'A randomização minimiza o viés de confusão.',
+                    'Controlo rigoroso sobre a exposição.'
+                ],
+                cons: [
+                    'Muito caro, complexo e demorado.',
+                    'Questões éticas (princípio da equiparação).',
+                    'Resultados podem não ser generalizáveis para a população real (baixa validade externa).'
+                ],
+                example: 'Um estudo onde 400 pacientes com asma são aleatoriamente divididos: metade recebe um novo medicamento e a outra metade um placebo, para comparar a melhoria da função pulmonar.'
+            },
+            'ensaio-campo': {
+                name: 'Ensaio de Campo',
+                category: 'experimentais',
+                description: 'Semelhante ao ensaio clínico, mas testa intervenções preventivas (ex: vacinas) em indivíduos saudáveis na comunidade ("no campo").',
+                direction: 'Causa → Efeito',
+                unit: 'Indivíduo',
+                temporality: 'Longitudinal',
+                measure: 'Incidência, RR',
+                pros: [
+                    'Forte evidência para eficácia de medidas preventivas.',
+                    'Conduzido em ambiente mais próximo da realidade.'
+                ],
+                cons: [
+                    'Exige um número muito grande de participantes.',
+                    'Extremamente caro e logisticamente complexo.'
+                ],
+                example: 'O estudo da vacina Salk contra a poliomielite, que envolveu mais de um milhão de crianças para testar a eficácia da vacina.'
+            },
+            'ensaio-comunitario': {
+                name: 'Ensaio Comunitário',
+                category: 'experimentais',
+                description: 'A intervenção é aplicada a grupos inteiros (comunidades, cidades, escolas), não a indivíduos. Útil para avaliar políticas públicas ou intervenções ambientais.',
+                direction: 'Causa → Efeito',
+                unit: 'Grupo / Comunidade',
+                temporality: 'Longitudinal',
+                measure: 'Taxas de incidência',
+                pros: [
+                    'Avalia o impacto de intervenções em larga escala.',
+                    'Relevante para políticas públicas.'
+                ],
+                cons: [
+                    'Difícil randomizar poucas comunidades.',
+                    'Alto risco de "contaminação" entre os grupos.',
+                    'Poder estatístico limitado.'
+                ],
+                example: 'Fluoretar a água de uma cidade e comparar a incidência de cáries com uma cidade vizinha que não recebeu a intervenção.'
+            }
+        };
+
+        const pyramidData = {
+            1: { name: 'Opinião de Especialistas, Pesquisa Básica', description: 'A base da pirâmide. Inclui ideias, editoriais e estudos laboratoriais (in vitro) ou em animais. Essencial para gerar hipóteses, mas não fornece evidência direta para a prática clínica em humanos.' },
+            2: { name: 'Relato de Caso / Série de Casos', description: 'Descrições de casos individuais. São importantes para detetar novidades (doenças, efeitos adversos), mas não possuem grupo de controlo, o que impede conclusões sobre causa e efeito.' },
+            3: { name: 'Estudo de Caso-Controle', description: 'Estudo observacional retrospectivo que compara a exposição passada entre doentes (casos) e não doentes (controlos). É eficiente para doenças raras, mas vulnerável a vieses de memória e seleção.' },
+            4: { name: 'Estudo de Coorte', description: 'Estudo observacional que segue grupos de expostos e não expostos ao longo do tempo. Estabelece a sequência temporal e é considerado um desenho robusto, mas pode ser caro e demorado.' },
+            5: { name: 'Ensaio Clínico Randomizado (ECR)', description: 'Estudo experimental considerado o "padrão-ouro" para avaliar a eficácia de intervenções. A alocação aleatória minimiza vieses, fornecendo forte evidência causal.' },
+            6: { name: 'Revisão Sistemática e Metanálise', description: 'O topo da pirâmide. Sintetiza os resultados de múltiplos estudos de alta qualidade (idealmente ECRs) para fornecer a estimativa mais precisa e confiável sobre um tema.' }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+            const studySelectorObs = document.getElementById('study-selector-observacionais');
+            const studySelectorExp = document.getElementById('study-selector-experimentais');
+            const studyDetailsObs = document.getElementById('study-details-observacionais');
+            const studyDetailsExp = document.getElementById('study-details-experimentais');
+            const compareSelect1 = document.getElementById('compare-select-1');
+            const compareSelect2 = document.getElementById('compare-select-2');
+            const compareButton = document.getElementById('compare-button');
+            const comparisonContainer = document.getElementById('comparison-table-container');
+            const pyramidContainer = document.getElementById('pyramid-container');
+            const pyramidDetails = document.getElementById('pyramid-details');
+            
+            let activeStudyButtonObs = null;
+            let activeStudyButtonExp = null;
+
+            function switchTab(activeTab) {
+                tabs.forEach(tab => {
+                    const contentId = tab.id.replace('tab-', 'content-');
+                    const content = document.getElementById(contentId);
+                    if (tab === activeTab) {
+                        tab.classList.remove('tab-inactive');
+                        tab.classList.add('tab-active');
+                        content.classList.remove('hidden');
+                    } else {
+                        tab.classList.remove('tab-active');
+                        tab.classList.add('tab-inactive');
+                        content.classList.add('hidden');
+                    }
+                });
+            }
+
+            function createStudyButton(studyId, data) {
+                const button = document.createElement('button');
+                button.id = `btn-${studyId}`;
+                button.className = 'study-button px-4 py-2 text-sm font-medium text-zinc-700 bg-zinc-100 rounded-full hover:bg-teal-100 transition-all duration-300';
+                button.textContent = data.name;
+                return button;
+            }
+
+            function displayStudyDetails(studyId, container, button) {
+                const data = studyData[studyId];
+                if (!data) return;
+
+                const prosList = data.pros.map(pro => `<li class="flex items-start"><span class="text-green-500 mr-2 mt-1">✓</span><span>${pro}</span></li>`).join('');
+                const consList = data.cons.map(con => `<li class="flex items-start"><span class="text-red-500 mr-2 mt-1">✗</span><span>${con}</span></li>`).join('');
+
+                container.innerHTML = `
+                    <h3 class="text-xl font-bold text-teal-800 mb-3">${data.name}</h3>
+                    <p class="text-zinc-600 mb-6">${data.description}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-sm">
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-zinc-700">Vantagens</h4>
+                            <ul class="space-y-2 text-zinc-600">${prosList}</ul>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-zinc-700">Desvantagens</h4>
+                            <ul class="space-y-2 text-zinc-600">${consList}</ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-zinc-700 mb-2">Exemplo Prático</h4>
+                        <p class="text-zinc-600 text-sm italic border-l-4 border-teal-200 pl-4 py-2 bg-slate-50 rounded-r-lg">${data.example}</p>
+                    </div>
+                `;
+                
+                if (data.category === 'observacionais') {
+                    if (activeStudyButtonObs) activeStudyButtonObs.classList.remove('study-button-active');
+                    button.classList.add('study-button-active');
+                    activeStudyButtonObs = button;
+                } else {
+                    if (activeStudyButtonExp) activeStudyButtonExp.classList.remove('study-button-active');
+                    button.classList.add('study-button-active');
+                    activeStudyButtonExp = button;
+                }
+            }
+            
+            function populateSelectors() {
+                Object.keys(studyData).forEach((key, index) => {
+                    const option1 = document.createElement('option');
+                    option1.value = key;
+                    option1.textContent = studyData[key].name;
+                    compareSelect1.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = key;
+                    option2.textContent = studyData[key].name;
+                    compareSelect2.appendChild(option2);
+                });
+                compareSelect1.selectedIndex = 3;
+                compareSelect2.selectedIndex = 4;
+            }
+
+            function generateComparisonTable() {
+                const id1 = compareSelect1.value;
+                const id2 = compareSelect2.value;
+                const data1 = studyData[id1];
+                const data2 = studyData[id2];
+
+                if (id1 === id2) {
+                    comparisonContainer.innerHTML = `<p class="text-center text-red-600">Por favor, selecione dois estudos diferentes para comparar.</p>`;
+                    return;
+                }
+
+                const fields = [
+                    { label: 'Característica', key: 'name', isHeader: true },
+                    { label: 'Unidade de Análise', key: 'unit' },
+                    { label: 'Direção da Investigação', key: 'direction' },
+                    { label: 'Temporalidade', key: 'temporality' },
+                    { label: 'Principal Medida', key: 'measure' },
+                    { label: 'Principal Vantagem', key: 'pros', isList: true },
+                    { label: 'Principal Desvantagem', key: 'cons', isList: true },
+                ];
+                
+                let tableHTML = '<table class="w-full text-sm text-left text-gray-500">';
+                tableHTML += '<thead class="text-xs text-gray-700 uppercase bg-gray-50">';
+                tableHTML += `<tr><th scope="col" class="px-6 py-3">Característica</th><th scope="col" class="px-6 py-3">${data1.name}</th><th scope="col" class="px-6 py-3">${data2.name}</th></tr></thead>`;
+                tableHTML += '<tbody>';
+
+                fields.forEach((field, index) => {
+                    if (field.isHeader) return;
+                    const value1 = field.isList ? `<ul>${data1[field.key].map(i => `<li class="py-1">${i}</li>`).join('')}</ul>` : data1[field.key];
+                    const value2 = field.isList ? `<ul>${data2[field.key].map(i => `<li class="py-1">${i}</li>`).join('')}</ul>` : data2[field.key];
+                    tableHTML += `<tr class="bg-white border-b"><th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${field.label}</th>`;
+                    tableHTML += `<td class="px-6 py-4">${value1}</td>`;
+                    tableHTML += `<td class="px-6 py-4">${value2}</td></tr>`;
+                });
+
+                tableHTML += '</tbody></table>';
+                comparisonContainer.innerHTML = tableHTML;
+            }
+
+            function displayPyramidDetails(level) {
+                const data = pyramidData[level];
+                if (!data) return;
+                pyramidDetails.innerHTML = `<h4 class="font-bold text-teal-700">${data.name}</h4><p class="text-zinc-600 mt-2 text-sm">${data.description}</p>`;
+            }
+
+            function initChart() {
+                const ctx = document.getElementById('tradeoff-chart').getContext('2d');
+                const chartData = {
+                    labels: Object.values(studyData).map(d => d.name.replace(' / ', '/')),
+                    datasets: [
+                        {
+                            label: 'Custo / Tempo / Complexidade',
+                            data: [1, 2, 2, 5, 8, 10, 9, 9],
+                            backgroundColor: 'rgba(245, 158, 11, 0.6)',
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Força da Evidência Causal',
+                            data: [1, 2, 2, 4, 6, 9, 8, 7],
+                            backgroundColor: 'rgba(13, 148, 136, 0.6)',
+                            borderColor: 'rgba(13, 148, 136, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                };
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                stacked: false,
+                                title: { display: true, text: 'Pontuação Relativa (1=Baixo, 10=Alto)' }
+                            },
+                            y: {
+                                stacked: false
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        return context[0].label.replace('/', ' / ');
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab));
+            });
+
+            Object.entries(studyData).forEach(([id, data]) => {
+                const button = createStudyButton(id, data);
+                if (data.category === 'observacionais') {
+                    studySelectorObs.appendChild(button);
+                    button.addEventListener('click', () => displayStudyDetails(id, studyDetailsObs, button));
+                } else {
+                    studySelectorExp.appendChild(button);
+                    button.addEventListener('click', () => displayStudyDetails(id, studyDetailsExp, button));
+                }
+            });
+
+            pyramidContainer.addEventListener('click', (e) => {
+                const levelDiv = e.target.closest('.pyramid-level');
+                if (levelDiv) {
+                    displayPyramidDetails(levelDiv.dataset.level);
+                }
+            });
+
+            compareButton.addEventListener('click', generateComparisonTable);
+
+            document.getElementById('btn-coorte').click();
+            document.getElementById('btn-ensaio-clinico').click();
+            populateSelectors();
+            generateComparisonTable();
+            displayPyramidDetails(6);
+            initChart();
+        });
+    </script>
+</body>
+</html>
