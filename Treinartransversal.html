@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Exercícios Interativa: Métodos Científicos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .question-card {
+            transition: box-shadow 0.3s;
+        }
+        .question-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .answer-btn {
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .answer-btn:not(:disabled):hover {
+            transform: translateY(-2px);
+            background-color: #e0f2fe; /* sky-100 */
+        }
+        .dark .answer-btn:not(:disabled):hover {
+            background-color: #0c4a6e; /* sky-900 */
+        }
+        .correct {
+            background-color: #16a34a !important; /* green-600 */
+            color: white;
+            border-color: #15803d; /* green-700 */
+        }
+        .incorrect {
+            background-color: #dc2626 !important; /* red-600 */
+            color: white;
+            border-color: #b91c1c; /* red-700 */
+        }
+        .answered .answer-btn:not(.correct):not(.incorrect) {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 sticky top-4 z-10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-blue-400">Lista de Exercícios</h1>
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">Métodos Científicos e Pesquisa em Saúde</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-center">
+                        <div id="score-display" class="text-3xl font-bold text-green-500">0/100</div>
+                        <div class="text-sm font-medium text-gray-500">Questões Corretas</div>
+                    </div>
+                    <button id="reset-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                        Resetar Progresso
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main id="exercise-list" class="space-y-6">
+            <!-- As questões serão inseridas aqui pelo JavaScript -->
+        </main>
+
+    </div>
+
+    <script>
+        const questions = [
+            // DADOS DO QUIZ (100 QUESTÕES)
+            // PARTE I: MÉTODOS CIENTÍFICOS E PARADIGMAS
+            { question: 'De acordo com o material, a principal distinção entre "método científico" e "técnica científica" reside em:', options: ['O método ser a ação prática (como fazer) e a técnica ser o plano teórico (o que fazer).', 'O método ser o caminho ou plano (o que fazer) e a técnica ser a ação ou modo de caminhar (como fazer).', 'Método e técnica serem sinônimos, referindo-se ambos aos procedimentos de comprovação.', 'O método ser aplicável apenas às ciências exatas e a técnica às ciências humanas.'], answer: 1 },
+            { question: 'Qual método científico é caracterizado por partir de premissas universais para chegar a uma conclusão específica e lógica, como no exemplo de Sócrates?', options: ['Método Indutivo', 'Método Dialético', 'Método Dedutivo', 'Método Fenomenológico'], answer: 2 },
+            { question: 'A generalização "o calor dilata TODOS os metais" é uma conclusão típica de qual método?', options: ['Hipotético-dedutivo, pois testa uma hipótese.', 'Indutivo, pois parte de observações particulares (ferro, cobre, ouro) para criar uma lei geral.', 'Dedutivo, pois parte da premissa geral de que o calor causa dilatação.', 'Dialético, pois considera a interação entre calor e diferentes metais.'], answer: 1 },
+            { question: 'O método dialético se diferencia fundamentalmente dos outros por:', options: ['Focar exclusivamente em dados quantitativos.', 'Isolar os fatos para estudá-los em sua essência pura.', 'Exigir a percepção da inter-relação de múltiplas causas (políticas, econômicas, etc.) para entender um fenômeno.', 'Partir de uma hipótese e testá-la experimentalmente.'], answer: 2 },
+            { question: 'Um estudo que busca compreender a percepção e as vivências de pacientes terminais sobre os cuidados paliativos, focando em seus aspectos essenciais e intrínsecos, utiliza qual método?', options: ['Método Hipotético-dedutivo', 'Método Indutivo', 'Método Dedutivo', 'Método Fenomenológico'], answer: 3 },
+            { question: 'Karl Popper está intrinsecamente associado ao desenvolvimento de qual método, considerado o principal da Ciência Moderna?', options: ['Método Dialético', 'Método Hipotético-dedutivo', 'Método Fenomenológico', 'Método Indutivo'], answer: 1 },
+            { question: 'Analisando o fluxo "Problema Clínico -> Hipóteses Diagnósticas -> Teste(s) -> Resultados", qual etapa do método hipotético-dedutivo corresponde à fase de "Teste(s)"?', options: ['Formulação da pergunta', 'Revisão bibliográfica', 'Experimentação', 'Conclusão'], answer: 2 },
+            { question: 'Se um pesquisador, após um experimento, rejeita sua hipótese inicial, qual deveria ser o próximo passo lógico segundo o fluxograma do método hipotético-dedutivo?', options: ['Divulgar os resultados negativos imediatamente.', 'Aceitar a hipótese mesmo com resultados contrários.', 'Formular uma nova hipótese e reiniciar o ciclo de testes.', 'Questionar a validade da observação inicial.'], answer: 2 },
+            { question: 'Thomas Kuhn introduziu o conceito de "paradigma" na ciência. Segundo ele, as "revoluções científicas" ocorrem quando:', options: ['Um novo método científico é descoberto.', 'Os paradigmas existentes são alterados ou substituídos por novos.', 'A ciência acumula dados suficientes para provar todas as hipóteses.', 'Os cientistas concordam em todos os pontos de uma teoria.'], answer: 1 },
+            { question: 'A crítica de Edgar Morin ao pensamento cartesiano propõe uma alternativa baseada na:', options: ['Divisão do objeto de pesquisa em partes menores para facilitar a análise.', 'Exclusão de métodos qualitativos em favor dos quantitativos.', 'Visão sistêmica do todo, conhecida como Teoria da Complexidade.', 'Rejeição completa do método científico tradicional.'], answer: 2 },
+            { question: 'A afirmação de que "os fatos não podem ser entendidos quando considerados isoladamente" é a premissa central de qual método?', options: ['Dedutivo', 'Indutivo', 'Dialético', 'Fenomenológico'], answer: 2 },
+            { question: 'O exemplo da vacina contra a varíola por Edward Jenner ilustra qual método científico?', options: ['Uma dedução lógica a partir de princípios gerais da imunologia.', 'Um processo indutivo de observação de casos particulares de varíola.', 'A aplicação do método hipotético-dedutivo, testando a hipótese de que a exposição à varíola bovina conferia proteção.', 'Uma análise fenomenológica da experiência dos ordenhadores.'], answer: 2 },
+            { question: 'Qual a principal diferença entre a lógica da dedução e da indução, conforme o diagrama apresentado?', options: ['A dedução generaliza e a indução particulariza.', 'A dedução parte do particular para o universal, e a indução do universal para o particular.', 'A dedução particulariza (do universal para o particular) e a indução generaliza (do particular para o universal).', 'Ambas partem do universal, mas chegam a conclusões diferentes.'], answer: 2 },
+            { question: 'A Teoria da Complexidade de Morin, ao ser aplicada, implica que:', options: ['O método científico se torna inválido e obsoleto.', 'A pesquisa deve focar em uma única variável para evitar complexidade.', 'O método científico deve ser aplicado considerando as particularidades e a interconexão dos elementos de cada área do conhecimento.', 'Apenas pesquisas qualitativas podem abraçar a complexidade.'], answer: 2 },
+            { question: 'Qual filósofo é associado à ideia de que os paradigmas são elementos essenciais do método científico?', options: ['Karl Popper', 'Edgar Morin', 'Edward Jenner', 'Thomas Kuhn'], answer: 3 },
+            { question: 'Se uma pesquisa parte da premissa "Toda inflamação causa dor" e observa um paciente com apendicite (uma inflamação) para concluir que ele sente dor, qual método está sendo implicitamente usado?', options: ['Indutivo', 'Dedutivo', 'Dialético', 'Fenomenológico'], answer: 1 },
+            { question: 'Um estudo que analisa como a crise econômica, as políticas públicas e a cultura local influenciam as taxas de criminalidade em uma cidade está adotando uma abordagem primordialmente:', options: ['Fenomenológica', 'Hipotético-dedutiva', 'Dialética', 'Indutiva'], answer: 2 },
+            { question: 'A etapa de "Revisão Bibliográfica" no método hipotético-dedutivo serve principalmente para:', options: ['Realizar o experimento.', 'Formular uma hipótese embasada no conhecimento existente.', 'Aceitar ou rejeitar a hipótese.', 'Divulgar a pesquisa.'], answer: 1 },
+            { question: 'A principal crítica ao método indutivo é que:', options: ['Ele nunca pode ser aplicado a problemas práticos.', 'A generalização a partir de um número finito de observações pode não ser universalmente verdadeira.', 'Ele é excessivamente complexo e pouco prático.', 'Ele não permite a formulação de hipóteses.'], answer: 1 },
+            { question: 'A busca por entender "o que" se vivencia e "como" se vivencia um fenômeno é central para o método:', options: ['Dedutivo', 'Fenomenológico', 'Hipotético-dedutivo', 'Dialético'], answer: 1 },
+            { question: 'A charge do "Cientista do Século XIX vs. Cientista do Século XXI" critica uma mudança de foco na ciência, que seria:', options: ['Da busca pela compreensão da natureza para a busca por resultados que se encaixem em uma narrativa para publicação.', 'Da pesquisa qualitativa para a quantitativa.', 'Do método indutivo para o dedutivo.', 'Da colaboração para a competição entre cientistas.'], answer: 0 },
+            { question: 'A convivência e combinação de diferentes métodos científicos em uma mesma pesquisa é uma abordagem:', options: ['Rejeitada pela ciência moderna.', 'Aceita atualmente, dependendo do objeto de investigação.', 'Proposta apenas por Edgar Morin.', 'Válida somente para pesquisas quanti-qualitativas.'], answer: 1 },
+            { question: 'A ideia de "abraçar o todo" é a essência da:', options: ['Lógica dedutiva.', 'Teoria da Complexidade.', 'Experimentação no método hipotético-dedutivo.', 'Generalização indutiva.'], answer: 1 },
+            { question: 'Qual método se baseia fundamentalmente na lógica para derivar conclusões de premissas?', options: ['Método Dedutivo', 'Método Fenomenológico', 'Método Dialético', 'Método Indutivo'], answer: 0 },
+            { question: 'A etapa de "Questionamento" no ciclo do método científico ilustrado (página 14) é precedida imediatamente pela:', options: ['Experimentação', 'Observação', 'Formulação de hipóteses', 'Conclusão'], answer: 1 },
+            { question: 'Qual vertente de estudo é mais utilizada na área da Saúde e busca a generalização dos resultados através de amostragem e medição numérica?', options: ['Pesquisa Qualitativa', 'Pesquisa Quanti-qualitativa', 'Pesquisa Quantitativa', 'Pesquisa Fenomenológica'], answer: 2 },
+            { question: 'Uma pesquisa qualitativa se diferencia da quantitativa porque:', options: ['Busca medir numericamente as hipóteses.', 'Parte de uma hipótese pré-concebida e a testa.', 'Busca a singularidade e constrói suas hipóteses após a observação.', 'Exige sempre um cálculo de amostra representativa.'], answer: 2 },
+            { question: 'O método da "Triangulação" é característico de qual vertente de estudo?', options: ['Apenas Quantitativa', 'Apenas Qualitativa', 'Quanti-qualitativa', 'Apenas Experimental'], answer: 2 },
+            { question: 'A principal vantagem da pesquisa quanti-qualitativa é:', options: ['Ser mais rápida e barata que as outras.', 'Permitir uma análise mais ampla e complexa do objeto de estudo.', 'Eliminar a necessidade de formular hipóteses.', 'Focar exclusivamente na singularidade do fenômeno.'], answer: 1 },
+            { question: 'Os dados coletados através de um questionário elaborado especificamente para uma pesquisa em andamento são classificados como:', options: ['Dados Secundários', 'Dados Primários', 'Dados Terciários', 'Dados Brutos'], answer: 1 },
+            { question: 'Qual das seguintes opções é uma fonte de dados secundários?', options: ['Medidas antropométricas coletadas pela equipe de pesquisa.', 'Respostas a um roteiro de entrevista criado para o estudo.', 'Bancos de dados do DATASUS.', 'Exames bioquímicos solicitados para os participantes da pesquisa.'], answer: 2 },
+            { question: 'Uma das principais desvantagens do uso de dados secundários é que eles:', options: ['São financeiramente mais caros.', 'Exigem mais tempo para a coleta.', 'Podem estar desatualizados ou ser irrelevantes para o objeto de estudo específico.', 'São sempre de baixa qualidade.'], answer: 2 },
+            { question: 'A principal vantagem dos dados primários é que eles:', options: ['São financeiramente mais baratos.', 'Exigem menos tempo para a coleta.', 'São diretamente relacionados com a pesquisa e mais atualizados.', 'Não exigem controle do pesquisador.'], answer: 2 },
+            { question: 'Uma pesquisa que interpreta o significado dos fenômenos, sem hipóteses pré-concebidas e sem a necessidade de cálculo de amostra, é de natureza:', options: ['Quantitativa', 'Experimental', 'Qualitativa', 'Dedutiva'], answer: 2 },
+            { question: 'O uso de um questionário estruturado com perguntas claras e objetivas é uma estratégia para garantir a "calibração" em qual tipo de pesquisa?', options: ['Qualitativa', 'Quantitativa', 'Fenomenológica', 'Dialética'], answer: 1 },
+            { question: 'Se um pesquisador deseja analisar dados de nascimentos, óbitos e casamentos que já foram oficialmente registrados, ele recorrerá a dados:', options: ['Primários, pois ele fará a análise.', 'Secundários, pois os dados já existiam antes da pesquisa.', 'Quanti-qualitativos.', 'Experimentais.'], answer: 1 },
+            { question: 'A afirmação "o pesquisador tem menos controle, pois não foi ele quem fez a coleta" refere-se a qual tipo de dado?', options: ['Dados Primários', 'Dados Secundários', 'Dados Qualitativos', 'Dados Quantitativos'], answer: 1 },
+            { question: 'A busca pela "generalização" é um objetivo central da pesquisa __________, enquanto a busca pela "singularidade" é central para a pesquisa __________.', options: ['Qualitativa; Quantitativa', 'Quantitativa; Qualitativa', 'Primária; Secundária', 'Secundária; Primária'], answer: 1 },
+            { question: 'A triangulação, conforme Kelle (2001), permite:', options: ['Simplificar a análise, focando em um único ponto de vista.', 'Combinar postulados de diferentes vertentes de forma complementar.', 'Validar apenas dados quantitativos.', 'Substituir a coleta de dados primários pela de secundários.'], answer: 1 },
+            { question: 'Qual tipo de dado se refere sempre ao passado?', options: ['Dados Primários', 'Dados Secundários', 'Dados Experimentais', 'Dados Longitudinais'], answer: 1 },
+            { question: 'A necessidade de o pesquisador "gerar" os dados é uma característica dos dados:', options: ['Secundários', 'Públicos', 'Primários', 'Históricos'], answer: 2 },
+            { question: 'Em qual vertente de estudo as hipóteses são construídas *após* a observação?', options: ['Quantitativa', 'Qualitativa', 'Hipotético-dedutiva', 'Experimental'], answer: 1 },
+            { question: 'A distinção entre "dado" e "informação" é que:', options: ['Dado é o resultado da análise da informação.', 'Informação é a unidade básica, e o conjunto de informações forma um dado.', 'Dado é a unidade básica, e a organização de um conjunto de dados transforma-os em informação.', 'São termos sinônimos no contexto de pesquisa.'], answer: 2 },
+            { question: 'Uma pesquisa que utiliza prontuários de um hospital para analisar a evolução de uma doença está usando dados:', options: ['Primários, pois os prontuários são do hospital.', 'Secundários, pois os registros não foram criados para a pesquisa.', 'Qualitativos apenas.', 'Experimentais.'], answer: 1 },
+            { question: 'A necessidade de "calibração" para garantir a uniformidade de entendimento dos entrevistados é crucial em estudos:', options: ['Fenomenológicos', 'Qualitativos', 'Quantitativos com questionários estruturados.', 'Históricos.'], answer: 2 },
+            { question: 'Qual das seguintes fontes de dados tem sua origem histórica ligada aos registros da Igreja Católica?', options: ['IBGE', 'DATASUS', 'Registro Civil', 'Pesquisa Nacional de Saúde (PNS)'], answer: 2 },
+            { question: 'O IBGE é uma fonte primária de dados para qual tipo de ator?', options: ['Para o próprio IBGE, que realiza a coleta.', 'Para um pesquisador universitário que utiliza os dados do Censo.', 'Para todos os cidadãos.', 'Para o DATASUS.'], answer: 0 },
+            { question: 'A Pesquisa Nacional de Amostra Domiciliar (PNAD) é uma pesquisa especial realizada por qual instituição?', options: ['DATASUS', 'OMS', 'Ministério da Saúde', 'IBGE'], answer: 3 },
+            { question: 'O "Setor Censitário" é uma unidade territorial de coleta definida pelo IBGE para:', options: ['As operações censitárias.', 'Apenas a Pesquisa Nacional de Saúde do Escolar (PeNSE).', 'O registro de nascidos vivos.', 'A divisão de estados e municípios.'], answer: 0 },
+            { question: 'Qual das seguintes informações NÃO é uma informação censitária básica coletada pelo IBGE?', options: ['Idade e sexo.', 'Raça/cor.', 'Histórico de internações hospitalares.', 'Nível de alfabetização.'], answer: 2 },
+            { question: 'Questionários e roteiros de entrevista são considerados instrumentos de coleta:', options: ['Indireta', 'Documental', 'Direta', 'Bibliográfica'], answer: 2 },
+            { question: 'A principal diferença entre um questionário e um roteiro de entrevista é:', options: ['O questionário é sempre respondido com a interferência do pesquisador.', 'A entrevista é sempre não-estruturada.', 'O questionário é tipicamente respondido sem a interferência do pesquisador, enquanto a entrevista envolve interação face a face.', 'O questionário só tem perguntas fechadas, e a entrevista só tem perguntas abertas.'], answer: 2 },
+            { question: 'O que é um pré-teste na elaboração de um questionário?', options: ['A aplicação final do questionário.', 'Uma etapa para definir os objetivos da coleta.', 'Uma aplicação preliminar para identificar e ajustar possíveis distorções.', 'A escolha da ordem das perguntas.'], answer: 2 },
+            { question: 'Uma entrevista em que o pesquisador tem um roteiro prévio, mas possui liberdade para modificar a ordem das perguntas conforme a conversa flui, é do tipo:', options: ['Estruturada', 'Não-estruturada', 'Painel', 'Documental'], answer: 1 },
+            { question: 'A análise de prontuários, filmes, fotos e registros institucionais caracteriza uma coleta de dados:', options: ['Direta', 'Por questionário', 'Documental (indireta)', 'Por entrevista em painel'], answer: 2 },
+            { question: 'Teses, dissertações e artigos científicos são exemplos de fontes para uma coleta de dados:', options: ['Direta', 'Bibliográfica (indireta)', 'Primária', 'Experimental'], answer: 1 },
+            { question: 'Qual instrumento de coleta é predominante em estudos qualitativos?', options: ['Questionário estruturado', 'Roteiros de entrevista', 'Dados do DATASUS', 'Censo Demográfico'], answer: 1 },
+            { question: 'Uma entrevista em painel se caracteriza por:', options: ['Entrevistar um grande número de pessoas de uma só vez.', 'Acessar os mesmos sujeitos entrevistados repetidamente ao longo do tempo.', 'Não ter nenhum roteiro prévio.', 'Ser realizada apenas com especialistas.'], answer: 1 },
+            { question: 'A escolha do instrumento de coleta de dados depende fundamentalmente:', options: ['Apenas do orçamento da pesquisa.', 'Dos objetivos, tipo de estudo e abordagem metodológica.', 'Da preferência pessoal do pesquisador.', 'Da disponibilidade de dados secundários.'], answer: 1 },
+            { question: 'Um questionário auto responsivo é aquele que:', options: ['O pesquisador lê as perguntas para o entrevistado.', 'O próprio entrevistado preenche sem a presença do pesquisador.', 'Contém apenas perguntas abertas.', 'É usado exclusivamente em entrevistas estruturadas.'], answer: 1 },
+            { question: 'O DATASUS é o Departamento de Informática de qual sistema?', options: ['Do IBGE', 'Do Sistema Único de Saúde (SUS)', 'Do Registro Civil', 'Da Organização Mundial da Saúde (OMS)'], answer: 1 },
+            { question: 'O uso de mapas de setor censitário para analisar a distribuição de doenças, como no exemplo de Ascaris lumbricoides, demonstra a aplicação de dados de qual fonte para a saúde pública?', options: ['DATASUS', 'Registro Civil', 'IBGE', 'OMS'], answer: 2 },
+            { question: 'Qual é a principal aplicação dos dados demográficos coletados pelo IBGE no campo da saúde?', options: ['Apenas para o cálculo de impostos.', 'Para planejamento, diagnóstico de saúde (ex: mortalidade infantil) e avaliação de programas.', 'Exclusivamente para pesquisas de mercado.', 'Para o registro de patentes de medicamentos.'], answer: 1 },
+            { question: 'A análise de "padrões arquitetônicos e objetos culturais" como fonte de dados é um exemplo de coleta:', options: ['Bibliográfica', 'Documental', 'Por entrevista', 'Por questionário'], answer: 1 },
+            { question: 'A etapa de "CALIBRAÇÃO" mencionada na elaboração de questionários visa:', options: ['Garantir que as perguntas sejam abertas.', 'Ajustar o orçamento da pesquisa.', 'Assegurar a uniformidade de entendimento e aplicação do instrumento.', 'Escolher o tipo de entrevista a ser realizada.'], answer: 2 },
+            { question: 'O que é um viés (ou bias) em uma pesquisa?', options: ['Um fator que aumenta a confiabilidade dos resultados.', 'Um erro sistemático que produz desvios ou distorções nos resultados.', 'Um tipo de análise estatística avançada.', 'O resultado esperado de um experimento.'], answer: 1 },
+            { question: 'Um entrevistador que, para facilitar seu trabalho, escolhe entrevistar apenas as casas de mais fácil acesso em uma quadra está introduzindo qual tipo de viés?', options: ['Viés de Medição (Aferição)', 'Viés do Entrevistador', 'Viés de Seleção', 'Viés de Confirmação'], answer: 2 },
+            { question: 'O uso de um manguito de tamanho adulto para medir a pressão arterial de crianças, gerando valores incorretos, é um exemplo clássico de:', options: ['Viés de Seleção', 'Viés de Medição (Aferição)', 'Viés do Entrevistador', 'Fraude científica'], answer: 1 },
+            { question: 'Uma pergunta formulada como "O senhor não acha que o serviço oferecido aqui está bem melhor agora?" pode introduzir qual tipo de viés?', options: ['Viés de Seleção', 'Viés de Medição', 'Viés do Entrevistador / Pesquisador', 'Viés de Amostragem'], answer: 2 },
+            { question: 'Qual é a melhor maneira de evitar o viés de seleção em uma pesquisa domiciliar?', options: ['Permitir que o entrevistador escolha as casas que preferir.', 'Fornecer ao entrevistador uma listagem pré-definida e aleatória de casas a visitar.', 'Entrevistar apenas voluntários.', 'Realizar as entrevistas apenas no período noturno.'], answer: 1 },
+            { question: 'A calibração de equipamentos (como balanças) e o treinamento rigoroso da equipe são medidas para minimizar qual tipo de viés?', options: ['Viés de Seleção', 'Viés de Publicação', 'Viés de Medição (Aferição)', 'Viés do Entrevistado'], answer: 2 },
+            { question: 'A postura autoritária de um pesquisador ao fazer uma pergunta pode influenciar a resposta do entrevistado, caracterizando um:', options: ['Viés de Seleção', 'Viés do Entrevistador / Pesquisador', 'Viés de Aferição', 'Erro aleatório'], answer: 1 },
+            { question: 'O SIM (Sistema de Informações sobre Mortalidade) utiliza qual documento como instrumento de coleta?', options: ['Declaração de Nascido Vivo', 'Prontuário Hospitalar', 'Declaração de Óbito', 'Ficha de Notificação do SINAN'], answer: 2 },
+            { question: 'O SINASC (Sistema de Informações sobre Nascidos Vivos) é fundamental para o cálculo de qual importante indicador de saúde?', options: ['Taxa de Mortalidade Geral', 'Coeficiente de Mortalidade Infantil', 'Taxa de Incidência de Dengue', 'Prevalência de Hipertensão'], answer: 1 },
+            { question: 'O SINAN (Sistema de Informação de Agravos de Notificação) é utilizado para monitorar:', options: ['A produção ambulatorial.', 'A ocorrência de doenças e agravos de notificação compulsória, como surtos e epidemias.', 'Apenas óbitos maternos.', 'O número de leitos hospitalares.'], answer: 1 },
+            { question: 'A fórmula (Nº total de óbitos / População total) x 1.000 calcula qual indicador?', options: ['Coeficiente de Mortalidade Infantil', 'Taxa de Mortalidade por Causa Específica', 'Taxa de Mortalidade Geral (TMG)', 'Taxa de Letalidade'], answer: 2 },
+            { question: 'A principal diferença entre Incidência e Prevalência é:', options: ['Incidência mede casos novos, enquanto prevalência mede o total de casos (novos + antigos) em um ponto no tempo.', 'Incidência mede o total de casos, e prevalência mede apenas os casos novos.', 'Incidência é usada para doenças crônicas, e prevalência para doenças agudas.', 'Não há diferença, são sinônimos.'], answer: 0 },
+            { question: 'O Coeficiente de Mortalidade Infantil (CMI) é dividido em dois componentes principais. Quais são eles?', options: ['Neonatal e Pós-neonatal', 'Materno e Fetal', 'Precoce e Tardio', 'Agudo e Crônico'], answer: 0 },
+            { question: 'Para que serve o SIH (Sistema de Informações Hospitalares)?', options: ['Para notificar casos de dengue.', 'Para registrar informações sobre morbidade hospitalar, gestão e custeio da atenção hospitalar.', 'Para registrar nascidos vivos.', 'Para realizar o censo demográfico.'], answer: 1 },
+            { question: 'A afirmação de que a OMS define um sistema de informação em saúde como um mecanismo de "coleta, processamento, análise e transmissão da informação" destaca seu papel em:', options: ['Apenas armazenar dados.', 'Apoiar o ciclo de gestão em saúde (planejar, organizar, operar, avaliar).', 'Apenas publicar artigos científicos.', 'Substituir os profissionais de saúde.'], answer: 1 },
+            { question: 'O que é o TABNET?', options: ['Um sistema de informação para agendamento de consultas.', 'Uma ferramenta do DATASUS que permite tabular e gerar informações a partir dos bancos de dados do SUS.', 'Um software para preenchimento da Declaração de Óbito.', 'Uma rede social para profissionais de saúde.'], answer: 1 },
+            { question: 'O Coeficiente de Mortalidade Infantil Pós-Neonatal refere-se ao risco de morte para crianças em qual faixa etária?', options: ['Nos primeiros 7 dias de vida.', 'Nos primeiros 28 dias de vida.', 'De 28 dias até completar 1 ano de idade.', 'De 1 a 5 anos de idade.'], answer: 2 },
+            { question: 'Qual sistema de informação é a fonte primária para o cálculo da incidência de tuberculose no Brasil?', options: ['SIM', 'SINASC', 'SINAN', 'SIH'], answer: 2 },
+            { question: 'Um viés de seleção ocorre quando:', options: ['O instrumento de medição está descalibrado.', 'A maneira como os sujeitos são escolhidos para o estudo leva a conclusões não generalizáveis para a população alvo.', 'O pesquisador induz a resposta do entrevistado.', 'Ocorrem erros de digitação no banco de dados.'], answer: 1 },
+            { question: 'A "Medicina Baseada em Evidências" depende crucialmente de um fluxo que transforma ________ em ________ para guiar a ________.', options: ['Ação; Evidência; Informação', 'Informação; Evidência; Ação', 'Dado; Ação; Informação', 'Evidência; Dado; Ação'], answer: 1 },
+            { question: 'A principal forma de melhorar as estatísticas de mortalidade, segundo o material, é:', options: ['Aumentar o número de hospitais.', 'Melhorar o preenchimento das declarações de óbito pelos profissionais de saúde.', 'Usar apenas dados do IBGE.', 'Reduzir o número de notificações.'], answer: 1 },
+            { question: 'A fórmula (Nº de óbitos por causa X / População total) x 100.000 calcula a:', options: ['Taxa de Mortalidade Geral', 'Taxa de Mortalidade por Causa Específica', 'Prevalência', 'Incidência'], answer: 1 },
+            { question: 'O SIA (Sistema de Informações Ambulatoriais) é usado para gerenciar e custear qual nível de atenção?', options: ['Atenção Hospitalar', 'Atenção Primária', 'Atenção Ambulatorial', 'Vigilância Sanitária'], answer: 2 },
+            { question: 'A charge sobre reciclagem ilustra um viés onde as pessoas:', options: ['Fornecem uma resposta socialmente desejável, mesmo que não corresponda à realidade.', 'São selecionadas de forma inadequada.', 'São medidas com instrumentos defeituosos.', 'Não entendem a pergunta.'], answer: 0 },
+            { question: 'O denominador do Coeficiente de Mortalidade Infantil (CMI) é o:', options: ['Número total de óbitos.', 'Número de nascidos vivos.', 'População total.', 'Número de crianças menores de 5 anos.'], answer: 1 },
+            { question: 'Um problema comum que afeta a acurácia da Taxa de Mortalidade Geral é:', options: ['O excesso de notificações de óbitos.', 'A sub-contagem de óbitos e incorreções no tamanho da população.', 'A falta de dados sobre a causa da morte.', 'A dificuldade de acesso ao TABNET.'], answer: 1 },
+            { question: 'Qual sistema de informação é essencial para a "Vigilância a Criança de Risco"?', options: ['SIM', 'SINAN', 'SINASC', 'SIAB'], answer: 2 },
+            { question: 'A prevalência é uma medida de ________, enquanto a incidência é uma medida de ________.', options: ['Risco; Frequência', 'Frequência (estoque); Risco (fluxo)', 'Mortalidade; Morbidade', 'Morbidade; Mortalidade'], answer: 1 },
+            { question: 'Se um estudo sobre a eficácia de um novo medicamento recruta apenas voluntários saudáveis, qual viés é mais provável de ocorrer?', options: ['Viés de Medição', 'Viés do Entrevistador', 'Viés de Seleção', 'Viés de Publicação'], answer: 2 },
+            { question: 'A Declaração de Nascido Vivo (DNV) é o instrumento de coleta para qual sistema?', options: ['SIM', 'SINASC', 'SINAN', 'SIH'], answer: 1 },
+            { question: 'A análise da série histórica das taxas de homicídio, morte no trânsito e suicídio (gráfico da página 91) só é possível graças à existência de qual sistema de informação?', options: ['SINAN', 'SIH', 'SIM', 'SINASC'], answer: 2 },
+            { question: 'O que significa "FINotificação" na tabela de sistemas de informação?', options: ['Ficha de Investigação e Notificação', 'Fim da Notificação', 'Financiamento da Notificação', 'Formulário de Informação Nacional'], answer: 0 },
+            { question: 'O Coeficiente de Mortalidade Infantil Neonatal Precoce (não detalhado, mas inferível pelo contexto) se referiria a óbitos ocorridos em que período?', options: ['No primeiro dia de vida.', 'Nos primeiros 7 dias de vida.', 'Nos primeiros 28 dias de vida.', 'Após 28 dias de vida.'], answer: 1 },
+            { question: 'Qual é o principal uso do indicador de prevalência?', options: ['Medir a velocidade de ocorrência de novas doenças.', 'Dimensionar a carga de uma doença na população e planejar recursos de saúde.', 'Avaliar o risco de adquirir uma doença.', 'Calcular a taxa de mortalidade.'], answer: 1 },
+            { question: 'A necessidade de "sensibilização junto aos médicos e aos profissionais de saúde" é uma estratégia para combater qual problema fundamental nos sistemas de informação?', options: ['A falta de acesso à internet.', 'O preenchimento incorreto ou incompleto dos instrumentos de coleta (ex: Declaração de Óbito).', 'O alto custo dos sistemas.', 'A falta de leis que obriguem o registro.'], answer: 1 },
+        ];
+
+        const exerciseListEl = document.getElementById('exercise-list');
+        const scoreDisplayEl = document.getElementById('score-display');
+        const resetBtn = document.getElementById('reset-btn');
+
+        let userProgress = {};
+
+        function saveProgress() {
+            localStorage.setItem('quizProgress', JSON.stringify(userProgress));
+        }
+
+        function loadProgress() {
+            const savedProgress = localStorage.getItem('quizProgress');
+            if (savedProgress) {
+                userProgress = JSON.parse(savedProgress);
+            } else {
+                userProgress = {};
+            }
+        }
+
+        function updateScore() {
+            const correctAnswers = Object.values(userProgress).filter(item => item.isCorrect).length;
+            scoreDisplayEl.textContent = `${correctAnswers}/${questions.length}`;
+        }
+
+        function selectAnswer(questionIndex, selectedOptionIndex, questionCard) {
+            // Se a questão já foi respondida, não faz nada
+            if (userProgress[questionIndex]) {
+                return;
+            }
+
+            const question = questions[questionIndex];
+            const isCorrect = question.answer === selectedOptionIndex;
+
+            // Salva o progresso
+            userProgress[questionIndex] = {
+                selected: selectedOptionIndex,
+                isCorrect: isCorrect
+            };
+            saveProgress();
+            updateScore();
+
+            // Atualiza a UI
+            const optionButtons = questionCard.querySelectorAll('.answer-btn');
+            questionCard.querySelector('.options-grid').classList.add('answered');
+
+            optionButtons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === selectedOptionIndex) {
+                    btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                }
+                // Mostra a resposta correta se o usuário errou
+                if (!isCorrect && index === question.answer) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        function renderExercises() {
+            exerciseListEl.innerHTML = ''; // Limpa a lista
+            loadProgress();
+
+            questions.forEach((q, index) => {
+                const questionState = userProgress[index];
+
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-6';
+
+                const questionText = document.createElement('p');
+                questionText.className = 'text-lg font-semibold mb-4';
+                questionText.innerHTML = `<span class="text-blue-500 font-bold">${index + 1}.</span> ${q.question}`;
+                
+                const optionsGrid = document.createElement('div');
+                optionsGrid.className = 'options-grid grid grid-cols-1 md:grid-cols-2 gap-3';
+
+                q.options.forEach((option, optionIndex) => {
+                    const button = document.createElement('button');
+                    button.innerHTML = option;
+                    button.className = 'answer-btn w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-left text-base';
+                    button.dataset.qIndex = index;
+                    button.dataset.oIndex = optionIndex;
+
+                    if (questionState) {
+                        button.disabled = true;
+                        optionsGrid.classList.add('answered');
+                        if (questionState.selected === optionIndex) {
+                            button.classList.add(questionState.isCorrect ? 'correct' : 'incorrect');
+                        }
+                        if (!questionState.isCorrect && q.answer === optionIndex) {
+                            button.classList.add('correct');
+                        }
+                    } else {
+                         button.onclick = () => selectAnswer(index, optionIndex, questionCard);
+                    }
+
+                    optionsGrid.appendChild(button);
+                });
+
+                questionCard.appendChild(questionText);
+                questionCard.appendChild(optionsGrid);
+                exerciseListEl.appendChild(questionCard);
+            });
+            
+            updateScore();
+        }
+
+        function resetProgress() {
+            if (confirm('Você tem certeza que deseja apagar todo o seu progresso? Esta ação não pode ser desfeita.')) {
+                localStorage.removeItem('quizProgress');
+                userProgress = {};
+                renderExercises();
+            }
+        }
+
+        // Event Listeners
+        resetBtn.addEventListener('click', resetProgress);
+        
+        // Initial Render
+        document.addEventListener('DOMContentLoaded', renderExercises);
+
+    </script>
+</body>
+</html>
