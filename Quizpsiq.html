@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interativo: Saúde Mental</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:not(.disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .correct {
+            background-color: #10B981 !important; /* green-500 */
+            color: white !important;
+            border-color: #059669 !important;
+        }
+        .incorrect {
+            background-color: #EF4444 !important; /* red-500 */
+            color: white !important;
+            border-color: #DC2626 !important;
+        }
+        .highlight-correct {
+            animation: pulse-green 1s;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex items-center justify-center min-h-screen p-4">
+
+    <div id="quiz-container" class="w-full max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+        <!-- Cabeçalho do Quiz -->
+        <div id="quiz-header">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-700 mb-2">Quiz: Módulo de Saúde Mental</h1>
+            <p class="text-slate-500 mb-6">Selecione a alternativa correta para cada questão.</p>
+            <div class="flex justify-between items-center mb-4">
+                <div id="progress-text" class="text-sm font-medium text-slate-600"></div>
+                <div id="score-text" class="text-sm font-semibold text-blue-600"></div>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-2.5 mb-6">
+                <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Área da Questão -->
+        <div id="question-area">
+            <h2 id="question-text" class="text-lg font-semibold mb-6 leading-relaxed"></h2>
+            <div id="options-container" class="space-y-3"></div>
+        </div>
+
+        <!-- Navegação -->
+        <div id="navigation-area" class="mt-8 text-right">
+            <button id="next-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:bg-slate-400 disabled:cursor-not-allowed" disabled>
+                Próxima Questão
+            </button>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div id="results-screen" class="hidden text-center">
+            <h2 class="text-3xl font-bold text-slate-700 mb-4">Quiz Finalizado!</h2>
+            <p class="text-slate-600 text-lg mb-6">Sua pontuação final é:</p>
+            <div id="final-score" class="text-6xl font-bold text-blue-600 mb-8"></div>
+            <button id="restart-btn" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                Refazer o Quiz
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- BANCO DE DADOS DAS QUESTÕES ---
+        // Extraído do documento PDF fornecido.
+        const quizData = [
+            { question: 'Um homem de 65 anos, com diagnóstico recente de câncer de pâncreas inoperável, é internado para manejo da dor. A equipe de oncologia solicita uma interconsulta psiquiátrica devido a "choro frequente, perda de interesse nas visitas familiares e pessimismo". O paciente relata sentir-se triste e assustado com o prognóstico, mas nega ideação suicida e mantém a esperança de ter um final de vida digno. Ele coopera com o tratamento e interage com a equipe, embora de forma mais quieta. Qual é a formulação diagnóstica mais precisa e a principal implicação para a abordagem da psicologia médica neste caso?', options: ['Transtorno Depressivo Maior; iniciar imediatamente fluoxetina 20 mg/dia para tratar a depressão e melhorar a adesão.', 'Reação Aguda ao Estresse; focar na validação dos sentimentos do paciente e no fortalecimento de estratégias de enfrentamento.', 'Transtorno de Ansiedade Generalizada; prescrever clonazepam para reduzir a ansiedade e facilitar a aceitação do diagnóstico.', 'Transtorno de Sintomas Somáticos; a tristeza é uma manifestação somática da sua ansiedade sobre a doença, devendo-se focar em técnicas de relaxamento.', 'Transtorno de Adaptação com Humor Deprimido; a abordagem deve centrar-se na psicoterapia de apoio e na comunicação empática sobre o luto antecipatório.'], answer: 4 },
+            { question: 'Uma estudante de medicina do segundo ano sente-se sobrecarregada com a carga de estudos e relata dificuldade em se conectar com os pacientes durante as primeiras entrevistas clínicas. Ela afirma: "Eu sei todos os critérios do DSM-5 para depressão, mas quando o paciente chora, eu congelo. Sinto que deveria focar apenas nos sintomas para fazer o diagnóstico correto". Qual princípio da psicologia médica, fundamental para superar essa dificuldade, está sendo negligenciado pela estudante?', options: ['O modelo biomédico, que prioriza a identificação de patologias orgânicas subjacentes aos sintomas psiquiátricos.', 'A importância da prescrição farmacológica como principal ferramenta terapêutica na prática clínica.', 'A necessidade de manter um distanciamento profissional absoluto para evitar o envolvimento emocional e o burnout.', 'O paradigma biopsicossocial, que reconhece a subjetividade do sofrimento e promove uma relação terapêutica horizontalizada e empática.', 'A técnica de entrevista estruturada, que garante a coleta de todos os dados necessários para uma classificação nosológica precisa.'], answer: 3 },
+            { question: 'Um paciente de 45 anos, internado na cardiologia após um infarto agudo do miocárdio, recusa-se a seguir as orientações de reabilitação cardíaca, afirmando: "Não adianta, meu coração está acabado. Vou morrer de qualquer jeito". Ele se mostra irritado e isolado. A equipe solicita avaliação psiquiátrica. Qual é a abordagem mais adequada, segundo os princípios da psicologia médica, para o psiquiatra interconsultor?', options: ['Diagnosticar o paciente com transtorno de oposição desafiante e recomendar contenção comportamental.', 'Focar exclusivamente na prescrição de um antidepressivo para tratar o "pessimismo" e melhorar a adesão.', 'Explorar o significado que o infarto teve para a autoimagem e identidade do paciente, validando seu medo e trabalhando a resiliência.', 'Informar ao paciente que sua atitude está prejudicando o tratamento e que ele precisa colaborar para o seu próprio bem.', 'Recomendar alta psiquiátrica, pois a recusa ao tratamento é uma questão de autonomia do paciente e não uma condição psiquiátrica.'], answer: 0 },
+            { question: 'Durante uma discussão sobre a relação médico-paciente, um professor afirma: "A eficácia do nosso trabalho não reside apenas no que prescrevemos, mas em como construímos a aliança terapêutica. A capacidade de compreender o mundo interno do paciente e comunicar essa compreensão é uma habilidade clínica". A qual conceito central da psicologia médica o professor está se referindo?', options: ['Transferência', 'Contratransferência', 'Empatia', 'Resiliência', 'Insight'], answer: 2 },
+            { question: 'Um médico residente de cirurgia geral sente-se frustrado com um paciente idoso que se recusa a consentir para uma cirurgia de amputação de pé diabético, apesar do risco iminente de sepse. O residente diz: "Ele não entende a gravidade, é uma negação patológica. Preciso de um parecer psiquiátrico para declarar incapacidade". Qual é a principal armadilha que o residente está enfrentando, do ponto de vista da psicologia médica?', options: ['A supervalorização do modelo biopsicossocial em detrimento da urgência médica.', 'Uma visão reducionista que equipara a não aceitação do tratamento a uma patologia psiquiátrica, sem explorar os valores e medos do paciente.', 'A falta de conhecimento sobre as diretrizes de tratamento para o pé diabético.', 'A dificuldade em lidar com o erro médico, projetando a culpa no paciente.', 'A aplicação excessiva de técnicas de comunicação empática, o que pode ter confundido o paciente.'], answer: 1 },
+            { question: 'Um psiquiatra, ao descrever um caso clínico em uma conferência em 1975, refere-se a um paciente com "neurose de angústia", caracterizada por ansiedade flutuante e preocupações excessivas, sem os ataques discretos de pânico. A utilização deste termo diagnóstico reflete a influência de qual manual e paradigma predominante na época?', options: ['DSM-III, com seu paradigma ateórico e operacional.', 'CID-10, com sua estrutura alfanumérica e descrições clínicas detalhadas.', 'DSM-I, com sua base na nomenclatura militar do "Medical 203".', 'DSM-5, com sua abordagem dimensional e de ciclo de vida.', 'DSM-II, com seu paradigma psicodinâmico que entendia os sintomas como expressões simbólicas de conflitos inconscientes.'], answer: 4 },
+            { question: 'A publicação do DSM-III em 1980 representou uma mudança paradigmática na psiquiatria. Qual foi a principal consequência conceitual e estrutural dessa nova edição?', options: ['A introdução de uma abordagem dimensional para os transtornos de personalidade, abandonando as categorias.', 'O abandono do modelo psicodinâmico e a adoção de um sistema ateórico, descritivo e baseado em critérios operacionais, alinhando a psiquiatria com outras especialidades médicas.', 'A maior harmonização com a CID-9, resultando em uma nomenclatura quase idêntica para facilitar pesquisas epidemiológicas internacionais.', 'A redução significativa do número de diagnósticos para combater a "inflação diagnóstica" e a medicalização da vida cotidiana.', 'A incorporação de marcadores biológicos e exames de neuroimagem como critérios diagnósticos obrigatórios para a maioria dos transtornos.'], answer: 1 },
+            { question: 'Críticos do DSM-5 argumentam que a redução do limiar para certos diagnósticos e a criação de novas categorias, como o Transtorno de Desregulação do Humor Disruptivo, podem levar à "patologização" de comportamentos e emoções normais da vida. Essa crítica reflete uma tensão fundamental na história das classificações psiquiátricas entre:', options: ['A psiquiatria biológica e a neurologia.', 'A necessidade de confiabilidade diagnóstica para pesquisa e a validade clínica que respeita a subjetividade do sofrimento.', 'O modelo americano (APA) e o modelo europeu (OMS).', 'A psicofarmacologia e as psicoterapias.', 'O diagnóstico em adultos e o diagnóstico em crianças.'], answer: 1 },
+            { question: 'A Classificação Estatística Internacional de Doenças e Problemas Relacionados à Saúde (CID), da OMS, e o Manual Diagnóstico e Estatístico de Transtornos Mentais (DSM), da APA, são os dois sistemas de classificação mais influentes. Uma diferença fundamental em seus propósitos originais e escopo é que:', options: ['O DSM foi criado primariamente para fins de saúde pública e estatísticas de mortalidade, enquanto a CID sempre foi focada na prática clínica.', 'A CID é uma classificação de todas as doenças e problemas de saúde, da qual os transtornos mentais são apenas um capítulo, enquanto o DSM é exclusivamente focado em transtornos mentais.', 'O DSM é de uso obrigatório em todos os países membros da ONU, enquanto a CID é utilizada apenas nos Estados Unidos e Canadá.', 'A CID-11 eliminou completamente o sistema de codificação, usando apenas descrições narrativas, enquanto o DSM-5 manteve os códigos numéricos.', 'O DSM é desenvolvido por psicólogos, enquanto a CID é desenvolvida exclusivamente por médicos psiquiatras.'], answer: 1 },
+            { question: 'A transição do sistema multiaxial do DSM-IV-TR para a estrutura não axial do DSM-5 foi uma mudança significativa. Qual foi a principal justificativa para a eliminação do sistema de cinco eixos?', options: ['A dificuldade em obter reembolso das seguradoras de saúde para os diagnósticos do Eixo II.', 'A percepção de que a separação entre os transtornos do Eixo I (clínicos) e do Eixo II (personalidade/retardo mental) criava uma distinção artificial e muitas vezes estigmatizante, não refletindo a comorbidade comum na prática.', 'A pressão de grupos de pacientes que se opunham à avaliação da Escala de Avaliação Global do Funcionamento (GAF) no Eixo V.', 'A incompatibilidade total do sistema multiaxial com a estrutura da CID-10, dificultando a colaboração internacional.', 'A conclusão de que as condições médicas gerais (Eixo III) não tinham relevância para o diagnóstico ou tratamento psiquiátrico.'], answer: 1 },
+            { question: 'Paciente de 22 anos é trazido ao pronto-socorro pela polícia após ser encontrado andando desorientado no centro da cidade. Ao exame, ele está sonolento, com dificuldade de concentração e compreensão, respondendo lentamente às perguntas. Quando estimulado verbalmente de forma mais enérgica, ele se torna mais alerta por alguns instantes, mas logo volta a um estado de torpor. Ele consegue realizar atos motores complexos, como se cobrir com um lençol. Qual alteração da consciência é mais compatível com este quadro?', options: ['Coma', 'Estado crepuscular', 'Sopor', 'Obnubilação', 'Dissociação da consciência'], answer: 3 },
+            { question: 'Durante a entrevista, um paciente de 35 anos, com diagnóstico de esquizofrenia, relata: "Eu estava andando na rua e vi um carro vermelho. Eu sei que isso é um sinal. O vermelho é a cor do perigo, mas também do amor. Eles estão me testando. O motorista piscou o farol duas vezes, o que significa que eu preciso ir para o norte. É um código, doutor, tudo está conectado". A descrição do paciente é um exemplo clássico de qual alteração do pensamento?', options: ['Pensamento mágico', 'Fuga de ideias', 'Pensamento tangencial', 'Pensamento circunstancial', 'Pensamento delirante (com percepção delirante e interpretação delirante)'], answer: 4 },
+            { question: 'Uma paciente de 28 anos, em tratamento para transtorno de pânico, descreve suas crises: "Do nada, meu coração dispara, sinto falta de ar e uma tontura terrível. Eu tenho a certeza absoluta de que vou morrer, que estou tendo um infarto. É uma sensação de perigo iminente, uma catástrofe vai acontecer". Qual função psíquica está primariamente alterada na gênese do ataque de pânico, segundo o modelo cognitivo?', options: ['Sensopercepção, na forma de alucinações somáticas.', 'Memória, com revivescências de traumas passados.', 'Juízo de realidade, com uma interpretação catastrófica das sensações corporais.', 'Consciência, com rebaixamento do nível de consciência.', 'Linguagem, com afasia expressiva durante a crise.'], answer: 2 },
+            { question: 'Ao avaliar a orientação de um paciente idoso com quadro confusional agudo (delirium), o médico pergunta: "Onde o senhor está?". O paciente responde: "Estou no meu quarto, em casa". Na verdade, ele está em um leito de hospital. Esta resposta indica qual tipo de desorientação?', options: ['Desorientação autopsíquica', 'Desorientação temporal', 'Desorientação alopsíquica espacial', 'Desorientação por apatia', 'Desorientação amnéstica'], answer: 2 },
+            { question: 'Um paciente com transtorno bipolar em fase maníaca fala de forma incessante, saltando de um tópico para outro sem conexão lógica aparente, guiado por estímulos externos ou assonância de palavras. Por exemplo: "Preciso comprar um carro novo, novo como o dia, dia de sol, o sol queima a pele, pele de pêssego, pêssego em calda, calda de chocolate, que delícia!". Qual alteração do curso do pensamento está sendo demonstrada?', options: ['Prolixidade', 'Fuga de ideias', 'Perseveração', 'Bloqueio do pensamento', 'Tangencialidade'], answer: 1 },
+            { question: 'Durante o exame do estado mental, o entrevistador nota que o paciente, embora relate eventos tristes como a perda de um ente querido, o faz com um sorriso no rosto e sem demonstrar qualquer emoção correspondente. Esta desconexão entre o conteúdo do pensamento e a expressão afetiva é denominada:', options: ['Labilidade afetiva', 'Embotamento afetivo', 'Incontinência emocional', 'Paratimia (ou inadequação do afeto)', 'Anedonia'], answer: 3 },
+            { question: 'Um paciente relata ouvir vozes que conversam entre si, fazendo comentários sobre suas ações em terceira pessoa ("Olha o que ele está fazendo agora. Ele é um fracassado."). Este tipo de alucinação auditiva complexa é particularmente sugestivo de qual transtorno?', options: ['Delirium tremens', 'Transtorno de estresse pós-traumático', 'Transtorno depressivo maior com sintomas psicóticos', 'Esquizofrenia', 'Intoxicação por alucinógenos'], answer: 3 },
+            { question: 'Qual das seguintes opções descreve corretamente a diferença entre uma ilusão e uma alucinação?', options: ['A ilusão é uma percepção sem objeto, enquanto a alucinação é uma interpretação errônea de um objeto real.', 'A ilusão ocorre apenas com estímulos visuais, enquanto a alucinação pode ocorrer em qualquer modalidade sensorial.', 'A ilusão é sempre um sintoma de psicose, enquanto a alucinação pode ocorrer em pessoas saudáveis.', 'A ilusão é uma percepção deformada de um objeto real presente no campo sensorial, enquanto a alucinação é uma percepção na ausência de um estímulo externo correspondente.', 'A ilusão é voluntária e pode ser controlada pelo indivíduo, enquanto a alucinação é involuntária e incontrolável.'], answer: 3 },
+            { question: 'Um paciente relata: "Doutor, eu não sinto mais nada. Nem alegria, nem tristeza. A comida não tem gosto, a música não me toca. É como se eu estivesse morto por dentro. Minha esposa ganhou uma promoção e eu não consegui sentir felicidade por ela". Esta descrição detalhada refere-se a qual sintoma psicopatológico?', options: ['Apatia', 'Anedonia', 'Embotamento afetivo', 'Hipotimia', 'Alexitimia'], answer: 1 },
+            { question: 'Um paciente com transtorno obsessivo-compulsivo (TOC) relata que, ao tocar em uma maçaneta, é invadido pelo pensamento "Estou contaminado com germes mortais". Ele reconhece que o pensamento é exagerado e irracional, mas não consegue afastá-lo e sente uma ansiedade intensa. Este pensamento intrusivo e reconhecido como produto da própria mente é um exemplo de:', options: ['Ideia delirante', 'Obsessão', 'Fobia específica', 'Ideia sobrevalorizada', 'Compulsão'], answer: 1 },
+            { question: 'Uma mulher de 28 anos, com diagnóstico de Transtorno Bipolar tipo I, descobre estar grávida de 8 semanas. Ela está em uso de valproato 1000 mg/dia com bom controle dos sintomas há 2 anos. Qual é a conduta mais apropriada neste momento, considerando os riscos e benefícios?', options: ['Manter o valproato na mesma dose, pois a estabilidade do humor é prioritária para evitar uma crise maníaca na gestação.', 'Substituir imediatamente o valproato por lítio, pois este é completamente seguro durante a gestação.', 'Suspender o valproato o mais rápido possível devido ao alto risco de defeitos do tubo neural e outras malformações, e discutir a transição para um antipsicótico de segunda geração com perfil de risco mais favorável, como a quetiapina ou lurasidona.', 'Aumentar a dose de valproato para compensar as alterações metabólicas da gestação e garantir a eutimia.', 'Recomendar a interrupção da gestação, pois o tratamento do transtorno bipolar é incompatível com uma gravidez segura.'], answer: 2 },
+            { question: 'Um paciente de 30 anos é diagnosticado com depressão bipolar. Ele apresenta-se com anedonia, hipersonia, aumento de apetite e lentificação psicomotora. Qual das seguintes opções terapêuticas é considerada de primeira linha e possui a melhor evidência para o tratamento da fase depressiva do transtorno bipolar, evitando o risco de virada maníaca?', options: ['Monoterapia com sertralina 100 mg/dia', 'Monoterapia com lítio, titulado para nível sérico de 0.8-1.2 mEq/L', 'Monoterapia com quetiapina ou lurasidona.', 'Associação de lamotrigina e bupropiona.', 'Monoterapia com venlafaxina 150 mg/dia.'], answer: 2 },
+            { question: 'Um paciente de 45 anos, em tratamento para transtorno bipolar com lítio, apresenta-se no pronto-socorro com tremores grosseiros, confusão mental, vômitos e hiperreflexia. Seu nível sérico de lítio é de 2.5 mEq/L. Qual dos seguintes fatores é a causa mais provável para essa intoxicação aguda?', options: ['O início recente de um suplemento de potássio.', 'A ingestão de alimentos ricos em tiramina.', 'O início recente de um diurético tiazídico para hipertensão.', 'A associação com carbamazepina para potencializar o efeito.', 'A má adesão ao tratamento, com ingestão de doses menores que a prescrita.'], answer: 2 },
+            { question: 'Uma paciente de 35 anos, com Transtorno Depressivo Maior recorrente, não obteve resposta satisfatória após 12 semanas de tratamento com sertralina 200 mg/dia. Ela relata anedonia persistente, fadiga e dificuldade de concentração. Qual é a estratégia de potencialização com maior nível de evidência para este caso?', options: ['Adicionar clonazepam 2 mg/dia para tratar a "ansiedade residual".', 'Adicionar um antipsicótico atípico como aripiprazol ou quetiapina em dose baixa.', 'Adicionar T3 (liotironina) para potencializar a função tireoidiana.', 'Adicionar metilfenidato para combater a fadiga e a anedonia.', 'Aumentar a dose de sertralina para 300 mg/dia.'], answer: 1 },
+            { question: 'Um homem de 50 anos apresenta-se com um primeiro episódio de humor deprimido, perda de peso, insônia terminal e ideação de culpa. Ele não possui história pessoal ou familiar de mania ou hipomania. Após avaliação completa, é diagnosticado com Transtorno Depressivo Maior, episódio único, grave. Qual é a conduta farmacológica de primeira linha?', options: ['Iniciar um inibidor seletivo da recaptação de serotonina (ISRS), como escitalopram ou sertralina.', 'Iniciar um estabilizador de humor, como o lítio, devido à gravidade do episódio.', 'Iniciar um antidepressivo tricíclico, como a amitriptilina, por sua potência.', 'Iniciar um inibidor da monoaminoxidase (IMAO), como a tranilcipromina.', 'Iniciar terapia eletroconvulsiva (ECT) como primeira opção.'], answer: 0 },
+            { question: 'No tratamento de manutenção do Transtorno Bipolar tipo I, qual é o objetivo principal e a estratégia fundamental?', options: ['Eliminar completamente qualquer flutuação de humor, mesmo as normais, utilizando doses altas de múltiplos medicamentos.', 'Prevenir a recorrência de novos episódios maníacos e depressivos, mantendo o paciente em monoterapia ou combinação de estabilizadores de humor de forma contínua.', 'Tratar apenas os episódios quando eles ocorrem, suspendendo a medicação nos períodos de eutimia para minimizar efeitos colaterais.', 'Focar exclusivamente na prevenção da mania, pois os episódios depressivos são menos incapacitantes.', 'Utilizar antidepressivos como monoterapia de manutenção para evitar a depressão residual.'], answer: 1 },
+            { question: 'A lamotrigina é um anticonvulsivante amplamente utilizado no tratamento do transtorno bipolar. Qual é sua principal indicação e o risco mais significativo associado ao seu uso que exige uma titulação lenta da dose?', options: ['Indicada principalmente para o tratamento da mania aguda; risco de agranulocitose.', 'Indicada principalmente para a prevenção da recorrência depressiva; risco de síndrome de Stevens-Johnson/necrólise epidérmica tóxica.', 'Indicada para agitação psicomotora; risco de hepatotoxicidade fulminante.', 'Indicada para a prevenção da recorrência maníaca; risco de hiponatremia grave.', 'Indicada como monoterapia para depressão bipolar aguda; risco de pancreatite.'], answer: 1 },
+            { question: 'Um paciente em tratamento para depressão com um ISRS relata melhora do humor, mas queixa-se de anorgasmia como efeito colateral. Qual é a conduta mais apropriada para manejar essa disfunção sexual induzida pelo ISRS?', options: ['Suspender imediatamente o ISRS e não prescrever outro antidepressivo.', 'Aumentar a dose do ISRS, pois a disfunção sexual é dose-dependente e melhora com doses mais altas.', 'Assegurar ao paciente que este é um efeito colateral inevitável e que ele deve se acostumar.', 'Considerar a redução da dose, a troca por um antidepressivo com menor incidência de disfunção sexual (como a bupropiona) ou a adição de um antídoto (como a bupropiona ou sildenafil).', 'Recomendar psicoterapia focada na disfunção sexual, pois a causa é provavelmente psicológica.'], answer: 3 },
+            { question: 'Um paciente de 25 anos, com diagnóstico de esquizofrenia, apresenta predominantemente sintomas negativos, como embotamento afetivo, alogia e avolição, com grande prejuízo funcional. Ele não tolera antipsicóticos de primeira geração devido a sintomas extrapiramidais (SEP). Qual antipsicótico atípico é considerado o padrão-ouro para o tratamento da esquizofrenia refratária e tem demonstrado maior eficácia nos sintomas negativos?', options: ['Risperidona', 'Haloperidol', 'Olanzapina', 'Aripiprazol', 'Clozapina'], answer: 4 },
+            { question: 'Um paciente de 30 anos, obeso e com síndrome metabólica, é diagnosticado com esquizofrenia. Qual dos seguintes antipsicóticos de segunda geração seria a escolha mais prudente para minimizar o risco de ganho de peso adicional e piora do perfil metabólico?', options: ['Olanzapina', 'Quetiapina', 'Clozapina', 'Aripiprazol ou Lurasidona', 'Risperidona'], answer: 3 },
+            { question: 'O mecanismo de ação dos antipsicóticos "típicos" ou de primeira geração, como o haloperidol, baseia-se principalmente no antagonismo de qual receptor e em qual via dopaminérgica para exercer seu efeito sobre os sintomas positivos?', options: ['Antagonismo dos receptores 5-HT2A na via mesocortical.', 'Antagonismo dos receptores D2 na via mesolímbica.', 'Antagonismo dos receptores H1 na via nigroestriatal.', 'Agonismo parcial dos receptores D2 na via tuberoinfundibular.', 'Antagonismo dos receptores muscarínicos na via mesolímbica.'], answer: 1 },
+            { question: 'Uma paciente em uso de haloperidol para tratamento de um episódio psicótico agudo desenvolve uma contração muscular sustentada e dolorosa do pescoço (torcicolo) e dos músculos oculares (crise oculógira). Qual é o diagnóstico dessa reação adversa e o tratamento de emergência mais eficaz?', options: ['Acatisia; tratar com propranolol.', 'Discinesia tardia; tratar com valbenazina.', 'Distonia aguda; tratar com um anticolinérgico injetável (biperideno) ou um anti-histamínico (prometazina).', 'Síndrome neuroléptica maligna; tratar com dantroleno e bromocriptina.', 'Parkinsonismo induzido por neuroléptico; tratar com levodopa.'], answer: 2 },
+            { question: 'A hipótese neurobiológica mais consolidada para os sintomas positivos da esquizofrenia (delírios, alucinações) envolve uma hiperatividade de qual neurotransmissor em qual via cerebral?', options: ['Serotonina na via mesocortical.', 'Noradrenalina no locus coeruleus.', 'Dopamina na via mesolímbica.', 'Glutamato no córtex pré-frontal.', 'GABA no sistema límbico.'], answer: 2 },
+            { question: 'A clozapina, apesar de sua eficácia superior, não é um medicamento de primeira linha devido ao risco de um efeito adverso hematológico grave, que exige monitoramento regular. Qual é esse efeito adverso?', options: ['Anemia aplásica', 'Trombocitopenia', 'Agranulocitose', 'Leucocitose', 'Policitemia'], answer: 2 },
+            { question: 'Um paciente com esquizofrenia em uso de um antipsicótico de segunda geração apresenta galactorreia e irregularidades menstruais. O bloqueio dopaminérgico em qual via cerebral é responsável por esse efeito colateral?', options: ['Via nigroestriatal', 'Via mesolímbica', 'Via tuberoinfundibular', 'Via mesocortical', 'Via tálamo-cortical'], answer: 2 },
+            { question: 'Qual é a principal característica que define um antipsicótico como "atípico" ou de segunda geração, em comparação com os típicos?', options: ['Ausência total de efeitos colaterais.', 'Mecanismo de ação exclusivamente serotoninérgico.', 'Menor risco de causar sintomas extrapiramidais (SEP) e discinesia tardia em doses terapêuticas, frequentemente associado a um antagonismo combinado D2/5-HT2A.', 'Disponibilidade apenas em formulações de depósito de longa ação.', 'Eficácia exclusiva para sintomas negativos, sem efeito nos sintomas positivos.'], answer: 2 },
+            { question: 'Um paciente de 25 anos com Transtorno de Ansiedade Social (TAS) tem medo intenso de ser julgado negativamente em situações de interação, como festas ou reuniões de trabalho. Ele evita essas situações ou as suporta com extrema ansiedade. Qual é o elemento central da Terapia Cognitivo-Comportamental (TCC) para este paciente?', options: ['Exposição interoceptiva para induzir sensações de pânico e promover a habituação.', 'Prevenção de resposta para impedir que ele realize rituais de verificação.', 'Reestruturação cognitiva focada em desafiar as crenças sobre a probabilidade e as consequências da avaliação negativa, combinada com exposição gradual a situações sociais temidas.', 'Treinamento em técnicas de relaxamento muscular progressivo como principal modalidade de tratamento.', 'Análise dos conflitos inconscientes da infância que levaram ao medo da autoridade.'], answer: 2 },
+            { question: 'No tratamento farmacológico do Transtorno Obsessivo-Compulsivo (TOC), qual é a principal diferença em relação ao tratamento do Transtorno Depressivo Maior em termos de dosagem de ISRS?', options: ['As doses eficazes para o TOC são geralmente mais baixas que as para a depressão.', 'As doses eficazes para o TOC são frequentemente mais altas e no limite superior da faixa terapêutica recomendada.', 'Apenas a fluvoxamina é eficaz para o TOC, enquanto todos os ISRS são eficazes para a depressão.', 'O tempo para o início do efeito terapêutico no TOC é muito mais rápido (1-2 semanas) do que na depressão (4-6 semanas).', 'Os ISRS não são eficazes para o TOC, sendo a clomipramina a única opção medicamentosa.'], answer: 1 },
+            { question: 'Uma paciente com Transtorno de Pânico com Agorafobia inicia a Terapia Cognitivo-Comportamental. O terapeuta explica que uma parte crucial do tratamento envolverá a indução proposital de sensações físicas temidas (como tontura, taquicardia) em um ambiente seguro para que ela aprenda que essas sensações não são perigosas. Como se chama essa técnica?', options: ['Dessensibilização sistemática', 'Exposição interoceptiva', 'Prevenção de resposta', 'Ativação comportamental', 'Modelagem social'], answer: 1 },
+            { question: 'De acordo com as diretrizes brasileiras para o tratamento do Transtorno de Ansiedade Social (TAS), qual é a abordagem terapêutica de primeira linha com maior nível de evidência?', options: ['Psicoterapia psicodinâmica de longa duração.', 'Uso de benzodiazepínicos sob demanda para situações sociais.', 'Monoterapia com beta-bloqueadores, como o propranolol.', 'Associação de Terapia Cognitivo-Comportamental (TCC) com um inibidor seletivo da recaptação de serotonina (ISRS).', 'Monoterapia com buspirona.'], answer: 3 },
+            { question: 'A técnica de Exposição e Prevenção de Resposta (EPR) é o componente central da TCC para o TOC. Qual é o princípio fundamental por trás da EPR?', options: ['Evitar completamente os estímulos que causam obsessões para reduzir a ansiedade.', 'Substituir os rituais compulsivos por comportamentos mais adaptativos e relaxantes.', 'Expor o paciente ao estímulo temido (obsessão) e impedi-lo de realizar o comportamento neutralizador (compulsão), permitindo que a ansiedade diminua naturalmente (habituação).', 'Desafiar verbalmente a lógica dos pensamentos obsessivos até que o paciente concorde que eles são irracionais.', 'Utilizar a medicação para eliminar a ansiedade antes de iniciar qualquer tipo de exposição.'], answer: 2 },
+            { question: 'Um paciente com Transtorno de Ansiedade Generalizada (TAG) apresenta preocupações excessivas e incontroláveis sobre múltiplos aspectos da vida (finanças, saúde, família), acompanhadas de tensão muscular, irritabilidade e dificuldade de concentração. Qual classe de medicamentos é considerada de primeira linha para o tratamento farmacológico de longo prazo do TAG?', options: ['Benzodiazepínicos', 'Antipsicóticos atípicos', 'Inibidores seletivos da recaptação de serotonina (ISRS) ou inibidores da recaptação de serotonina e noradrenalina (IRSN).', 'Anticonvulsivantes como a gabapentina.', 'Antidepressivos tricíclicos.'], answer: 2 },
+            { question: 'Qual é o modelo cognitivo central que explica o Transtorno de Pânico?', options: ['Uma crença central de desamparo e vulnerabilidade ao perigo social.', 'A interpretação catastrófica de sensações corporais inofensivas como sinais de uma ameaça iminente à vida ou à sanidade.', 'A superestimação da responsabilidade pessoal por prevenir danos a si mesmo ou aos outros.', 'Um viés atencional para estímulos ameaçadores no ambiente, levando a um estado de hipervigilância crônica.', 'A fusão pensamento-ação, onde pensar em um evento é equiparado a fazê-lo acontecer.'], answer: 1 },
+            { question: 'Um paciente com TOC grave e refratário, que não respondeu a múltiplos ensaios com ISRS (incluindo clomipramina), potencialização com antipsicóticos e TCC adequada, pode ser considerado para qual intervenção de última linha?', options: ['Terapia eletroconvulsiva (ECT).', 'Psicoterapia de orientação analítica.', 'Tratamento neurocirúrgico, como a capsulotomia anterior ou a estimulação cerebral profunda (DBS).', 'Terapia com cetamina intravenosa.', 'Uso de fitoterápicos como a Erva de São João.'], answer: 2 },
+            { question: 'Uma mulher de 30 anos busca terapia por "ansiedade social e depressão". Ela relata dificuldade em manter amizades, sentir-se "diferente" dos outros, e um histórico de interesses intensos e muito específicos (astronomia na adolescência, agora filatelia). Ela tem alta sensibilidade a ruídos altos e texturas de roupas. Embora tenha um bom vocabulário, ela tem dificuldade em entender sarcasmo e "ler nas entrelinhas". Qual diagnóstico, frequentemente mascarado por ansiedade e depressão em mulheres adultas, deve ser prioritariamente investigado?', options: ['Transtorno de Personalidade Borderline', 'Transtorno de Personalidade Esquiva', 'Transtorno de Déficit de Atenção/Hiperatividade (TDAH), tipo predominantemente desatento', 'Transtorno do Espectro Autista (TEA), nível 1 de suporte (anteriormente Asperger)', 'Transtorno Obsessivo-Compulsivo (TOC)'], answer: 3 },
+            { question: 'Qual é um desafio diagnóstico comum na avaliação de TDAH em adultos?', options: ['Os sintomas de hiperatividade motora geralmente se tornam mais exacerbados na vida adulta.', 'A ausência de comorbidades psiquiátricas, o que torna o diagnóstico mais "puro".', 'A sobreposição de sintomas como desatenção, impulsividade e desorganização com outros transtornos, como transtornos de humor, ansiedade e de personalidade.', 'A necessidade de um teste genético para confirmar o diagnóstico.', 'A exigência do DSM-5 de que os sintomas tenham se iniciado obrigatoriamente após os 18 anos.'], answer: 2 },
+            { question: 'De acordo com o DSM-5, o diagnóstico de Transtorno do Espectro Autista (TEA) requer a presença de déficits persistentes em duas áreas centrais. Quais são elas?', options: ['Habilidades motoras e capacidade intelectual.', 'Comunicação social e interação social; e padrões restritos e repetitivos de comportamento, interesses ou atividades.', 'Controle de impulsos e regulação emocional.', 'Memória de trabalho e funções executivas.', 'Linguagem expressiva e linguagem receptiva.'], answer: 1 },
+            { question: 'Um homem de 25 anos, diagnosticado com TDAH na infância, continua a apresentar dificuldades significativas. Ele perde prazos no trabalho, tem dificuldade em organizar tarefas sequenciais, age por impulso em decisões financeiras e interrompe os outros com frequência. Seus sintomas de hiperatividade motora diminuíram, mas ele relata uma "inquietação interna" constante. Esta apresentação é:', options: ['Incomum, pois o TDAH geralmente remite completamente na adolescência.', 'Típica da evolução do TDAH para a vida adulta, com a persistência da desatenção e impulsividade e uma internalização da hiperatividade.', 'Sugestiva de um diagnóstico incorreto na infância, sendo mais provável um transtorno de conduta.', 'Indicativa de que o tratamento com estimulantes na infância causou uma piora dos sintomas.', 'Mais compatível com o início de um transtorno bipolar do que com a persistência do TDAH.'], answer: 1 },
+            { question: 'Qual das seguintes comorbidades psiquiátricas é mais frequentemente associada tanto ao TDAH quanto ao TEA em adultos?', options: ['Esquizofrenia', 'Transtornos de ansiedade', 'Transtornos alimentares', 'Transtornos parafílicos', 'Transtorno de conversão'], answer: 1 },
+            { question: 'A avaliação diagnóstica de TEA em um adulto que não recebeu o diagnóstico na infância (diagnóstico tardio) é um processo complexo. Qual ferramenta é considerada um dos padrões-ouro para essa avaliação, envolvendo uma entrevista semiestruturada com um cuidador ou familiar próximo para coletar a história do desenvolvimento?', options: ['Escala de Inteligência Wechsler para Adultos (WAIS-IV)', 'Inventário de Depressão de Beck (BDI-II)', 'Entrevista Diagnóstica para o Autismo - Revisada (ADI-R)', 'Questionário de Saúde do Paciente (PHQ-9)', 'Teste de Apercepção Temática (TAT)'], answer: 2 },
+            { question: 'A neurobiologia da dependência química envolve a ativação do sistema de recompensa cerebral. Qual é o principal neurotransmissor e a via cerebral implicados na sensação de prazer e no reforço que levam ao uso compulsivo de substâncias?', options: ['Serotonina, liberada nas vias que se projetam do núcleo da rafe.', 'Noradrenalina, liberada no locus coeruleus.', 'Dopamina, liberada na via mesolímbica (área tegmentar ventral para o núcleo accumbens).', 'Acetilcolina, liberada no prosencéfalo basal.', 'GABA, atuando nos interneurônios corticais.'], answer: 2 },
+            { question: 'Um paciente dependente de opioides decide iniciar um tratamento. Qual das seguintes opções farmacológicas é uma terapia de substituição eficaz, que atua como um agonista opioide de ação longa, reduzindo a fissura e os sintomas de abstinência, e permitindo uma estabilização do paciente?', options: ['Naltrexona', 'Dissulfiram', 'Acamprosato', 'Metadona ou Buprenorfina', 'Clonidina'], answer: 3 },
+            { question: 'A síndrome de abstinência alcoólica grave pode ser fatal se não for tratada adequadamente. Quais são os sintomas característicos do delirium tremens, a forma mais grave de abstinência?', options: ['Apenas tremores finos, ansiedade e insônia.', 'Desorientação, alucinações (tipicamente visuais ou táteis), agitação psicomotora, instabilidade autonômica (taquicardia, hipertensão, febre) e sudorese.', 'Humor deprimido, anedonia e lentificação psicomotora.', 'Fissura intensa por álcool, acompanhada de comportamento de busca.', 'Crises convulsivas tônico-clônicas generalizadas, sem alteração do estado de consciência entre as crises.'], answer: 1 },
+            { question: 'O conceito de "neuroadaptação de oposição" é fundamental para entender a dependência e a abstinência. O que este conceito postula?', options: ['O cérebro se adapta ao uso crônico de uma droga desenvolvendo mecanismos que se opõem aos seus efeitos agudos, o que leva à tolerância e a uma síndrome de abstinência com sintomas opostos aos da droga.', 'O uso de uma droga leva a um comportamento de oposição e desafio por parte do usuário em relação às normas sociais.', 'Diferentes drogas competem pelos mesmos receptores cerebrais, criando um efeito de oposição.', 'A genética de um indivíduo pode se opor ao desenvolvimento da dependência, mesmo com uso crônico.', 'A psicoterapia funciona por se opor aos desejos irracionais de usar a droga.'], answer: 0 },
+            { question: 'Um paciente com transtorno por uso de álcool, em abstinência, concorda em iniciar um tratamento farmacológico para prevenir recaídas. Ele está altamente motivado e tem bom suporte familiar. Qual medicamento atua produzindo uma reação aversiva (náuseas, vômitos, rubor) quando o álcool é consumido, sendo útil em pacientes selecionados e com supervisão?', options: ['Naltrexona', 'Acamprosato', 'Topiramato', 'Dissulfiram', 'Baclofeno'], answer: 3 },
+            { question: 'Um homem de 55 anos, obeso (IMC 35 kg/m²), com hipertensão, queixa-se de sonolência diurna excessiva, a ponto de cochilar em reuniões. Sua esposa relata que ele ronca muito alto e tem pausas respiratórias durante a noite, seguidas de engasgos. Ele nega dificuldade para iniciar o sono. Qual é a hipótese diagnóstica mais provável e qual o exame padrão-ouro para confirmá-la?', options: ['Insônia crônica; actigrafia.', 'Síndrome das pernas inquietas; eletroneuromiografia.', 'Narcolepsia; teste de latências múltiplas do sono (TLMS).', 'Apneia Obstrutiva do Sono (AOS); polissonografia.', 'Transtorno do ritmo circadiano; dosagem de melatonina salivar.'], answer: 3 },
+            { question: 'Uma paciente de 40 anos queixa-se de dificuldade para iniciar e manter o sono há mais de 6 meses, ocorrendo pelo menos 3 noites por semana, com prejuízo em seu funcionamento diurno (fadiga, irritabilidade). Ela não apresenta roncos ou pausas respiratórias relatadas pelo parceiro. Qual é a abordagem terapêutica não farmacológica de primeira linha para este quadro de insônia crônica?', options: ['Uso diário de suplementos de melatonina.', 'Terapia Cognitivo-Comportamental para Insônia (TCC-I), incluindo técnicas de controle de estímulos e restrição do sono.', 'Psicanálise para explorar conflitos inconscientes que se manifestam como insônia.', 'Prescrição de um programa de exercícios físicos intensos imediatamente antes de deitar.', 'Aconselhamento para consumir uma bebida alcoólica antes de dormir para induzir o sono.'], answer: 1 },
+            { question: 'A Classificação Internacional de Transtornos do Sono (ICSD-3) organiza os transtornos em grandes categorias. A insônia, os transtornos respiratórios do sono e as parassonias são exemplos dessas categorias. Em qual categoria se enquadra o sonambulismo?', options: ['Transtornos do ritmo circadiano', 'Hipersonolências de origem central', 'Parassonias (especificamente, parassonias do sono NREM)', 'Transtornos do movimento relacionados ao sono', 'Outros transtornos do sono'], answer: 2 },
+            { question: 'Por que é perigoso prescrever um hipnótico benzodiazepínico (como o clonazepam) para um paciente com queixa de "insônia" sem antes investigar adequadamente a possibilidade de Apneia Obstrutiva do Sono (AOS)?', options: ['Porque os benzodiazepínicos podem causar dependência, o que é indesejável em qualquer paciente.', 'Porque os benzodiazepínicos são ineficazes para induzir o sono em pacientes com AOS.', 'Porque os benzodiazepínicos, por serem relaxantes musculares, podem piorar o colapso das vias aéreas superiores, aumentando a frequência e a duração das apneias.', 'Porque os benzodiazepínicos interagem perigosamente com a dieta do paciente com AOS.', 'Porque os benzodiazepínicos podem mascarar os sintomas de narcolepsia, que é o principal diagnóstico diferencial.'], answer: 2 },
+            { question: 'Um paciente com diagnóstico confirmado de Apneia Obstrutiva do Sono (AOS) grave recebe a indicação de tratamento. Qual é a terapia de primeira linha e mais eficaz para a AOS moderada a grave?', options: ['Cirurgia de uvulopalatofaringoplastia.', 'Uso de aparelhos de avanço mandibular.', 'Terapia posicional para dormir de lado.', 'Pressão positiva contínua nas vias aéreas (CPAP).', 'Terapia de reposição de oxigênio durante a noite.'], answer: 3 },
+            { question: 'Um paciente de 28 anos, com histórico de esquizofrenia, é trazido ao pronto-socorro em estado de agitação psicomotora. Ele está gritando, andando de um lado para o outro, gesticulando de forma ameaçadora e quebrou um objeto na sala de espera. Segundo o protocolo de manejo da agitação, qual é o nível de risco e a conduta imediata mais apropriada?', options: ['Risco alto (Hostil); tentar abordagem verbal amigável para convencê-lo a tomar medicação oral.', 'Risco iminente (Violento); o diálogo é remoto, a equipe deve se preparar para a contenção física e farmacológica imediata.', 'Risco muito alto (Agressivo); tentar diálogo com cautela, mas interromper ao menor sinal de piora.', 'Risco baixo; observar o paciente à distância até que ele se acalme espontaneamente.', 'Risco moderado; oferecer um copo de água e um local tranquilo para ele se sentar.'], answer: 1 },
+            { question: 'Na abordagem farmacológica da agitação psicomotora em um paciente não colaborativo, qual combinação de medicamentos intramusculares é frequentemente utilizada para obter sedação rápida e segura, balanceando os efeitos antipsicóticos e ansiolíticos?', options: ['Diazepam (não recomendado IM) e Clonazepam (apenas oral).', 'Haloperidol (antipsicótico) associado à prometazina (anti-histamínico/anticolinérgico para reduzir SEP e potencializar sedação).', 'Fluoxetina e Lítio.', 'Carbamazepina e Lamotrigina.', 'Midazolam isolado em dose alta, sem associação com antipsicótico.'], answer: 1 },
+            { question: 'Qual é o princípio fundamental da abordagem verbal (de-escalation) a um paciente agitado?', options: ['Falar em tom de voz alto e firme para estabelecer autoridade.', 'Fazer promessas que não podem ser cumpridas para acalmar o paciente momentaneamente.', 'Manter contato visual intenso e ficar muito próximo ao paciente para mostrar que não há medo.', 'Usar uma postura calma e não ameaçadora, manter uma distância segura, usar frases curtas e claras, e validar os sentimentos do paciente sem necessariamente concordar com o conteúdo de suas crenças.', 'Ignorar o que o paciente está dizendo e focar apenas em administrar a medicação o mais rápido possível.'], answer: 3 },
+            { question: 'Após a contenção mecânica e farmacológica de um paciente agitado, qual é o cuidado mais importante que a equipe de enfermagem e médica deve ter?', options: ['Deixar o paciente isolado no quarto de contenção por pelo menos 12 horas.', 'Retirar a contenção de todos os membros simultaneamente assim que o paciente adormecer.', 'Monitorar continuamente os sinais vitais, o nível de consciência e a perfusão das extremidades contidas, reavaliando a necessidade da contenção em intervalos regulares.', 'Manter a contenção até que o paciente verbalize um pedido formal de desculpas pelo seu comportamento.', 'Administrar doses adicionais de sedativos a cada 30 minutos, independentemente do estado clínico do paciente.'], answer: 2 },
+            { question: 'A Classificação Internacional de Doenças, 11ª edição (CID-11), introduziu o diagnóstico de Transtorno do Comportamento Sexual Compulsivo (TCSC). Em qual capítulo ele foi classificado, refletindo a compreensão atual de sua neurobiologia?', options: ['Transtornos Parafílicos', 'Transtornos Aditivos', 'Transtornos do Impulso', 'Transtornos de Ansiedade', 'Transtornos do Humor'], answer: 2 },
+            { question: 'O diagnóstico de Transtorno do Comportamento Sexual Compulsivo (TCSC) pela CID-11 requer um padrão persistente de falha no controle de impulsos sexuais intensos, resultando em comportamento sexual repetitivo. Qual critério adicional é essencial para o diagnóstico?', options: ['O comportamento deve ser ilegal ou envolver parceiros não consentintes.', 'O comportamento deve ser a única fonte de prazer na vida do indivíduo.', 'O comportamento deve levar a sofrimento acentuado ou prejuízo significativo na vida pessoal, familiar, social, educacional ou ocupacional.', 'O indivíduo deve ter pelo menos três comorbidades psiquiátricas.', 'O comportamento deve ser exclusivamente solitário (masturbação ou consumo de pornografia).'], answer: 2 },
+            { question: 'O tratamento do TCSC é multimodal. Em casos onde há comorbidade com transtornos por uso de substâncias ou outros comportamentos impulsivos, qual medicamento, um antagonista opioide, pode ser útil por modular o sistema de recompensa?', options: ['Fluoxetina', 'Risperidona', 'Lítio', 'Naltrexona', 'Clonazepam'], answer: 3 },
+            { question: 'Um paciente com TCSC e comorbidade com transtorno depressivo maior inicia tratamento. Qual classe de medicamentos seria uma escolha lógica para abordar ambos os quadros simultaneamente?', options: ['Antiandrogênicos como a ciproterona.', 'Antipsicóticos típicos como o haloperidol.', 'Inibidores seletivos da recaptação de serotonina (ISRS).', 'Benzodiazepínicos como o alprazolam.', 'Estimulantes como o metilfenidato.'], answer: 2 },
+            { question: 'Uma idosa de 78 anos faz uso crônico de lorazepam 2 mg/dia há 15 anos para "insônia". Recentemente, ela apresentou duas quedas e sua família nota piora da memória. Qual é a conduta mais apropriada?', options: ['Manter o lorazepam, pois a retirada em idosos é muito arriscada e pode causar abstinência grave.', 'Aumentar a dose do lorazepam para garantir que ela durma a noite toda e não se levante, evitando quedas.', 'Substituir o lorazepam por um barbitúrico, que é mais seguro em idosos.', 'Iniciar um plano de desprescrição gradual e supervisionado do lorazepam, associado a medidas de higiene do sono e TCC-I.', 'Suspender o lorazepam abruptamente e iniciar zolpidem, que não causa dependência.'], answer: 3 },
+            { question: 'No processo de desprescrição de um benzodiazepínico de meia-vida curta, como o alprazolam, em um paciente com uso crônico, qual é uma estratégia recomendada para minimizar a intensidade dos sintomas de abstinência?', options: ['Aumentar a dose em 50% por uma semana antes de iniciar a redução.', 'Reduzir a dose em 50% a cada 3 dias para acelerar o processo.', 'Trocar por um benzodiazepínico de meia-vida longa, como o diazepam, e então fazer a retirada gradual deste.', 'Manter a dose do alprazolam e adicionar um antipsicótico para controlar a ansiedade.', 'Realizar a retirada em ambiente hospitalar com anestesia geral.'], answer: 2 },
+            { question: 'O uso crônico de benzodiazepínicos em idosos está associado a um aumento significativo do risco de quais eventos adversos?', options: ['Infarto agudo do miocárdio e acidente vascular cerebral.', 'Câncer de cólon e doença hepática.', 'Quedas, fraturas, declínio cognitivo e acidentes automobilísticos.', 'Diabetes mellitus tipo 2 e hipertireoidismo.', 'Doença de Parkinson e esclerose lateral amiotrófica.'], answer: 2 },
+            { question: 'Qual é a principal justificativa para a recomendação de que o uso de benzodiazepínicos para insônia seja de curto prazo (2-4 semanas)?', options: ['Após esse período, o custo do medicamento se torna proibitivo.', 'O desenvolvimento de tolerância aos efeitos hipnóticos, com manutenção ou piora dos efeitos adversos, e o risco de dependência.', 'A necessidade de trocar para um medicamento mais potente após 4 semanas.', 'A eficácia dos benzodiazepínicos aumenta progressivamente com o tempo, tornando-os desnecessários após um mês.', 'As diretrizes da indústria farmacêutica recomendam a rotação de medicamentos mensalmente.'], answer: 1 },
+            { question: 'A Rede de Atenção Psicossocial (RAPS) no Brasil é estruturada em diferentes componentes para oferecer um cuidado integral. Um jovem de 22 anos, com uso abusivo de crack e em situação de rua, com vínculos familiares rompidos, necessita de um local de acolhimento temporário para estabilização e elaboração de um projeto terapêutico singular. Qual componente da RAPS é mais adequado para essa necessidade?', options: ['Leito de saúde mental em Hospital Geral.', 'Centro de Atenção Psicossocial tipo II (CAPS II).', 'Unidade de Acolhimento (UA).', 'Serviço Residencial Terapêutico (SRT).', 'Unidade Básica de Saúde (UBS).'], answer: 2 },
+            { question: 'Qual é um dos principais objetivos da inserção da saúde mental na Atenção Primária à Saúde (APS) no Brasil, através de estratégias como o Núcleo de Apoio à Saúde da Família (NASF)?', options: ['Transferir toda a responsabilidade do cuidado em saúde mental para os especialistas dos CAPS.', 'Aumentar a prescrição de psicotrópicos na comunidade.', 'Promover a desinstitucionalização, realizar o diagnóstico e tratamento de transtornos mentais comuns em um ambiente menos estigmatizante e coordenar o cuidado em rede.', 'Focar exclusivamente na prevenção, sem realizar intervenções em casos já estabelecidos.', 'Substituir completamente os CAPS por equipes de saúde mental na APS.'], answer: 2 },
+            { question: 'A RAPS foi criada para consolidar um modelo de atenção em saúde mental aberto e de base comunitária. Qual dos seguintes serviços é o principal articulador da rede no território, oferecendo cuidado intensivo, semi-intensivo e não intensivo para pessoas com transtornos mentais graves e persistentes?', options: ['Ambulatório de especialidades.', 'Unidade de Pronto Atendimento (UPA).', 'Centro de Atenção Psicossocial (CAPS).', 'Hospital Psiquiátrico.', 'Consultório na Rua.'], answer: 2 },
+            { question: 'Um paciente com esquizofrenia, após muitos anos de internação em hospital psiquiátrico, recebe alta como parte do processo de desinstitucionalização. Ele não tem família ou local para morar. Qual dispositivo da RAPS foi criado especificamente para ser a moradia desses egressos de longas internações?', options: ['Unidade de Acolhimento (UA).', 'Serviço Residencial Terapêutico (SRT).', 'Centro de Convivência e Cultura.', 'Leito em Hospital Geral.', 'CAPS III.'], answer: 1 },
+            { question: 'A visita do psiquiatra italiano Franco Basaglia ao Hospital Colônia de Barbacena em 1979 foi um marco para a Reforma Psiquiátrica Brasileira. Qual foi a definição impactante que ele usou para descrever o que viu, e que foi amplamente divulgada pela imprensa, ajudando a mobilizar a opinião pública?', options: ['"Um sanatório modelo, porém com poucos recursos."', '"Uma comunidade terapêutica em desenvolvimento."', '"Um campo de concentração nazista."', '"Um hospital geral com uma ala psiquiátrica."', '"Uma experiência social fracassada."'], answer: 2 },
+            { question: 'O caso do Hospital Colônia de Barbacena, onde dezenas de milhares de pessoas morreram em condições desumanas, tornou-se um símbolo da crise do modelo manicomial no Brasil. Qual era a "lógica" de internação que prevalecia em instituições como Barbacena?', options: ['A internação era baseada em critérios diagnósticos rigorosos da CID.', 'Apenas pacientes com risco iminente de suicídio ou homicídio eram internados.', 'A internação servia como um mecanismo de exclusão social para "indesejáveis", incluindo não apenas pessoas com transtornos mentais, mas também epiléticos, alcoólatras, homossexuais, e outros grupos marginalizados.', 'A internação era voluntária e buscava o tratamento humanizado e a reinserção social.', 'A internação era exclusiva para a elite, que buscava um refúgio da sociedade.'], answer: 2 },
+            { question: 'A Lei 10.216 de 2001, conhecida como a Lei da Reforma Psiquiátrica, redireciona o modelo de assistência em saúde mental no Brasil. Qual é o princípio central dessa lei, diretamente influenciado pela crítica ao modelo de Barbacena?', options: ['O fortalecimento dos hospitais psiquiátricos como centro do tratamento.', 'A priorização do tratamento em serviços de base comunitária, a proteção dos direitos das pessoas com transtornos mentais e a busca pela reinserção social, em detrimento da internação de longa permanência.', 'A proibição total de qualquer tipo de internação psiquiátrica.', 'A obrigatoriedade da terapia eletroconvulsiva para todos os casos graves.', 'A transferência da responsabilidade do cuidado em saúde mental do SUS para o setor privado.'], answer: 1 },
+            { question: 'A transformação do Hospital Colônia de Barbacena e a criação de dispositivos como o Museu da Loucura e o Festival da Loucura têm um objetivo fundamental no contexto da Reforma Psiquiátrica. Qual é esse objetivo?', options: ['Gerar receita turística para a cidade.', 'Apagar a história vergonhosa do hospital.', 'Manter viva a memória das atrocidades do modelo manicomial para que não se repitam e, ao mesmo tempo, ressignificar o estigma da loucura através da arte e da cultura.', 'Provar que o modelo manicomial era eficaz, apesar de alguns excessos.', 'Servir como um centro de treinamento para técnicas de contenção física.'], answer: 2 }
+        ];
+
+        // --- ELEMENTOS DO DOM ---
+        const quizContainer = document.getElementById('quiz-container');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const progressTextEl = document.getElementById('progress-text');
+        const scoreTextEl = document.getElementById('score-text');
+        const progressBarEl = document.getElementById('progress-bar');
+        const resultsScreenEl = document.getElementById('results-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const quizHeaderEl = document.getElementById('quiz-header');
+        const questionAreaEl = document.getElementById('question-area');
+        const navigationAreaEl = document.getElementById('navigation-area');
+
+        // --- ESTADO DO QUIZ ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let shuffledQuestions = [];
+
+        // --- FUNÇÕES ---
+
+        /**
+         * Embaralha um array usando o algoritmo Fisher-Yates.
+         * @param {Array} array O array a ser embaralhado.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        /**
+         * Inicia ou reinicia o quiz.
+         */
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            shuffledQuestions = [...quizData];
+            shuffleArray(shuffledQuestions);
+
+            resultsScreenEl.classList.add('hidden');
+            quizHeaderEl.style.display = 'block';
+            questionAreaEl.style.display = 'block';
+            navigationAreaEl.style.display = 'block';
+
+            updateScoreAndProgress();
+            showQuestion();
+        }
+
+        /**
+         * Exibe a questão atual e suas opções.
+         */
+        function showQuestion() {
+            // Limpa as opções anteriores
+            optionsContainerEl.innerHTML = '';
+            
+            // Pega a questão atual
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+            questionTextEl.textContent = currentQuestion.question;
+
+            // Cria os botões de opção
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.innerHTML = `<span class="font-bold mr-2">${String.fromCharCode(65 + index)}.</span> ${option}`;
+                button.classList.add('option-btn', 'w-full', 'text-left', 'p-4', 'border', 'border-slate-300', 'rounded-lg', 'bg-slate-100', 'hover:bg-slate-200', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-400', 'focus:ring-opacity-50');
+                button.dataset.index = index;
+                button.addEventListener('click', selectAnswer);
+                optionsContainerEl.appendChild(button);
+            });
+
+            nextBtn.disabled = true;
+        }
+
+        /**
+         * Lida com a seleção de uma resposta.
+         * @param {Event} e O evento de clique.
+         */
+        function selectAnswer(e) {
+            const selectedButton = e.currentTarget;
+            const selectedIndex = parseInt(selectedButton.dataset.index);
+            const correctIndex = shuffledQuestions[currentQuestionIndex].answer;
+
+            // Desabilita todos os botões para impedir nova seleção
+            const allOptions = optionsContainerEl.querySelectorAll('.option-btn');
+            allOptions.forEach(btn => {
+                btn.classList.add('disabled');
+                btn.removeEventListener('click', selectAnswer); // Remove o listener
+            });
+
+            // Verifica se a resposta está correta e atualiza a pontuação
+            if (selectedIndex === correctIndex) {
+                score++;
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+                // Destaca a resposta correta
+                const correctButton = optionsContainerEl.querySelector(`[data-index='${correctIndex}']`);
+                correctButton.classList.add('correct', 'highlight-correct');
+            }
+
+            updateScoreAndProgress();
+            nextBtn.disabled = false;
+        }
+
+        /**
+         * Atualiza o texto de pontuação e a barra de progresso.
+         */
+        function updateScoreAndProgress() {
+            progressTextEl.textContent = `Questão ${currentQuestionIndex + 1} de ${shuffledQuestions.length}`;
+            scoreTextEl.textContent = `Pontuação: ${score}`;
+            const progressPercentage = ((currentQuestionIndex + 1) / shuffledQuestions.length) * 100;
+            progressBarEl.style.width = `${progressPercentage}%`;
+        }
+
+        /**
+         * Mostra a próxima questão ou a tela de resultados.
+         */
+        function showNextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                showQuestion();
+                updateScoreAndProgress();
+            } else {
+                showResults();
+            }
+        }
+        
+        /**
+         * Exibe a tela de resultados finais.
+         */
+        function showResults() {
+            quizHeaderEl.style.display = 'none';
+            questionAreaEl.style.display = 'none';
+            navigationAreaEl.style.display = 'none';
+            resultsScreenEl.classList.remove('hidden');
+            finalScoreEl.textContent = `${score} / ${shuffledQuestions.length}`;
+        }
+
+        // --- EVENT LISTENERS ---
+        nextBtn.addEventListener('click', showNextQuestion);
+        restartBtn.addEventListener('click', startQuiz);
+
+        // --- INICIALIZAÇÃO ---
+        startQuiz();
+
+    </script>
+</body>
+</html>
