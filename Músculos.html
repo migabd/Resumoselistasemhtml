@@ -19,12 +19,14 @@
             z-index: 10;
         }
         /* Cores didáticas por região */
-        .region-ombro { background-color: #e0f2fe; border-color: #bae6fd; color: #0c4a6e; }
-        .region-braco { background-color: #dcfce7; border-color: #bbf7d0; color: #166534; }
-        .region-antebraco { background-color: #e0f2f2; border-color: #a7f3d0; color: #115e59; }
+        .region-ombro { background-color: #fef3c7; border-color: #fde68a; color: #b45309; }
+        .region-braco { background-color: #dbeafe; border-color: #bfdbfe; color: #1e40af; }
+        .region-antebraco { background-color: #e0f2fe; border-color: #bae6fd; color: #0c4a6e; }
+        .region-mao { background-color: #fef9c3; border-color: #fef08a; color: #a16207; }
         .region-quadril { background-color: #ffedd5; border-color: #fed7aa; color: #9a3412; }
         .region-coxa { background-color: #fee2e2; border-color: #fecaca; color: #991b1b; }
         .region-perna { background-color: #f3e8ff; border-color: #e9d5ff; color: #6b21a8; }
+        .region-pe { background-color: #dcfce7; border-color: #bbf7d0; color: #166534; }
         
         .region-cell {
             font-weight: 700;
@@ -47,7 +49,7 @@
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         <header class="text-center mb-10">
             <h1 class="text-4xl md:text-5xl font-bold text-slate-900">Guia Didático de Músculos</h1>
-            <p class="text-lg text-slate-600 mt-2">Membros Superiores e Inferiores</p>
+            <p class="text-lg text-slate-600 mt-2">Uma visão completa dos membros superiores e inferiores.</p>
         </header>
         
         <!-- Legenda de Cores -->
@@ -57,281 +59,338 @@
                 <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-ombro border"></span> Ombro</span>
                 <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-braco border"></span> Braço</span>
                 <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-antebraco border"></span> Antebraço</span>
+                <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-mao border"></span> Mão</span>
                 <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-quadril border"></span> Quadril / Glútea</span>
                 <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-coxa border"></span> Coxa</span>
                 <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-perna border"></span> Perna</span>
+                <span class="flex items-center"><span class="w-4 h-4 rounded-full mr-2 region-pe border"></span> Pé / Tornozelo</span>
             </div>
         </div>
 
         <!-- Seção de Membros Superiores -->
-        <div class="mb-12 bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden">
-            <h2 class="text-2xl font-bold text-slate-900 p-5 bg-slate-50 border-b border-slate-200">Membros Superiores (MMSS)</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="text-xs text-slate-600 uppercase bg-slate-100">
-                        <tr>
-                            <th class="p-3 w-[50px]">Região</th>
-                            <th class="p-3">Músculo</th>
-                            <th class="p-3">Origem</th>
-                            <th class="p-3">Inserção</th>
-                            <th class="p-3">Inervação</th>
-                            <th class="p-3">Ações Principais</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200">
-                        <!-- Ombro -->
-                        <tr>
-                            <td class="region-cell region-ombro" rowspan="8">Ombro</td>
-                            <td class="p-3 font-semibold">Deltoide</td>
-                            <td class="p-3">Terço lateral da clavícula, acrômio e espinha da escápula</td>
-                            <td class="p-3">Tuberosidade deltoidea do úmero</td>
-                            <td class="p-3">Nervo axilar (C5, C6)</td>
-                            <td class="p-3">Abdução do braço; flexão e rotação medial; extensão e rotação lateral</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Supraespinal</td>
-                            <td class="p-3">Fossa supraespinal da escápula</td>
-                            <td class="p-3">Tubérculo maior do úmero</td>
-                            <td class="p-3">Nervo supraescapular (C5, C6)</td>
-                            <td class="p-3">Inicia a abdução do braço; estabiliza o ombro</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Infraespinal</td>
-                            <td class="p-3">Fossa infraespinal da escápula</td>
-                            <td class="p-3">Tubérculo maior do úmero</td>
-                            <td class="p-3">Nervo supraescapular (C5, C6)</td>
-                            <td class="p-3">Rotação lateral do braço; estabiliza o ombro</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Redondo Menor</td>
-                            <td class="p-3">Margem lateral da escápula</td>
-                            <td class="p-3">Tubérculo maior do úmero</td>
-                            <td class="p-3">Nervo axilar (C5, C6)</td>
-                            <td class="p-3">Rotação lateral e adução do braço; estabiliza o ombro</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Redondo Maior</td>
-                            <td class="p-3">Ângulo inferior da escápula</td>
-                            <td class="p-3">Crista do tubérculo menor do úmero</td>
-                            <td class="p-3">Nervo subescapular inferior (C5, C6)</td>
-                            <td class="p-3">Adução e rotação medial do braço</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Subescapular</td>
-                            <td class="p-3">Fossa subescapular da escápula</td>
-                            <td class="p-3">Tubérculo menor do úmero</td>
-                            <td class="p-3">Nervos subescapulares (C5, C6)</td>
-                            <td class="p-3">Rotação medial do braço; estabiliza o ombro</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Peitoral Maior</td>
-                            <td class="p-3">Clavícula, esterno e cartilagens costais</td>
-                            <td class="p-3">Crista do tubérculo maior do úmero</td>
-                            <td class="p-3">Nervos peitorais (C5-T1)</td>
-                            <td class="p-3">Adução, rotação medial e flexão do braço</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Latíssimo do Dorso</td>
-                            <td class="p-3">Vértebras T7-L5, crista ilíaca, últimas costelas</td>
-                            <td class="p-3">Sulco intertubercular do úmero</td>
-                            <td class="p-3">Nervo toracodorsal (C6-C8)</td>
-                            <td class="p-3">Extensão, adução e rotação medial do braço</td>
-                        </tr>
-                        <!-- Braço -->
-                        <tr>
-                            <td class="region-cell region-braco" rowspan="4">Braço</td>
-                            <td class="p-3 font-semibold">Bíceps Braquial</td>
-                            <td class="p-3">Tubérculo supraglenoidal (longa); processo coracoide (curta)</td>
-                            <td class="p-3">Tuberosidade do rádio e aponeurose bicipital</td>
-                            <td class="p-3">Nervo musculocutâneo (C5, C6)</td>
-                            <td class="p-3">Flexão do cotovelo, supinação do antebraço e flexão do ombro</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Braquial</td>
-                            <td class="p-3">Metade distal da face anterior do úmero</td>
-                            <td class="p-3">Processo coronoide e tuberosidade da ulna</td>
-                            <td class="p-3">Nervo musculocutâneo (C5, C6)</td>
-                            <td class="p-3">Principal flexor do cotovelo</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Coracobraquial</td>
-                            <td class="p-3">Processo coracoide da escápula</td>
-                            <td class="p-3">Terço médio da face medial do úmero</td>
-                            <td class="p-3">Nervo musculocutâneo (C5-C7)</td>
-                            <td class="p-3">Flexão e adução do braço</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Tríceps Braquial</td>
-                            <td class="p-3">Tubérculo infraglenoidal (longa); face posterior do úmero</td>
-                            <td class="p-3">Olécrano da ulna</td>
-                            <td class="p-3">Nervo radial (C6-C8)</td>
-                            <td class="p-3">Principal extensor do cotovelo; extensão do ombro</td>
-                        </tr>
-                        <!-- Antebraço -->
-                         <tr>
-                            <td class="region-cell region-antebraco" rowspan="7">Antebraço (Anterior)</td>
-                            <td class="p-3 font-semibold">Pronador Redondo</td>
-                            <td class="p-3">Epicôndilo medial do úmero e processo coronoide da ulna</td>
-                            <td class="p-3">Face lateral do rádio</td>
-                            <td class="p-3">Nervo mediano</td>
-                            <td class="p-3">Pronação do antebraço e flexão do cotovelo</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Flexor Radial do Carpo</td>
-                            <td class="p-3">Epicôndilo medial do úmero</td>
-                            <td class="p-3">Base do 2º metacarpo</td>
-                            <td class="p-3">Nervo mediano</td>
-                            <td class="p-3">Flexão e abdução (desvio radial) do punho</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Flexor Ulnar do Carpo</td>
-                            <td class="p-3">Epicôndilo medial do úmero e olécrano</td>
-                            <td class="p-3">Pisiforme, hamato e base do 5º metacarpo</td>
-                            <td class="p-3">Nervo ulnar</td>
-                            <td class="p-3">Flexão e adução (desvio ulnar) do punho</td>
-                        </tr>
-                         <tr>
-                            <td class="p-3 font-semibold">Flexor Superficial dos Dedos</td>
-                            <td class="p-3">Epicôndilo medial do úmero, processo coronoide e rádio</td>
-                            <td class="p-3">Falanges médias do 2º ao 5º dedos</td>
-                            <td class="p-3">Nervo mediano</td>
-                            <td class="p-3">Flexão das interfalangianas proximais e punho</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Flexor Profundo dos Dedos</td>
-                            <td class="p-3">Face anterior da ulna e membrana interóssea</td>
-                            <td class="p-3">Falanges distais do 2º ao 5º dedos</td>
-                            <td class="p-3">Nervo mediano (lateral) e ulnar (medial)</td>
-                            <td class="p-3">Flexão das interfalangianas distais</td>
-                        </tr>
-                        <!-- Outros músculos do antebraço aqui -->
-                    </tbody>
-                </table>
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Membros Superiores (MMSS)</h2>
+            <div class="bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-600 uppercase bg-slate-100">
+                            <tr>
+                                <th class="p-3 w-[50px]">Região</th>
+                                <th class="p-3">Músculo</th>
+                                <th class="p-3">Origem</th>
+                                <th class="p-3">Inserção</th>
+                                <th class="p-3">Inervação</th>
+                                <th class="p-3">Ações Principais</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <!-- Ombro -->
+                            <tr>
+                                <td class="region-cell region-ombro" rowspan="8">Ombro</td>
+                                <td class="p-3 font-semibold">Deltoide</td>
+                                <td class="p-3">Terço lateral da clavícula, acrômio e espinha da escápula</td>
+                                <td class="p-3">Tuberosidade deltoidea do úmero</td>
+                                <td class="p-3">Nervo axilar (C5, C6)</td>
+                                <td class="p-3">Abdução, flexão, extensão e rotação do braço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Supraespinal</td>
+                                <td class="p-3">Fossa supraespinal da escápula</td>
+                                <td class="p-3">Tubérculo maior do úmero</td>
+                                <td class="p-3">Nervo supraescapular (C5, C6)</td>
+                                <td class="p-3">Inicia a abdução do braço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Infraespinal</td>
+                                <td class="p-3">Fossa infraespinal da escápula</td>
+                                <td class="p-3">Tubérculo maior do úmero</td>
+                                <td class="p-3">Nervo supraescapular (C5, C6)</td>
+                                <td class="p-3">Rotação lateral do braço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Redondo Menor</td>
+                                <td class="p-3">Margem lateral da escápula</td>
+                                <td class="p-3">Tubérculo maior do úmero</td>
+                                <td class="p-3">Nervo axilar (C5, C6)</td>
+                                <td class="p-3">Rotação lateral e adução do braço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Redondo Maior</td>
+                                <td class="p-3">Ângulo inferior da escápula</td>
+                                <td class="p-3">Crista do tubérculo menor do úmero</td>
+                                <td class="p-3">Nervo subescapular inferior (C5, C6)</td>
+                                <td class="p-3">Adução e rotação medial do braço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Subescapular</td>
+                                <td class="p-3">Fossa subescapular da escápula</td>
+                                <td class="p-3">Tubérculo menor do úmero</td>
+                                <td class="p-3">Nervos subescapulares (C5, C6)</td>
+                                <td class="p-3">Rotação medial do braço</td>
+                            </tr>
+                             <tr>
+                                <td class="p-3 font-semibold">Peitoral Maior</td>
+                                <td class="p-3">Clavícula, esterno e cartilagens costais</td>
+                                <td class="p-3">Crista do tubérculo maior do úmero</td>
+                                <td class="p-3">Nervos peitorais (C5-T1)</td>
+                                <td class="p-3">Adução, rotação medial e flexão do braço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Latíssimo do Dorso</td>
+                                <td class="p-3">Vértebras T7-L5, crista ilíaca, últimas costelas</td>
+                                <td class="p-3">Sulco intertubercular do úmero</td>
+                                <td class="p-3">Nervo toracodorsal (C6-C8)</td>
+                                <td class="p-3">Extensão, adução e rotação medial do braço</td>
+                            </tr>
+                            <!-- Braço -->
+                            <tr>
+                                <td class="region-cell region-braco" rowspan="4">Braço</td>
+                                <td class="p-3 font-semibold">Bíceps Braquial</td>
+                                <td class="p-3">Tubérculo supraglenoidal (longa); processo coracoide (curta)</td>
+                                <td class="p-3">Tuberosidade do rádio e aponeurose bicipital</td>
+                                <td class="p-3">Nervo musculocutâneo (C5, C6)</td>
+                                <td class="p-3">Flexão do cotovelo, supinação do antebraço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Braquial</td>
+                                <td class="p-3">Metade distal da face anterior do úmero</td>
+                                <td class="p-3">Processo coronoide e tuberosidade da ulna</td>
+                                <td class="p-3">Nervo musculocutâneo (C5, C6)</td>
+                                <td class="p-3">Principal flexor do cotovelo</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Coracobraquial</td>
+                                <td class="p-3">Processo coracoide da escápula</td>
+                                <td class="p-3">Terço médio da face medial do úmero</td>
+                                <td class="p-3">Nervo musculocutâneo (C5-C7)</td>
+                                <td class="p-3">Flexão e adução do braço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Tríceps Braquial</td>
+                                <td class="p-3">Tubérculo infraglenoidal (longa); face posterior do úmero</td>
+                                <td class="p-3">Olécrano da ulna</td>
+                                <td class="p-3">Nervo radial (C6-C8)</td>
+                                <td class="p-3">Principal extensor do cotovelo</td>
+                            </tr>
+                            <!-- Antebraço -->
+                            <tr>
+                                <td class="region-cell region-antebraco" rowspan="5">Antebraço</td>
+                                <td class="p-3 font-semibold">Pronador Redondo</td>
+                                <td class="p-3">Epicôndilo medial do úmero e processo coronoide da ulna</td>
+                                <td class="p-3">Face lateral do rádio</td>
+                                <td class="p-3">Nervo mediano</td>
+                                <td class="p-3">Pronação do antebraço</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Flexor Radial do Carpo</td>
+                                <td class="p-3">Epicôndilo medial do úmero</td>
+                                <td class="p-3">Base do 2º metacarpo</td>
+                                <td class="p-3">Nervo mediano</td>
+                                <td class="p-3">Flexão e abdução (desvio radial) do punho</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Flexor Ulnar do Carpo</td>
+                                <td class="p-3">Epicôndilo medial do úmero e olécrano</td>
+                                <td class="p-3">Pisiforme, hamato e 5º metacarpo</td>
+                                <td class="p-3">Nervo ulnar</td>
+                                <td class="p-3">Flexão e adução (desvio ulnar) do punho</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Flexor Superficial dos Dedos</td>
+                                <td class="p-3">Epicôndilo medial, proc. coronoide e rádio</td>
+                                <td class="p-3">Falanges médias do 2º ao 5º dedos</td>
+                                <td class="p-3">Nervo mediano</td>
+                                <td class="p-3">Flexão das interfalangianas proximais</td>
+                            </tr>
+                             <tr>
+                                <td class="p-3 font-semibold">Flexor Profundo dos Dedos</td>
+                                <td class="p-3">Face anterior da ulna e membrana interóssea</td>
+                                <td class="p-3">Falanges distais do 2º ao 5º dedos</td>
+                                <td class="p-3">N. mediano (lateral) e ulnar (medial)</td>
+                                <td class="p-3">Flexão das interfalangianas distais</td>
+                            </tr>
+                            <!-- Mão -->
+                            <tr>
+                                <td class="region-cell region-mao" rowspan="4">Mão</td>
+                                <td class="p-3 font-semibold">Tenares (Oponente do Polegar)</td>
+                                <td class="p-3">Tubérculo do trapézio e retináculo flexor</td>
+                                <td class="p-3">Face lateral do 1º metacarpo</td>
+                                <td class="p-3">Nervo Mediano</td>
+                                <td class="p-3">Oposição do polegar</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Hipotenares (Abdutor do Mínimo)</td>
+                                <td class="p-3">Osso pisiforme</td>
+                                <td class="p-3">Base da falange proximal do 5º dedo</td>
+                                <td class="p-3">Nervo Ulnar</td>
+                                <td class="p-3">Abdução do dedo mínimo</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Lumbricais</td>
+                                <td class="p-3">Tendões do flexor profundo dos dedos</td>
+                                <td class="p-3">Expansões extensoras dos dedos</td>
+                                <td class="p-3">1º-2º: N. Mediano; 3º-4º: N. Ulnar</td>
+                                <td class="p-3">Flexão das MCF e extensão das IF</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Interósseos</td>
+                                <td class="p-3">Metacarpos</td>
+                                <td class="p-3">Falanges proximais e expansões extensoras</td>
+                                <td class="p-3">Nervo Ulnar</td>
+                                <td class="p-3">Adução (palmares) e Abdução (dorsais)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- Seção de Membros Inferiores -->
-        <div class="bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden">
-            <h2 class="text-2xl font-bold text-slate-900 p-5 bg-slate-50 border-b border-slate-200">Membros Inferiores (MMII)</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                     <thead class="text-xs text-slate-600 uppercase bg-slate-100">
-                        <tr>
-                            <th class="p-3 w-[50px]">Região</th>
-                            <th class="p-3">Músculo</th>
-                            <th class="p-3">Origem</th>
-                            <th class="p-3">Inserção</th>
-                            <th class="p-3">Inervação</th>
-                            <th class="p-3">Ações Principais</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200">
-                        <!-- Quadril -->
-                        <tr>
-                            <td class="region-cell region-quadril" rowspan="6">Quadril / Glútea</td>
-                            <td class="p-3 font-semibold">Glúteo Máximo</td>
-                            <td class="p-3">Ílio, sacro e cóccix</td>
-                            <td class="p-3">Trato iliotibial e tuberosidade glútea do fêmur</td>
-                            <td class="p-3">Nervo glúteo inferior (L5-S2)</td>
-                            <td class="p-3">Principal extensor da coxa; rotação lateral</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Glúteo Médio</td>
-                            <td class="p-3">Ílio</td>
-                            <td class="p-3">Trocânter maior do fêmur</td>
-                            <td class="p-3">Nervo glúteo superior (L4-S1)</td>
-                            <td class="p-3">Abdução e rotação medial da coxa; estabiliza a pelve</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Tensor da Fáscia Lata</td>
-                            <td class="p-3">Espinha ilíaca anterossuperior</td>
-                            <td class="p-3">Trato iliotibial</td>
-                            <td class="p-3">Nervo glúteo superior (L4-S1)</td>
-                            <td class="p-3">Abdução, rotação medial e flexão da coxa</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Ilíopsoas (Psoas + Ilíaco)</td>
-                            <td class="p-3">Vértebras T12-L5 (Psoas); Fossa ilíaca (Ilíaco)</td>
-                            <td class="p-3">Trocânter menor do fêmur</td>
-                            <td class="p-3">Nervo femoral e ramos L1-L3</td>
-                            <td class="p-3">Principal flexor da coxa</td>
-                        </tr>
-                        <!-- Outros músculos do quadril aqui -->
-                        
-                        <!-- Coxa -->
-                        <tr>
-                            <td class="region-cell region-coxa" rowspan="8">Coxa</td>
-                            <td class="p-3 font-semibold">Quadríceps Femoral</td>
-                            <td class="p-3">Reto femoral: espinha ilíaca; Vastos: fêmur</td>
-                            <td class="p-3">Base da patela e tuberosidade da tíbia</td>
-                            <td class="p-3">Nervo femoral (L2-L4)</td>
-                            <td class="p-3">Extensor da perna; reto femoral flexiona a coxa</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Sartório</td>
-                            <td class="p-3">Espinha ilíaca anterossuperior</td>
-                            <td class="p-3">"Pata de ganso" na tíbia</td>
-                            <td class="p-3">Nervo femoral (L2, L3)</td>
-                            <td class="p-3">Flexão, abdução, rotação lateral da coxa</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Adutor Magno</td>
-                            <td class="p-3">Púbis, ísquio</td>
-                            <td class="p-3">Linha áspera e tubérculo do adutor</td>
-                            <td class="p-3">Nervo obturatório e isquiático</td>
-                            <td class="p-3">Adução potente; extensão da coxa</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Bíceps Femoral</td>
-                            <td class="p-3">Tuberosidade isquiática (longa); linha áspera (curta)</td>
-                            <td class="p-3">Cabeça da fíbula</td>
-                            <td class="p-3">Nervo isquiático</td>
-                            <td class="p-3">Flexão da perna; extensão da coxa</td>
-                        </tr>
-                         <tr>
-                            <td class="p-3 font-semibold">Semitendíneo</td>
-                            <td class="p-3">Tuberosidade isquiática</td>
-                            <td class="p-3">"Pata de ganso" na tíbia</td>
-                            <td class="p-3">Nervo isquiático (tibial)</td>
-                            <td class="p-3">Flexão da perna; extensão da coxa</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Semimembranáceo</td>
-                            <td class="p-3">Tuberosidade isquiática</td>
-                            <td class="p-3">Côndilo medial da tíbia</td>
-                            <td class="p-3">Nervo isquiático (tibial)</td>
-                            <td class="p-3">Flexão da perna; extensão da coxa</td>
-                        </tr>
-                        <!-- Outros músculos da coxa aqui -->
-
-                        <!-- Perna -->
-                        <tr>
-                            <td class="region-cell region-perna" rowspan="5">Perna</td>
-                            <td class="p-3 font-semibold">Tibial Anterior</td>
-                            <td class="p-3">Tíbia e membrana interóssea</td>
-                            <td class="p-3">Cuneiforme medial e base do 1º metatarso</td>
-                            <td class="p-3">Nervo fibular profundo (L4, L5)</td>
-                            <td class="p-3">Dorsiflexão e inversão do pé</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Gastrocnêmio</td>
-                            <td class="p-3">Côndilos do fêmur</td>
-                            <td class="p-3">Calcâneo (via tendão de Aquiles)</td>
-                            <td class="p-3">Nervo tibial (S1, S2)</td>
-                            <td class="p-3">Flexão plantar do pé; flexão da perna</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 font-semibold">Sóleo</td>
-                            <td class="p-3">Tíbia e fíbula</td>
-                            <td class="p-3">Calcâneo (via tendão de Aquiles)</td>
-                            <td class="p-3">Nervo tibial (S1, S2)</td>
-                            <td class="p-3">Principal músculo da flexão plantar</td>
-                        </tr>
-                        <!-- Outros músculos da perna aqui -->
-                    </tbody>
-                </table>
+        <div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Membros Inferiores (MMII)</h2>
+            <div class="bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-600 uppercase bg-slate-100">
+                             <tr>
+                                <th class="p-3 w-[50px]">Região</th>
+                                <th class="p-3">Músculo</th>
+                                <th class="p-3">Origem</th>
+                                <th class="p-3">Inserção</th>
+                                <th class="p-3">Inervação</th>
+                                <th class="p-3">Ações Principais</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <!-- Quadril -->
+                            <tr>
+                                <td class="region-cell region-quadril" rowspan="4">Quadril / Glútea</td>
+                                <td class="p-3 font-semibold">Glúteo Máximo</td>
+                                <td class="p-3">Ílio, sacro e cóccix</td>
+                                <td class="p-3">Trato iliotibial e tuberosidade glútea</td>
+                                <td class="p-3">Nervo glúteo inferior (L5-S2)</td>
+                                <td class="p-3">Principal extensor da coxa</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Glúteo Médio/Mínimo</td>
+                                <td class="p-3">Face externa do Ílio</td>
+                                <td class="p-3">Trocânter maior do fêmur</td>
+                                <td class="p-3">Nervo glúteo superior (L4-S1)</td>
+                                <td class="p-3">Abdução e rotação medial da coxa</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Tensor da Fáscia Lata</td>
+                                <td class="p-3">Espinha ilíaca anterossuperior</td>
+                                <td class="p-3">Trato iliotibial</td>
+                                <td class="p-3">Nervo glúteo superior (L4-S1)</td>
+                                <td class="p-3">Flexão, abdução e rotação medial da coxa</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Ilíopsoas</td>
+                                <td class="p-3">Vértebras T12-L5 e fossa ilíaca</td>
+                                <td class="p-3">Trocânter menor do fêmur</td>
+                                <td class="p-3">Nervo femoral e ramos L1-L3</td>
+                                <td class="p-3">Principal flexor da coxa</td>
+                            </tr>
+                            <!-- Coxa -->
+                            <tr>
+                                <td class="region-cell region-coxa" rowspan="6">Coxa</td>
+                                <td class="p-3 font-semibold">Quadríceps Femoral</td>
+                                <td class="p-3">Reto femoral: espinha ilíaca; Vastos: fêmur</td>
+                                <td class="p-3">Base da patela e tuberosidade da tíbia</td>
+                                <td class="p-3">Nervo femoral (L2-L4)</td>
+                                <td class="p-3">Extensor da perna</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Sartório</td>
+                                <td class="p-3">Espinha ilíaca anterossuperior</td>
+                                <td class="p-3">"Pata de ganso" na tíbia</td>
+                                <td class="p-3">Nervo femoral (L2, L3)</td>
+                                <td class="p-3">Flexão, abdução e rotação lateral da coxa</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Adutor Magno</td>
+                                <td class="p-3">Púbis, ísquio</td>
+                                <td class="p-3">Linha áspera e tubérculo do adutor</td>
+                                <td class="p-3">N. obturatório e isquiático</td>
+                                <td class="p-3">Adução e extensão da coxa</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Bíceps Femoral</td>
+                                <td class="p-3">Tuberosidade isquiática e linha áspera</td>
+                                <td class="p-3">Cabeça da fíbula</td>
+                                <td class="p-3">Nervo isquiático</td>
+                                <td class="p-3">Flexão da perna e extensão da coxa</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Semitendíneo</td>
+                                <td class="p-3">Tuberosidade isquiática</td>
+                                <td class="p-3">"Pata de ganso" na tíbia</td>
+                                <td class="p-3">Nervo isquiático (tibial)</td>
+                                <td class="p-3">Flexão da perna e extensão da coxa</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Semimembranáceo</td>
+                                <td class="p-3">Tuberosidade isquiática</td>
+                                <td class="p-3">Côndilo medial da tíbia</td>
+                                <td class="p-3">Nervo isquiático (tibial)</td>
+                                <td class="p-3">Flexão da perna e extensão da coxa</td>
+                            </tr>
+                            <!-- Perna -->
+                            <tr>
+                                <td class="region-cell region-perna" rowspan="3">Perna</td>
+                                <td class="p-3 font-semibold">Tibial Anterior</td>
+                                <td class="p-3">Tíbia e membrana interóssea</td>
+                                <td class="p-3">Cuneiforme medial e base do 1º metatarso</td>
+                                <td class="p-3">Nervo fibular profundo (L4, L5)</td>
+                                <td class="p-3">Dorsiflexão e inversão do pé</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Gastrocnêmio</td>
+                                <td class="p-3">Côndilos do fêmur</td>
+                                <td class="p-3">Calcâneo (via tendão de Aquiles)</td>
+                                <td class="p-3">Nervo tibial (S1, S2)</td>
+                                <td class="p-3">Flexão plantar do pé e flexão da perna</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Sóleo</td>
+                                <td class="p-3">Tíbia e fíbula</td>
+                                <td class="p-3">Calcâneo (via tendão de Aquiles)</td>
+                                <td class="p-3">Nervo tibial (S1, S2)</td>
+                                <td class="p-3">Principal músculo da flexão plantar</td>
+                            </tr>
+                             <!-- Pé -->
+                            <tr>
+                                <td class="region-cell region-pe" rowspan="3">Pé / Tornozelo</td>
+                                <td class="p-3 font-semibold">Extensor Longo dos Dedos</td>
+                                <td class="p-3">Tíbia e fíbula</td>
+                                <td class="p-3">Falanges dos 4 dedos laterais</td>
+                                <td class="p-3">Nervo Fibular Profundo</td>
+                                <td class="p-3">Extensão dos 4 dedos laterais</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Flexor Longo do Hálux</td>
+                                <td class="p-3">Face posterior da fíbula</td>
+                                <td class="p-3">Falange distal do hálux</td>
+                                <td class="p-3">Nervo Tibial</td>
+                                <td class="p-3">Flexão do hálux</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold">Músculos Intrínsecos do Pé</td>
+                                <td class="p-3">Vários ossos do pé</td>
+                                <td class="p-3">Vários ossos do pé</td>
+                                <td class="p-3">Nervos Plantares Medial e Lateral</td>
+                                <td class="p-3">Movimentos finos e suporte do arco</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+        
+        <footer class="text-center mt-10 text-sm text-slate-500">
+            <p>Este é um guia simplificado para fins de estudo. Consulte sempre a literatura anatômica para informações detalhadas.</p>
+        </footer>
     </div>
 </body>
 </html>
